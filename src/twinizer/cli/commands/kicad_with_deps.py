@@ -12,7 +12,6 @@ from pathlib import Path
 
 from rich.console import Console
 
-from twinizer.cli.commands import command_group
 from twinizer.hardware.kicad.sch_parser import KiCadSchematicParser
 from twinizer.hardware.kicad.pcb_parser import PCBParser
 from twinizer.hardware.kicad.converters import (
@@ -21,7 +20,6 @@ from twinizer.hardware.kicad.converters import (
 
 console = Console()
 
-@command_group
 @click.group(name="kicad-deps", help="KiCad file operations with dependency handling")
 def kicad_deps_group():
     """

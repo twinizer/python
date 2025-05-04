@@ -199,23 +199,187 @@ class KiCadSchematicParser:
                     'nets': len(sheet_data.get('nets', []))
                 })
 
-    def parse(self) -> Dict[str, Any]:
+    def parse(self) -> Dict:
         """
-        Parse the schematic file and extract components, nets, and hierarchy.
+        Parse the KiCad schematic file.
 
         Returns:
             Dictionary with parsed schematic data
         """
-        if not os.path.exists(self.schematic_path):
-            raise FileNotFoundError(f"Schematic file not found: {self.schematic_path}")
+        try:
+            with open(self.schematic_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except Exception as e:
+            console.print(f"[red]Error reading schematic file:[/red] {e}")
+            return {
+                'components': [],
+                'nets': [],
+                'hierarchy': [],
+                'format': 'unknown'
+            }
 
-        # Load dependencies first
-        self._load_dependencies()
+        lines = content.split('\n')
+        i = 0
 
-        if self.is_new_format:
-            return self._parse_new_format()
-        else:
-            return self._parse_legacy_format()
+        # Dictionary to track pins by their coordinates
+        pin_positions = {}
+        # Dictionary to track components by their reference
+        components_by_ref = {}
+
+        while i < len(lines):
+            line = lines[i].strip()
+
+            # Parse components
+            if line == '$Comp':
+                component = {}
+                i += 1
+
+                while i < len(lines) and lines[i].strip() != '$EndComp':
+                    comp_line = lines[i].strip()
+
+                    if comp_line.startswith('L '):
+                        parts = comp_line.split()
+                        if len(parts) >= 3:
+                            component['lib_id'] = parts[1]
+                            component['reference'] = parts[2]
+
+                    elif comp_line.startswith('U '):
+                        # Unit number, not critical for our purposes
+                        pass
+
+                    elif comp_line.startswith('P '):
+                        parts = comp_line.split()
+                        try:
+                            if len(parts) >= 3:
+                                x = float(parts[1]) if parts[1].strip() else 0.0
+                                y = float(parts[2]) if parts[2].strip() else 0.0
+                                component['position'] = (x, y)
+                        except ValueError:
+                            # Handle invalid position values
+                            component['position'] = (0.0, 0.0)
+
+                    elif comp_line.startswith('F '):
+                        parts = comp_line.split()
+                        if len(parts) >= 3:
+                            field_num = parts[1]
+                            field_value = parts[2].strip('"')
+
+                            if field_num == '0':
+                                component['reference'] = field_value
+                            elif field_num == '1':
+                                component['value'] = field_value
+                            elif field_num == '2':
+                                component['footprint'] = field_value
+                            elif field_num == '3':
+                                component['datasheet'] = field_value
+
+                    i += 1
+
+                if 'reference' in component:
+                    self.components.append(component)
+                    components_by_ref[component['reference']] = component
+
+                    # Initialize pins for this component
+                    component['pins'] = []
+
+            # Parse wire connections (nets)
+            elif line.startswith('Wire Wire Line'):
+                i += 1
+                if i < len(lines):
+                    wire_line = lines[i].strip()
+                    parts = wire_line.split()
+
+                    try:
+                        if len(parts) >= 4:
+                            x1 = float(parts[0]) if parts[0].strip() else 0.0
+                            y1 = float(parts[1]) if parts[1].strip() else 0.0
+                            x2 = float(parts[2]) if parts[2].strip() else 0.0
+                            y2 = float(parts[3]) if parts[3].strip() else 0.0
+
+                            # Create a net for this wire
+                            net_code = len(self.nets) + 1
+                            net = {
+                                'code': net_code,
+                                'name': f'Net-{net_code}',
+                                'connections': [],
+                                'start': (x1, y1),
+                                'end': (x2, y2)
+                            }
+                            self.nets.append(net)
+
+                            # Store the wire endpoints for later connection detection
+                            key1 = f"{x1},{y1}"
+                            key2 = f"{x2},{y2}"
+
+                            if key1 not in pin_positions:
+                                pin_positions[key1] = []
+                            pin_positions[key1].append(net)
+
+                            if key2 not in pin_positions:
+                                pin_positions[key2] = []
+                            pin_positions[key2].append(net)
+                    except ValueError:
+                        # Handle invalid wire coordinates
+                        pass
+
+            # Parse connections (labels)
+            elif line.startswith('Connection'):
+                parts = line.split()
+                if len(parts) >= 4:
+                    try:
+                        x = float(parts[2]) if parts[2].strip() else 0.0
+                        y = float(parts[3]) if parts[3].strip() else 0.0
+
+                        # Find the component closest to this connection point
+                        closest_comp = None
+                        min_distance = float('inf')
+
+                        for comp in self.components:
+                            if 'position' in comp:
+                                comp_x, comp_y = comp['position']
+                                distance = ((x - comp_x) ** 2 + (y - comp_y) ** 2) ** 0.5
+
+                                if distance < min_distance:
+                                    min_distance = distance
+                                    closest_comp = comp
+
+                        if closest_comp and min_distance < 1000:  # Arbitrary threshold
+                            key = f"{x},{y}"
+                            if key in pin_positions:
+                                for net in pin_positions[key]:
+                                    if closest_comp['reference'] not in net['connections']:
+                                        net['connections'].append(closest_comp['reference'])
+                    except ValueError:
+                        pass
+
+            i += 1
+
+        # Post-processing: detect connections between components based on wire endpoints
+        # This is a simplified approach - in a real implementation, we would need to analyze
+        # the schematic more thoroughly to determine actual component pin connections
+        for comp in self.components:
+            if 'position' in comp:
+                comp_x, comp_y = comp['position']
+
+                # Check if any wire endpoints are close to this component
+                for key, nets in pin_positions.items():
+                    x, y = map(float, key.split(','))
+                    distance = ((x - comp_x) ** 2 + (y - comp_y) ** 2) ** 0.5
+
+                    if distance < 1000:  # Arbitrary threshold
+                        for net in nets:
+                            if comp['reference'] not in net['connections']:
+                                net['connections'].append(comp['reference'])
+
+        # Clean up nets with less than 2 connections
+        self.nets = [net for net in self.nets if len(net['connections']) >= 2]
+
+        return {
+            'components': self.components,
+            'nets': self.nets,
+            'hierarchy': self.hierarchy,
+            'format': 'legacy_sch'
+        }
 
     def _parse_new_format(self) -> Dict[str, Any]:
         """
@@ -270,103 +434,6 @@ class KiCadSchematicParser:
             'nets': self.nets,
             'hierarchy': self.hierarchy,
             'format': 'kicad_sch'
-        }
-
-    def _parse_legacy_format(self) -> Dict[str, Any]:
-        """
-        Parse the legacy .sch format.
-
-        Returns:
-            Dictionary with parsed schematic data
-        """
-        with open(self.schematic_path, 'r', encoding='utf-8') as f:
-            lines = f.readlines()
-
-        i = 0
-        while i < len(lines):
-            line = lines[i].strip()
-
-            # Parse components
-            if line.startswith('$Comp'):
-                component = {}
-                i += 1
-
-                while i < len(lines) and not lines[i].strip().startswith('$EndComp'):
-                    comp_line = lines[i].strip()
-
-                    if comp_line.startswith('L '):
-                        parts = comp_line.split()
-                        if len(parts) >= 3:
-                            component['lib_id'] = parts[1]
-                            component['reference'] = parts[2]
-
-                    elif comp_line.startswith('U '):
-                        # Unit number, not critical for our purposes
-                        pass
-
-                    elif comp_line.startswith('P '):
-                        parts = comp_line.split()
-                        try:
-                            if len(parts) >= 3:
-                                x = float(parts[1]) if parts[1].strip() else 0.0
-                                y = float(parts[2]) if parts[2].strip() else 0.0
-                                component['position'] = (x, y)
-                        except ValueError:
-                            # Handle invalid position values
-                            component['position'] = (0.0, 0.0)
-
-                    elif comp_line.startswith('F '):
-                        parts = comp_line.split()
-                        if len(parts) >= 3:
-                            field_num = parts[1]
-                            field_value = parts[2].strip('"')
-
-                            if field_num == '0':
-                                component['reference'] = field_value
-                            elif field_num == '1':
-                                component['value'] = field_value
-                            elif field_num == '2':
-                                component['footprint'] = field_value
-                            elif field_num == '3':
-                                component['datasheet'] = field_value
-
-                    i += 1
-
-                if 'reference' in component:
-                    self.components.append(component)
-
-            # Parse wire connections (nets)
-            elif line.startswith('Wire Wire Line'):
-                i += 1
-                if i < len(lines):
-                    wire_line = lines[i].strip()
-                    parts = wire_line.split()
-
-                    try:
-                        if len(parts) >= 4:
-                            x1 = float(parts[0]) if parts[0].strip() else 0.0
-                            y1 = float(parts[1]) if parts[1].strip() else 0.0
-                            x2 = float(parts[2]) if parts[2].strip() else 0.0
-                            y2 = float(parts[3]) if parts[3].strip() else 0.0
-
-                            # Create a net for this wire
-                            net_code = len(self.nets) + 1
-                            self.nets.append({
-                                'code': net_code,
-                                'name': f'Net-{net_code}',
-                                'connections': []  # We'd need more complex parsing to determine connections
-                            })
-                    except ValueError:
-                        # Handle invalid wire coordinates
-                        pass
-
-            i += 1
-
-        return {
-            'components': self.components,
-            'nets': self.nets,
-            'hierarchy': self.hierarchy,
-            'format': 'legacy_sch'
         }
 
     def generate_component_list(self) -> Table:

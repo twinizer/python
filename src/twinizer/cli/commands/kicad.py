@@ -19,7 +19,8 @@ from rich.syntax import Syntax
 from twinizer.hardware.kicad.sch_parser import SchematicParser
 from twinizer.hardware.kicad.pcb_parser import PCBParser
 from twinizer.hardware.kicad.converters import (
-    SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel
+    SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel,
+    convert_kicad_to_image, convert_kicad_to_mermaid, convert_kicad_to_svg
 )
 
 console = Console()
@@ -129,7 +130,7 @@ def parse_pcb(pcb_file: str, output: Optional[str] = None,
 
 @kicad_group.command(name="sch-to-mermaid", help="Convert KiCad schematic to Mermaid diagram")
 @click.argument("schematic_file", type=click.Path(exists=True))
-@click.option("--diagram-type", type=click.Choice(["flowchart", "class"]), default="flowchart",
+@click.option("--diagram-type", type=click.Choice(["flowchart", "class", "graph"]), default="flowchart",
               help="Type of diagram to generate")
 @click.option("--output", type=click.Path(), default=None,
               help="Output file path (default: <schematic_name>_<diagram_type>.mmd)")
@@ -150,33 +151,34 @@ def schematic_to_mermaid(schematic_file: str, output: Optional[str] = None,
     Args:
         schematic_file: Path to the KiCad schematic file
         output: Output file path (optional)
-        diagram_type: Type of diagram to generate (flowchart or class)
+        diagram_type: Type of diagram to generate (flowchart, class, or graph)
         include_components: Include component details
         include_values: Include component values
         include_pins: Include component pins
         verbose: Enable verbose output
     """
     try:
-        from twinizer.hardware.kicad.converters import SchematicToMermaid
-        
+        # Create the converter
         converter = SchematicToMermaid(schematic_file)
         
+        # Generate the diagram
         if diagram_type == "flowchart":
             output_path = converter.to_flowchart(output)
         elif diagram_type == "class":
             output_path = converter.to_class_diagram(output)
+        elif diagram_type == "graph":
+            output_path = converter.to_graph(output)
         else:
-            console.print(f"[red]Unsupported diagram type:[/red] {diagram_type}")
-            return
+            raise ValueError(f"Unsupported diagram type: {diagram_type}")
         
         console.print(f"[green]Mermaid diagram generated:[/green] {output_path}")
+    
     except Exception as e:
-        console.print(f"[red]Error converting schematic to Mermaid:[/red] {str(e)}")
-        if output:
-            # Create a minimal valid Mermaid diagram as a fallback
-            with open(output, 'w') as f:
-                f.write(f"flowchart TD\n    A[Error] --> B[{str(e)}]\n")
-            console.print(f"[yellow]Created fallback diagram at:[/yellow] {output}")
+        console.print(f"[red]Error generating Mermaid diagram:[/red] {e}")
+        if verbose:
+            import traceback
+            console.print(traceback.format_exc())
+        sys.exit(1)
 
 
 @kicad_group.command(name="sch-to-bom", help="Generate BOM from KiCad schematic")
@@ -288,6 +290,39 @@ def pcb_to_3d(pcb_file: str, output: Optional[str] = None,
     except Exception as e:
         console.print(f"[red]Error converting PCB to 3D model:[/red] {e}")
         sys.exit(1)
+
+
+@kicad_group.command(name="sch-to-svg", help="Convert KiCad schematic to SVG")
+@click.argument('schematic_file', type=click.Path(exists=True))
+@click.option('--output', '-o', help='Output SVG file path')
+@click.option('--theme', '-t', type=click.Choice(['default', 'dark', 'blue', 'minimal']), 
+              default='default', help='Theme for the SVG output')
+@click.option('--html', '-h', is_flag=True, help='Generate HTML file with embedded SVG')
+def schematic_to_svg(schematic_file, output, theme, html):
+    """
+    Convert KiCad schematic to SVG format.
+    
+    This command converts a KiCad schematic file (.kicad_sch) to SVG format using schemdraw.
+    It can also generate an HTML file with the SVG embedded for easy viewing.
+    
+    Example:
+        twinizer kicad schematic-to-svg path/to/schematic.kicad_sch --theme dark --html
+    """
+    try:
+        result = convert_kicad_to_svg(schematic_file, output, theme, html)
+        
+        if html:
+            svg_path, html_path = result
+            click.echo(f"SVG file created: {svg_path}")
+            click.echo(f"HTML file created: {html_path}")
+        else:
+            click.echo(f"SVG file created: {result}")
+            
+    except ImportError as e:
+        click.echo(f"Error: {e}")
+        click.echo("Please install the required package with: pip install schemdraw")
+    except Exception as e:
+        click.echo(f"Error during conversion: {e}")
 
 
 def _format_schematic_text(schematic) -> str:

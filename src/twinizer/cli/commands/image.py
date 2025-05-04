@@ -17,10 +17,19 @@ from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from twinizer.converters.image.ascii import AsciiArtConverter
 from twinizer.converters.image.mermaid import MermaidDiagramGenerator
-from twinizer.converters.image.image_to_3d import (
-    ImageTo3DConverter, image_to_heightmap, image_to_normalmap,
-    image_to_mesh, image_to_point_cloud
-)
+
+# Używamy importów warunkowych dla modułów, które wymagają matplotlib
+# aby uniknąć błędów, gdy matplotlib nie jest zainstalowany
+def _import_image_to_3d():
+    try:
+        from twinizer.converters.image.image_to_3d import (
+            ImageTo3DConverter, image_to_heightmap, image_to_normalmap,
+            image_to_mesh, image_to_point_cloud
+        )
+        return (ImageTo3DConverter, image_to_heightmap, image_to_normalmap,
+                image_to_mesh, image_to_point_cloud)
+    except ImportError:
+        return None, None, None, None, None
 
 console = Console()
 
@@ -195,215 +204,236 @@ def image_to_mermaid(image_path: str, output: Optional[str] = None,
 @click.argument("image_path", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
 @click.option("--invert", "-i", is_flag=True, help="Invert height values")
-@click.option("--blur", "-b", type=float, default=1.0, help="Blur sigma (0 for no blur)")
-@click.option("--scale", "-s", type=float, default=1.0, help="Scale factor for height values")
-def image_to_heightmap_cmd(image_path: str, output: Optional[str] = None, 
-                          invert: bool = False, blur: float = 1.0,
-                          scale: float = 1.0):
+@click.option("--blur", "-b", type=float, default=0.0, help="Apply Gaussian blur (sigma value)")
+@click.option("--normalize", "-n", is_flag=True, help="Normalize height values")
+@click.option("--format", "-f", type=click.Choice(["png", "jpg", "tiff"]), default="png", 
+              help="Output format")
+def image_to_heightmap_cmd(
+    image_path: str, 
+    output: Optional[str] = None,
+    invert: bool = False,
+    blur: float = 0.0,
+    normalize: bool = False,
+    format: str = "png"
+):
     """
     Convert an image to a height map.
     
-    Args:
-        image_path: Path to the input image
-        output: Output file path (optional)
-        invert: Invert height values
-        blur: Blur sigma (0 for no blur)
-        scale: Scale factor for height values
+    This command takes an input image and generates a height map where pixel intensity
+    corresponds to height.
     """
     try:
-        # Convert image to height map
+        # Lazy import
+        _, image_to_heightmap_func, _, _, _ = _import_image_to_3d()
+        if image_to_heightmap_func is None:
+            console.print("[red]Error:[/red] Required dependency 'matplotlib' is not installed.")
+            console.print("Please install it with: [green]pip install matplotlib[/green]")
+            return
+            
+        # Set output path if not provided
+        if not output:
+            base_name = os.path.splitext(os.path.basename(image_path))[0]
+            output = f"{base_name}_heightmap.{format}"
+        
+        # Show progress
         with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
         ) as progress:
             task = progress.add_task("[green]Converting image to height map...", total=None)
             
-            result = image_to_heightmap(
+            result = image_to_heightmap_func(
                 image_path=image_path,
                 invert=invert,
                 blur_sigma=blur,
-                scale_factor=scale,
+                normalize=normalize,
                 output_path=output
             )
             
-            progress.update(task, completed=True, 
-                           description=f"[green]Conversion complete")
+            progress.update(task, completed=True)
         
-        # Display result
-        console.print(f"[green]Height map saved to: {result}[/green]")
-    
+        console.print(f"[green]Height map generated:[/green] {output}")
+        
     except Exception as e:
-        console.print(f"[red]Error converting image to height map: {e}[/red]")
-        import traceback
-        console.print(traceback.format_exc())
-        sys.exit(1)
+        console.print(f"[red]Error generating height map:[/red] {str(e)}")
 
 
 @image_group.command(name="to-normalmap", help="Convert image to normal map")
 @click.argument("image_path", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--strength", "-s", type=float, default=1.0, help="Strength of the normal map effect")
-def image_to_normalmap_cmd(image_path: str, output: Optional[str] = None, 
-                          strength: float = 1.0):
+@click.option("--strength", "-s", type=float, default=1.0, help="Strength of normal map effect")
+@click.option("--format", "-f", type=click.Choice(["png", "jpg", "tiff"]), default="png", 
+              help="Output format")
+def image_to_normalmap_cmd(
+    image_path: str, 
+    output: Optional[str] = None,
+    strength: float = 1.0,
+    format: str = "png"
+):
     """
     Convert an image to a normal map.
     
-    Args:
-        image_path: Path to the input image
-        output: Output file path (optional)
-        strength: Strength of the normal map effect
+    This command takes an input image (typically a height map) and generates a normal map
+    for use in 3D rendering and games.
     """
     try:
-        # Convert image to normal map
+        # Lazy import
+        _, _, image_to_normalmap_func, _, _ = _import_image_to_3d()
+        if image_to_normalmap_func is None:
+            console.print("[red]Error:[/red] Required dependency 'matplotlib' is not installed.")
+            console.print("Please install it with: [green]pip install matplotlib[/green]")
+            return
+            
+        # Set output path if not provided
+        if not output:
+            base_name = os.path.splitext(os.path.basename(image_path))[0]
+            output = f"{base_name}_normalmap.{format}"
+        
+        # Show progress
         with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
         ) as progress:
             task = progress.add_task("[green]Converting image to normal map...", total=None)
             
-            result = image_to_normalmap(
+            result = image_to_normalmap_func(
                 image_path=image_path,
                 strength=strength,
                 output_path=output
             )
             
-            progress.update(task, completed=True, 
-                           description=f"[green]Conversion complete")
+            progress.update(task, completed=True)
         
-        # Display result
-        console.print(f"[green]Normal map saved to: {result}[/green]")
-    
+        console.print(f"[green]Normal map generated:[/green] {output}")
+        
     except Exception as e:
-        console.print(f"[red]Error converting image to normal map: {e}[/red]")
-        import traceback
-        console.print(traceback.format_exc())
-        sys.exit(1)
+        console.print(f"[red]Error generating normal map:[/red] {str(e)}")
 
 
 @image_group.command(name="to-mesh", help="Convert image to 3D mesh")
 @click.argument("image_path", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--format", "-f", type=click.Choice(["obj", "stl", "ply"]), default="obj", 
+@click.option("--format", "-f", type=click.Choice(["obj", "stl", "ply", "glb"]), default="obj", 
               help="Output format")
-@click.option("--scale-z", "-z", type=float, default=0.1, help="Scale factor for height values")
+@click.option("--scale-z", "-z", type=float, default=1.0, help="Scale factor for Z axis")
 @click.option("--invert", "-i", is_flag=True, help="Invert height values")
-@click.option("--blur", "-b", type=float, default=1.0, help="Blur sigma (0 for no blur)")
-@click.option("--smooth/--no-smooth", default=True, help="Smooth the mesh")
-@click.option("--simplify/--no-simplify", default=False, help="Simplify the mesh")
-def image_to_mesh_cmd(image_path: str, output: Optional[str] = None, 
-                     format: str = "obj", scale_z: float = 0.1,
-                     invert: bool = False, blur: float = 1.0,
-                     smooth: bool = True, simplify: bool = False):
+@click.option("--smooth/--no-smooth", default=True, help="Apply smoothing to the mesh")
+@click.option("--resolution", "-r", type=int, default=100, help="Resolution of the mesh (percentage of image resolution)")
+def image_to_mesh_cmd(
+    image_path: str, 
+    output: Optional[str] = None,
+    format: str = "obj",
+    scale_z: float = 1.0,
+    invert: bool = False,
+    smooth: bool = True,
+    resolution: int = 100
+):
     """
     Convert an image to a 3D mesh.
     
-    Args:
-        image_path: Path to the input image
-        output: Output file path (optional)
-        format: Output format (obj, stl, or ply)
-        scale_z: Scale factor for height values
-        invert: Invert height values
-        blur: Blur sigma (0 for no blur)
-        smooth: Smooth the mesh
-        simplify: Simplify the mesh
+    This command takes an input image (typically a height map) and generates a 3D mesh
+    where pixel intensity corresponds to height.
     """
     try:
-        # Check for required dependencies
-        try:
-            import trimesh
-        except ImportError:
-            console.print("[red]Error: trimesh is required for mesh generation[/red]")
-            console.print("[yellow]Install it with: pip install trimesh[/yellow]")
-            sys.exit(1)
+        # Lazy import
+        _, _, _, image_to_mesh_func, _ = _import_image_to_3d()
+        if image_to_mesh_func is None:
+            console.print("[red]Error:[/red] Required dependency 'matplotlib' is not installed.")
+            console.print("Please install it with: [green]pip install matplotlib[/green]")
+            return
+            
+        # Set output path if not provided
+        if not output:
+            base_name = os.path.splitext(os.path.basename(image_path))[0]
+            output = f"{base_name}_mesh.{format}"
         
-        # Convert image to mesh
+        # Show progress
         with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
         ) as progress:
             task = progress.add_task("[green]Converting image to 3D mesh...", total=None)
             
-            result = image_to_mesh(
+            result = image_to_mesh_func(
                 image_path=image_path,
                 scale_z=scale_z,
                 invert=invert,
-                blur_sigma=blur,
                 smooth=smooth,
-                simplify=simplify,
+                resolution=resolution,
                 output_format=format,
                 output_path=output
             )
             
-            progress.update(task, completed=True, 
-                           description=f"[green]Conversion complete")
+            progress.update(task, completed=True)
         
-        # Display result
-        console.print(f"[green]3D mesh saved to: {result}[/green]")
-    
+        console.print(f"[green]3D mesh generated:[/green] {output}")
+        
     except Exception as e:
-        console.print(f"[red]Error converting image to 3D mesh: {e}[/red]")
-        import traceback
-        console.print(traceback.format_exc())
-        sys.exit(1)
+        console.print(f"[red]Error generating 3D mesh:[/red] {str(e)}")
 
 
 @image_group.command(name="to-pointcloud", help="Convert image to 3D point cloud")
 @click.argument("image_path", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--format", "-f", type=click.Choice(["ply", "xyz"]), default="ply", 
+@click.option("--format", "-f", type=click.Choice(["ply", "xyz", "pcd"]), default="ply", 
               help="Output format")
-@click.option("--scale-z", "-z", type=float, default=0.1, help="Scale factor for height values")
-@click.option("--sample-ratio", "-r", type=float, default=0.1, 
-              help="Ratio of points to sample (0-1)")
-def image_to_pointcloud_cmd(image_path: str, output: Optional[str] = None, 
-                           format: str = "ply", scale_z: float = 0.1,
-                           sample_ratio: float = 0.1):
+@click.option("--scale-z", "-z", type=float, default=1.0, help="Scale factor for Z axis")
+@click.option("--invert", "-i", is_flag=True, help="Invert height values")
+@click.option("--sample-ratio", "-s", type=float, default=1.0, 
+              help="Sampling ratio (percentage of pixels to include)")
+@click.option("--color/--no-color", default=True, help="Include color information")
+def image_to_pointcloud_cmd(
+    image_path: str, 
+    output: Optional[str] = None,
+    format: str = "ply",
+    scale_z: float = 1.0,
+    invert: bool = False,
+    sample_ratio: float = 1.0,
+    color: bool = True
+):
     """
     Convert an image to a 3D point cloud.
     
-    Args:
-        image_path: Path to the input image
-        output: Output file path (optional)
-        format: Output format (ply or xyz)
-        scale_z: Scale factor for height values
-        sample_ratio: Ratio of points to sample (0-1)
+    This command takes an input image (typically a height map) and generates a 3D point cloud
+    where pixel intensity corresponds to height.
     """
     try:
-        # Check for required dependencies
-        try:
-            import trimesh
-        except ImportError:
-            console.print("[red]Error: trimesh is required for point cloud generation[/red]")
-            console.print("[yellow]Install it with: pip install trimesh[/yellow]")
-            sys.exit(1)
+        # Lazy import
+        _, _, _, _, image_to_point_cloud_func = _import_image_to_3d()
+        if image_to_point_cloud_func is None:
+            console.print("[red]Error:[/red] Required dependency 'matplotlib' is not installed.")
+            console.print("Please install it with: [green]pip install matplotlib[/green]")
+            return
+            
+        # Set output path if not provided
+        if not output:
+            base_name = os.path.splitext(os.path.basename(image_path))[0]
+            output = f"{base_name}_pointcloud.{format}"
         
-        # Convert image to point cloud
+        # Show progress
         with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console
         ) as progress:
             task = progress.add_task("[green]Converting image to 3D point cloud...", total=None)
             
-            result = image_to_point_cloud(
+            result = image_to_point_cloud_func(
                 image_path=image_path,
                 scale_z=scale_z,
                 sample_ratio=sample_ratio,
+                invert=invert,
+                include_color=color,
                 output_format=format,
                 output_path=output
             )
             
-            progress.update(task, completed=True, 
-                           description=f"[green]Conversion complete")
+            progress.update(task, completed=True)
         
-        # Display result
-        console.print(f"[green]3D point cloud saved to: {result}[/green]")
-    
+        console.print(f"[green]3D point cloud generated:[/green] {output}")
+        
     except Exception as e:
-        console.print(f"[red]Error converting image to 3D point cloud: {e}[/red]")
-        import traceback
-        console.print(traceback.format_exc())
-        sys.exit(1)
+        console.print(f"[red]Error generating 3D point cloud:[/red] {str(e)}")

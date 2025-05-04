@@ -474,6 +474,12 @@ twinizer kicad pcb-to-mermaid board.kicad_pcb --diagram-type flowchart --output 
 
 # Convert a PCB to a 3D model
 twinizer kicad pcb-to-3d board.kicad_pcb --format step --output board.step
+
+# Konwersja schematu KiCad na diagram Mermaid z automatycznym ładowaniem zależności
+twinizer kicad-deps sch-to-mermaid schematic.sch --diagram-type flowchart --output schematic.mmd
+
+# Generowanie BOM ze schematu KiCad z automatycznym ładowaniem zależności
+twinizer kicad-deps sch-to-bom schematic.sch --format csv --output bom.csv
 ```
 
 #### Python API

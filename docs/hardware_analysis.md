@@ -60,6 +60,10 @@ twinizer kicad pcb-to-mermaid board.kicad_pcb --diagram-type flowchart --output 
 
 # Convert a PCB to a 3D model
 twinizer kicad pcb-to-3d board.kicad_pcb --format step --output board.step
+
+# New command: kicad-deps
+twinizer kicad-deps sch-to-mermaid schematic.sch --diagram-type flowchart --output schematic.mmd
+twinizer kicad-deps sch-to-bom schematic.sch --format csv --output bom.csv
 ```
 
 ### Python API
@@ -1002,6 +1006,135 @@ class SchematicToBOM:
         -----------
         sch_path : str
             Path to the Altium schematic file.
+        """
+        pass
+    
+    def to_csv(self, output_path):
+        """
+        Generate a BOM in CSV format.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the BOM.
+        
+        Returns:
+        --------
+        str
+            BOM in CSV format.
+        """
+        pass
+    
+    def to_json(self, output_path):
+        """
+        Generate a BOM in JSON format.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the BOM.
+        
+        Returns:
+        --------
+        str
+            BOM in JSON format.
+        """
+        pass
+
+```
+
+### New Command: kicad-deps
+
+```bash
+twinizer kicad-deps sch-to-mermaid schematic.sch --diagram-type flowchart --output schematic.mmd
+twinizer kicad-deps sch-to-bom schematic.sch --format csv --output bom.csv
+```
+
+```python
+class KiCadDeps:
+    """Automatically load dependencies for KiCad files."""
+    
+    def __init__(self, sch_path):
+        """
+        Initialize the dependency loader.
+        
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the KiCad schematic file.
+        """
+        pass
+    
+    def load_dependencies(self):
+        """
+        Load dependencies for the KiCad file.
+        
+        Returns:
+        --------
+        dict
+            Loaded dependencies.
+        """
+        pass
+```
+
+```python
+class SchematicToMermaid:
+    """Convert KiCad schematics to Mermaid diagrams."""
+    
+    def __init__(self, sch_path):
+        """
+        Initialize the converter.
+        
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the KiCad schematic file.
+        """
+        pass
+    
+    def to_flowchart(self, output_path):
+        """
+        Convert the schematic to a Mermaid flowchart.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
+    
+    def to_class(self, output_path):
+        """
+        Convert the schematic to a Mermaid class diagram.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
+
+class SchematicToBOM:
+    """Generate a bill of materials from a KiCad schematic."""
+    
+    def __init__(self, sch_path):
+        """
+        Initialize the converter.
+        
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the KiCad schematic file.
         """
         pass
     

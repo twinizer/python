@@ -5,13 +5,25 @@ This module provides functionality to convert KiCad schematic and PCB files to v
 """
 
 import os
+import sys
+import json
+import logging
 import subprocess
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Tuple, List, Dict, Any, Union
+import datetime
 
 from rich.console import Console
 
 console = Console()
+
+# Import schemdraw dla konwersji do SVG
+try:
+    import schemdraw
+    from schemdraw import elements as elm
+    SCHEMDRAW_AVAILABLE = True
+except ImportError:
+    SCHEMDRAW_AVAILABLE = False
 
 def convert_kicad_to_image(kicad_file: str, output_path: Optional[str] = None,
                           format: str = 'png', dpi: int = 300) -> str:
@@ -475,6 +487,222 @@ class SchematicToMermaid:
             console.print(f"[yellow]Created fallback diagram at:[/yellow] {output_path}")
             return output_path
         
+    def to_graph(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the schematic to a Mermaid graph diagram with LR layout.
+        
+        This diagram type often provides a better visualization of electronic schematics
+        with clearer connection paths.
+
+        Args:
+            output_path: Path to save the Mermaid file, if None uses the same name with .mmd extension
+
+        Returns:
+            Path to the output Mermaid file
+        """
+        try:
+            if output_path is None:
+                base_path = os.path.splitext(self.schematic_path)[0]
+                output_path = f"{base_path}_graph.mmd"
+                
+            # Parse the schematic
+            self.parser.parse()
+            
+            # Generate graph
+            mermaid_lines = ["graph LR"]
+            
+            # Define component groups and their styles
+            mermaid_lines.append("    %% Component Groups")
+            mermaid_lines.append("    subgraph Connectors[\"Connectors and Headers\"]")
+            mermaid_lines.append("    style Connectors fill:#e6f7ff,stroke:#1890ff,stroke-width:2px")
+            
+            # Add connectors to the Connectors subgraph
+            connector_ids = []
+            for component in self.parser.components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                if comp_id.startswith('J') or comp_id.startswith('P') or comp_id.startswith('CN'):
+                    connector_ids.append(comp_id)
+                    comp_value = component.get('value', '')
+                    comp_name = f"{comp_id}>J{comp_id}: {comp_value}]"
+                    mermaid_lines.append(f"        {comp_name}")
+            
+            mermaid_lines.append("    end")
+            
+            # Power components subgraph
+            mermaid_lines.append("    subgraph Power[\"Power Supply\"]")
+            mermaid_lines.append("    style Power fill:#fff7e6,stroke:#fa8c16,stroke-width:2px")
+            
+            # Add power components to the Power subgraph
+            power_ids = []
+            for component in self.parser.components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                if comp_id.startswith('#PWR') or comp_id.startswith('U') and ('VCC' in comp_id or 'VDD' in comp_id or 'REG' in comp_id):
+                    power_ids.append(comp_id)
+                    comp_value = component.get('value', '')
+                    comp_name = f"{comp_id}([{comp_id}: {comp_value}])"
+                    mermaid_lines.append(f"        {comp_name}")
+            
+            mermaid_lines.append("    end")
+            
+            # Passive components subgraph
+            mermaid_lines.append("    subgraph Passives[\"Passive Components\"]")
+            mermaid_lines.append("    style Passives fill:#f6ffed,stroke:#52c41a,stroke-width:2px")
+            
+            # Add passive components to the Passives subgraph
+            passive_ids = []
+            for component in self.parser.components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                if comp_id.startswith('R') or comp_id.startswith('C') or comp_id.startswith('L'):
+                    passive_ids.append(comp_id)
+                    comp_value = component.get('value', '')
+                    
+                    # Choose shape based on component type
+                    if comp_id.startswith('R'):
+                        comp_name = f"{comp_id}[/{comp_id}: {comp_value}/]"
+                    elif comp_id.startswith('C'):
+                        comp_name = f"{comp_id}[({comp_id}: {comp_value})]"
+                    elif comp_id.startswith('L'):
+                        comp_name = f"{comp_id}[{{{comp_id}: {comp_value}}}]"
+                    else:
+                        comp_name = f"{comp_id}[{comp_id}: {comp_value}]"
+                        
+                    mermaid_lines.append(f"        {comp_name}")
+            
+            mermaid_lines.append("    end")
+            
+            # Active components subgraph
+            mermaid_lines.append("    subgraph Actives[\"Active Components\"]")
+            mermaid_lines.append("    style Actives fill:#f9f0ff,stroke:#722ed1,stroke-width:2px")
+            
+            # Add active components to the Actives subgraph
+            active_ids = []
+            for component in self.parser.components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                if (comp_id.startswith('U') and not comp_id.startswith('#PWR')) or comp_id.startswith('Q') or comp_id.startswith('D') or comp_id.startswith('IC'):
+                    active_ids.append(comp_id)
+                    comp_value = component.get('value', '')
+                    comp_footprint = component.get('footprint', '')
+                    
+                    # Add footprint info if available
+                    footprint_info = f" ({comp_footprint})" if comp_footprint else ""
+                    
+                    # Choose shape based on component type
+                    if comp_id.startswith('D') or comp_id.startswith('LED'):
+                        comp_name = f"{comp_id}[{{{comp_id}: {comp_value}{footprint_info}}}]"  
+                    elif comp_id.startswith('Q') or comp_id.startswith('T'):
+                        comp_name = f"{comp_id}(({comp_id}: {comp_value}{footprint_info}))"
+                    else:
+                        comp_name = f"{comp_id}[{comp_id}: {comp_value}{footprint_info}]"
+                        
+                    mermaid_lines.append(f"        {comp_name}")
+            
+            mermaid_lines.append("    end")
+            
+            # Other components (not in any group)
+            other_components = []
+            for component in self.parser.components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                if (comp_id not in connector_ids and 
+                    comp_id not in power_ids and 
+                    comp_id not in passive_ids and 
+                    comp_id not in active_ids):
+                    other_components.append(component)
+            
+            if other_components:
+                mermaid_lines.append("    subgraph Others[\"Other Components\"]")
+                mermaid_lines.append("    style Others fill:#f5f5f5,stroke:#d9d9d9,stroke-width:2px")
+                
+                for component in other_components:
+                    comp_id = component.get('reference', 'UNKNOWN')
+                    comp_value = component.get('value', '')
+                    comp_name = f"{comp_id}[{comp_id}: {comp_value}]"
+                    mermaid_lines.append(f"        {comp_name}")
+                
+                mermaid_lines.append("    end")
+            
+            # Add connections with different styles and colors
+            mermaid_lines.append("    %% Connections")
+            
+            # Define connection styles
+            mermaid_lines.append("    %% Connection Styles")
+            mermaid_lines.append("    classDef powerNet stroke:#fa8c16,stroke-width:2px,color:#fa8c16")
+            mermaid_lines.append("    classDef groundNet stroke:#000000,stroke-width:2px,color:#000000")
+            mermaid_lines.append("    classDef signalNet stroke:#1890ff,stroke-width:1px,color:#1890ff")
+            mermaid_lines.append("    classDef controlNet stroke:#722ed1,stroke-width:1px,color:#722ed1")
+            
+            # Track connection IDs for styling
+            power_connections = []
+            ground_connections = []
+            signal_connections = []
+            control_connections = []
+            
+            for net in self.parser.nets:
+                net_name = net.get('name', '')
+                connections = net.get('connections', [])
+                
+                # Choose line style and class based on net name
+                line_style = "--"
+                connection_class = "signalNet"
+                
+                if "GND" in net_name.upper() or "VSS" in net_name.upper():
+                    line_style = "==="  # Thick line for ground
+                    connection_class = "groundNet"
+                elif "VCC" in net_name.upper() or "VDD" in net_name.upper() or "+5V" in net_name.upper() or "+3V3" in net_name.upper() or "+24V" in net_name.upper():
+                    line_style = "-.-"  # Dotted line for power
+                    connection_class = "powerNet"
+                elif "CLK" in net_name.upper() or "EN" in net_name.upper() or "RST" in net_name.upper() or "CS" in net_name.upper():
+                    line_style = "-->"  # Arrow for control signals
+                    connection_class = "controlNet"
+                
+                if len(connections) >= 2:
+                    for i in range(len(connections) - 1):
+                        src = connections[i]
+                        dst = connections[i + 1]
+                        connection_id = f"connection_{len(signal_connections) + len(power_connections) + len(ground_connections) + len(control_connections)}"
+                        
+                        # Add the connection with a unique ID
+                        mermaid_lines.append(f"    {src} {line_style} {net_name} {line_style}> {dst}")
+                        
+                        # Track the connection for styling
+                        if connection_class == "powerNet":
+                            power_connections.append(connection_id)
+                        elif connection_class == "groundNet":
+                            ground_connections.append(connection_id)
+                        elif connection_class == "controlNet":
+                            control_connections.append(connection_id)
+                        else:
+                            signal_connections.append(connection_id)
+            
+            # Apply styles to connections
+            if power_connections:
+                mermaid_lines.append(f"    class {','.join(power_connections)} powerNet")
+            if ground_connections:
+                mermaid_lines.append(f"    class {','.join(ground_connections)} groundNet")
+            if control_connections:
+                mermaid_lines.append(f"    class {','.join(control_connections)} controlNet")
+            if signal_connections:
+                mermaid_lines.append(f"    class {','.join(signal_connections)} signalNet")
+            
+            # Add title and description
+            schematic_name = os.path.basename(self.schematic_path)
+            mermaid_lines.insert(1, f"    %% KiCad Schematic: {schematic_name}")
+            mermaid_lines.insert(2, f"    %% Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            mermaid_lines.insert(3, f"    %% Components: {len(self.parser.components)}, Connections: {len(self.parser.nets)}")
+            
+            # Write to file
+            with open(output_path, 'w') as f:
+                f.write('\n'.join(mermaid_lines))
+                
+            console.print(f"[green]Enhanced Mermaid graph saved to:[/green] {output_path}")
+            return output_path
+        except Exception as e:
+            console.print(f"[red]Error generating Mermaid graph:[/red] {str(e)}")
+            # Create a minimal valid Mermaid diagram as a fallback
+            with open(output_path, 'w') as f:
+                f.write("graph LR\n    A[Error] --> B[Could not parse schematic]\n")
+            console.print(f"[yellow]Created fallback diagram at:[/yellow] {output_path}")
+            return output_path
+
     def to_class_diagram(self, output_path: Optional[str] = None) -> str:
         """
         Convert the schematic to a Mermaid class diagram.
@@ -498,7 +726,6 @@ class SchematicToMermaid:
             
             # Group components by type/library
             components_by_type = {}
-            
             for component in self.parser.components:
                 lib_id = component.get('lib_id', 'Unknown')
                 if lib_id not in components_by_type:
@@ -536,6 +763,7 @@ class SchematicToMermaid:
                 f.write("classDiagram\n    class Error {\n        +message: Could not parse schematic\n    }\n")
             console.print(f"[yellow]Created fallback diagram at:[/yellow] {output_path}")
             return output_path
+
 
 class SchematicToBOM:
     """
@@ -1063,20 +1291,20 @@ def convert_kicad_pcb_to_gerber(pcb_path: str, output_dir: Optional[str] = None)
 
             # Plot standard Gerber layers
             plot_plan = [
-                (pcbnew.F_Cu, "F.Cu", "Top Layer"),
-                (pcbnew.B_Cu, "B.Cu", "Bottom Layer"),
-                (pcbnew.F_Paste, "F.Paste", "Top Paste"),
-                (pcbnew.B_Paste, "B.Paste", "Bottom Paste"),
-                (pcbnew.F_SilkS, "F.SilkS", "Top Silk"),
-                (pcbnew.B_SilkS, "B.SilkS", "Bottom Silk"),
-                (pcbnew.F_Mask, "F.Mask", "Top Mask"),
-                (pcbnew.B_Mask, "B.Mask", "Bottom Mask"),
-                (pcbnew.Edge_Cuts, "Edge.Cuts", "Board Outline")
+                (pcbnew.F_Cu, "F.Cu"),
+                (pcbnew.B_Cu, "B.Cu"),
+                (pcbnew.F_Paste, "F.Paste"),
+                (pcbnew.B_Paste, "B.Paste"),
+                (pcbnew.F_SilkS, "F.SilkS"),
+                (pcbnew.B_SilkS, "B.SilkS"),
+                (pcbnew.F_Mask, "F.Mask"),
+                (pcbnew.B_Mask, "B.Mask"),
+                (pcbnew.Edge_Cuts, "Edge.Cuts")
             ]
 
-            for layer_id, layer_name, layer_desc in plot_plan:
+            for layer_id, layer_name in plot_plan:
                 pctl.SetLayer(layer_id)
-                pctl.OpenPlotfile(layer_name, pcbnew.PLOT_FORMAT_GERBER, layer_desc)
+                pctl.OpenPlotfile(layer_name, pcbnew.PLOT_FORMAT_GERBER, layer_name)
                 pctl.PlotLayer()
 
             # Close the plot controller
@@ -1100,3 +1328,276 @@ def convert_kicad_pcb_to_gerber(pcb_path: str, output_dir: Optional[str] = None)
         except Exception as e:
             console.print(f"[red]Error during conversion:[/red] {e}")
             return ""
+
+
+class SchematicToSVG:
+    """
+    Converter for KiCad schematics to SVG format using schemdraw.
+    """
+    
+    def __init__(self, schematic_path: str):
+        """
+        Initialize the converter with a schematic file path.
+        
+        Args:
+            schematic_path: Path to the KiCad schematic file
+        """
+        self.schematic_path = schematic_path
+        self.parser = SchematicParser(schematic_path)
+        
+        if not SCHEMDRAW_AVAILABLE:
+            console.print("[red]Error: schemdraw package is not installed. Please install it with:[/red]")
+            console.print("[yellow]pip install schemdraw[/yellow]")
+            raise ImportError("schemdraw package is required for SVG conversion")
+    
+    def convert(self, output_path: Optional[str] = None, theme: str = 'default', 
+                generate_html: bool = False) -> Union[str, Tuple[str, str]]:
+        """
+        Convert the schematic to SVG format.
+        
+        Args:
+            output_path: Path to save the SVG file, if None uses the same name with .svg extension
+            theme: Theme to use for the SVG (default, dark, blue, minimal)
+            generate_html: Whether to generate an HTML file with the SVG embedded
+            
+        Returns:
+            Path to the output SVG file, or a tuple of (svg_path, html_path) if generate_html is True
+        """
+        # Parse the schematic
+        self.parser.parse()
+        
+        # Prepare the output path
+        if output_path is None:
+            base_path = os.path.splitext(self.schematic_path)[0]
+            output_path = f"{base_path}.svg"
+        
+        # Set theme
+        if theme == 'dark':
+            schemdraw.theme('dark')
+        elif theme == 'blue':
+            schemdraw.theme(bgcolor='aliceblue', fgcolor='black')
+        elif theme == 'minimal':
+            schemdraw.theme(bgcolor='white', fgcolor='black', 
+                           color='black', lw=1, fontsize=10)
+        else:  # default
+            schemdraw.theme('default')
+        
+        # Create the drawing
+        d = schemdraw.Drawing()
+        
+        # Component type to schemdraw element mapping
+        component_map = {
+            # Connectors
+            'CONN_2': elm.Connector(num=2),
+            'CONN_3': elm.Connector(num=3),
+            'CONN_4': elm.Connector(num=4),
+            'CONN_5X2': elm.Connector(num=10, cols=2),
+            'Conn_01x02': elm.Connector(num=2),
+            'Conn_01x03': elm.Connector(num=3),
+            'Conn_01x04': elm.Connector(num=4),
+            'Conn_02x05': elm.Connector(num=10, cols=2),
+            
+            # Basic components
+            'R': elm.Resistor,
+            'C': elm.Capacitor,
+            'CP': elm.Capacitor(polar=True),
+            'L': elm.Inductor,
+            'D': elm.Diode,
+            'LED': elm.LED,
+            'Q_NPN': elm.BjtNpn,
+            'Q_PNP': elm.BjtPnp,
+            'MOSFET_N': elm.NFet,
+            'MOSFET_P': elm.PFet,
+            
+            # Power symbols
+            '+24V': elm.SourceV,
+            '+12V': elm.SourceV,
+            '+5V': elm.SourceV,
+            '+3V3': elm.SourceV,
+            'GND': elm.Ground,
+            'GNDA': elm.Ground,
+            'GNDREF': elm.Ground,
+            
+            # ICs and specialized components
+            'Opamp': elm.Opamp,
+            'Opamp_Dual': elm.Opamp2,
+            'Regulator_Linear': elm.Vdd,
+            'Crystal': elm.Crystal,
+            'Speaker': elm.Speaker,
+            'Microphone': elm.Mic,
+            'Transformer': elm.Transformer,
+            
+            # Default fallbacks for common prefixes
+            'U': elm.Ic,
+            'IC': elm.Ic,
+            'X': elm.Block,
+            'SW': elm.Switch,
+            'J': elm.Connector,
+            'P': elm.Connector,
+            'BT': elm.Battery,
+            'F': elm.Fuse,
+        }
+        
+        # Get components and connections
+        components = self.parser.components
+        nets = self.parser.nets
+        
+        # Normalize coordinates
+        if components:
+            min_x = min(c.get('x', 0) for c in components if 'x' in c)
+            min_y = min(c.get('y', 0) for c in components if 'y' in c)
+            max_x = max(c.get('x', 0) for c in components if 'x' in c)
+            max_y = max(c.get('y', 0) for c in components if 'y' in c)
+        else:
+            min_x = min_y = max_x = max_y = 0
+        
+        # Scale factors - ensure we don't divide by zero
+        width = max_x - min_x
+        height = max_y - min_y
+        
+        x_scale = 20 / width if width > 0 else 1
+        y_scale = 20 / height if height > 0 else 1
+        
+        # Use the smaller scale to maintain aspect ratio
+        scale = min(x_scale, y_scale)
+        
+        # Keep track of unique positions to avoid overlapping
+        used_positions = set()
+        
+        # Draw components
+        for comp in components:
+            # Get component properties
+            comp_type = comp.get('lib_id', '').split(':')[-1]
+            ref = comp.get('reference', 'UNKNOWN')
+            value = comp.get('value', '')
+            x = comp.get('x', 0)
+            y = comp.get('y', 0)
+            
+            prefix = ref[0] if ref and len(ref) > 0 else ''
+            
+            # Try to get element type from the map
+            element_type = None
+            
+            # First try exact match
+            if comp_type in component_map:
+                element_type = component_map[comp_type]
+            # Then try prefix match for reference
+            elif prefix in component_map:
+                element_type = component_map[prefix]
+            # Default to a block
+            else:
+                element_type = elm.Block
+            
+            # Get label from reference and value
+            label = f"{ref}"
+            if value:
+                label += f"\n{value}"
+            
+            # Adjust position
+            x_pos = (x - min_x) * scale
+            y_pos = (y - min_y) * scale
+            
+            # Ensure unique position
+            base_pos = (x_pos, y_pos)
+            pos = base_pos
+            offset = 0
+            while pos in used_positions:
+                offset += 0.5
+                pos = (x_pos + offset, y_pos + offset)
+            used_positions.add(pos)
+            
+            # Add element to drawing
+            try:
+                if callable(element_type):
+                    d += element_type().at(pos).label(label)
+                else:
+                    # For pre-configured elements like Connector
+                    d += element_type.at(pos).label(label)
+            except Exception as e:
+                console.print(f"[yellow]Warning: Error adding component {ref}:[/yellow] {e}")
+                # Fallback to block if specific element fails
+                d += elm.Block().at(pos).label(label)
+        
+        # Draw connections
+        for net in nets:
+            connections = net.get('connections', [])
+            if len(connections) >= 2:
+                for i in range(len(connections) - 1):
+                    # Find component positions for the connection endpoints
+                    start_comp = next((c for c in components if c.get('reference') == connections[i]), None)
+                    end_comp = next((c for c in components if c.get('reference') == connections[i+1]), None)
+                    
+                    if start_comp and end_comp:
+                        start_x = (start_comp.get('x', 0) - min_x) * scale
+                        start_y = (start_comp.get('y', 0) - min_y) * scale
+                        end_x = (end_comp.get('x', 0) - min_x) * scale
+                        end_y = (end_comp.get('y', 0) - min_y) * scale
+                        
+                        try:
+                            d += elm.Line().at((start_x, start_y)).to((end_x, end_y))
+                        except Exception as e:
+                            console.print(f"[yellow]Warning: Error drawing connection:[/yellow] {e}")
+        
+        # Save as SVG
+        d.save(output_path)
+        console.print(f"[green]SVG saved to:[/green] {output_path}")
+        
+        # Generate HTML if requested
+        if generate_html:
+            html_path = f"{os.path.splitext(output_path)[0]}.html"
+            with open(html_path, "w", encoding="utf-8") as f:
+                f.write(f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>KiCad Schematic: {os.path.basename(self.schematic_path)}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        h1 {{ color: #333; }}
+        .svg-container {{ 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            margin-bottom: 20px;
+            background-color: white;
+        }}
+        svg {{ max-width: 100%; height: auto; }}
+    </style>
+</head>
+<body>
+    <h1>KiCad Schematic: {os.path.basename(self.schematic_path)}</h1>
+    <div class="svg-container">
+""")
+                
+                # Embed the SVG
+                try:
+                    with open(output_path, "r", encoding="utf-8") as svg_f:
+                        svg_content = svg_f.read()
+                    f.write(f'        {svg_content}\n')
+                except Exception as e:
+                    f.write(f'        <p>Error embedding SVG: {e}</p>\n')
+                
+                f.write("""    </div>
+</body>
+</html>""")
+            
+            console.print(f"[green]HTML file generated:[/green] {html_path}")
+            return output_path, html_path
+        
+        return output_path
+
+
+def convert_kicad_to_svg(schematic_path: str, output_path: Optional[str] = None, 
+                         theme: str = 'default', generate_html: bool = False) -> Union[str, Tuple[str, str]]:
+    """
+    Convert a KiCad schematic to SVG format.
+    
+    Args:
+        schematic_path: Path to the KiCad schematic file
+        output_path: Path to save the SVG file, if None uses the same name with .svg extension
+        theme: Theme to use for the SVG (default, dark, blue, minimal)
+        generate_html: Whether to generate an HTML file with the SVG embedded
+        
+    Returns:
+        Path to the output SVG file, or a tuple of (svg_path, html_path) if generate_html is True
+    """
+    converter = SchematicToSVG(schematic_path)
+    return converter.convert(output_path, theme, generate_html)

@@ -1,0 +1,128 @@
+graph LR
+    %% KiCad Schematic: mtc.sch
+    %% Generated on: 2025-05-04 14:37:17
+    %% Components: 17, Connections: 51
+    %% Component Groups
+    subgraph Connectors["Connectors and Headers"]
+    style Connectors fill:#e6f7ff,stroke:#1890ff,stroke-width:2px
+        J101>JJ101: CONN_2]
+        J102>JJ102: CONN_3]
+        J103>JJ103: CONN_3]
+        J104>JJ104: CONN_3]
+        J105>JJ105: CONN_3]
+        J106>JJ106: CONN_3]
+        J107>JJ107: CONN_3]
+        J108>JJ108: CONN_3]
+        J109>JJ109: CONN_3]
+        J110>JJ110: CONN_3]
+        J111>JJ111: CONN_3]
+        J112>JJ112: CONN_3]
+        J113>JJ113: CONN_3]
+        J115>JJ115: CONN_2]
+        P1>JP1: CONN_5X2]
+    end
+    subgraph Power["Power Supply"]
+    style Power fill:#fff7e6,stroke:#fa8c16,stroke-width:2px
+        #PWR01([#PWR01: +24V])
+    end
+    subgraph Passives["Passive Components"]
+    style Passives fill:#f6ffed,stroke:#52c41a,stroke-width:2px
+    end
+    subgraph Actives["Active Components"]
+    style Actives fill:#f9f0ff,stroke:#722ed1,stroke-width:2px
+    end
+    subgraph Others["Other Components"]
+    style Others fill:#f5f5f5,stroke:#d9d9d9,stroke-width:2px
+        B101[B101: MTC_V100]
+    end
+    %% Connections
+    %% Connection Styles
+    classDef powerNet stroke:#fa8c16,stroke-width:2px,color:#fa8c16
+    classDef groundNet stroke:#000000,stroke-width:2px,color:#000000
+    classDef signalNet stroke:#1890ff,stroke-width:1px,color:#1890ff
+    classDef controlNet stroke:#722ed1,stroke-width:1px,color:#722ed1
+    J101 -- Net-1 --> J115
+    J115 -- Net-1 --> #PWR01
+    J108 -- Net-2 --> J109
+    J108 -- Net-3 --> J109
+    J108 -- Net-4 --> J109
+    J109 -- Net-4 --> J110
+    J108 -- Net-5 --> J109
+    J109 -- Net-5 --> J110
+    J111 -- Net-6 --> J112
+    J112 -- Net-6 --> J113
+    J112 -- Net-7 --> J113
+    J111 -- Net-8 --> J112
+    J112 -- Net-8 --> J113
+    J112 -- Net-9 --> J113
+    J109 -- Net-18 --> J110
+    J110 -- Net-18 --> J111
+    J110 -- Net-19 --> J111
+    J111 -- Net-19 --> J112
+    J109 -- Net-20 --> J110
+    J110 -- Net-20 --> J111
+    J110 -- Net-21 --> J111
+    J111 -- Net-21 --> J112
+    J101 -- Net-22 --> J115
+    J115 -- Net-22 --> #PWR01
+    J102 -- Net-23 --> J103
+    J102 -- Net-24 --> J103
+    J108 -- Net-27 --> J109
+    J106 -- Net-30 --> J107
+    J107 -- Net-30 --> #PWR01
+    J110 -- Net-31 --> J109
+    J109 -- Net-31 --> J111
+    J112 -- Net-32 --> J111
+    J111 -- Net-32 --> J113
+    J111 -- Net-39 --> J112
+    J112 -- Net-39 --> J113
+    J109 -- Net-40 --> J110
+    J110 -- Net-40 --> J111
+    J108 -- Net-41 --> J109
+    J110 -- Net-42 --> J111
+    J111 -- Net-42 --> J112
+    J112 -- Net-43 --> J113
+    J108 -- Net-44 --> J109
+    J109 -- Net-44 --> J110
+    J102 -- Net-45 --> J103
+    J102 -- Net-46 --> J103
+    J103 -- Net-46 --> J104
+    J102 -- Net-47 --> J103
+    J103 -- Net-47 --> J104
+    J102 -- Net-48 --> J103
+    J103 -- Net-48 --> J104
+    J103 -- Net-49 --> J104
+    J104 -- Net-49 --> J105
+    J103 -- Net-50 --> J104
+    J104 -- Net-50 --> J105
+    J103 -- Net-51 --> J104
+    J104 -- Net-51 --> J105
+    J104 -- Net-52 --> J105
+    J105 -- Net-52 --> J106
+    J104 -- Net-53 --> J105
+    J105 -- Net-53 --> J106
+    J104 -- Net-54 --> J105
+    J105 -- Net-54 --> J106
+    J105 -- Net-55 --> J106
+    J106 -- Net-55 --> J107
+    J105 -- Net-56 --> J106
+    J106 -- Net-56 --> J107
+    J105 -- Net-57 --> J106
+    J106 -- Net-57 --> J107
+    J106 -- Net-58 --> J107
+    J106 -- Net-59 --> J107
+    J106 -- Net-60 --> J107
+    J101 -- Net-61 --> J115
+    J115 -- Net-61 --> #PWR01
+    J106 -- Net-62 --> J107
+    J106 -- Net-63 --> J105
+    J105 -- Net-64 --> J104
+    J104 -- Net-65 --> J103
+    J103 -- Net-66 --> J102
+    J115 -- Net-78 --> J101
+    J101 -- Net-78 --> #PWR01
+    J115 -- Net-79 --> J101
+    J101 -- Net-79 --> #PWR01
+    #PWR01 -- Net-139 --> J101
+    J101 -- Net-139 --> J115
+    class connection_0,connection_1,connection_2,connection_3,connection_4,connection_5,connection_6,connection_7,connection_8,connection_9,connection_10,connection_11,connection_12,connection_13,connection_14,connection_15,connection_16,connection_17,connection_18,connection_19,connection_20,connection_21,connection_22,connection_23,connection_24,connection_25,connection_26,connection_27,connection_28,connection_29,connection_30,connection_31,connection_32,connection_33,connection_34,connection_35,connection_36,connection_37,connection_38,connection_39,connection_40,connection_41,connection_42,connection_43,connection_44,connection_45,connection_46,connection_47,connection_48,connection_49,connection_50,connection_51,connection_52,connection_53,connection_54,connection_55,connection_56,connection_57,connection_58,connection_59,connection_60,connection_61,connection_62,connection_63,connection_64,connection_65,connection_66,connection_67,connection_68,connection_69,connection_70,connection_71,connection_72,connection_73,connection_74,connection_75,connection_76,connection_77,connection_78,connection_79,connection_80,connection_81,connection_82,connection_83 signalNet
