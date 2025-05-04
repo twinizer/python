@@ -20,16 +20,34 @@ Twinizer provides comprehensive hardware analysis capabilities that allow you to
 
 ## KiCad File Parsing
 
-Twinizer can parse KiCad schematic (.sch) and PCB (.kicad_pcb) files to extract component information, connections, and other design data.
+The KiCad parser extracts information from KiCad schematic (.sch) and PCB (.kicad_pcb) files. It provides functionality to convert these files to various formats, including Mermaid diagrams, bill of materials (BOM), and 3D models.
 
-### Command Line Usage
+### Dependencies
+
+Some KiCad functionality requires additional dependencies:
+
+- **matplotlib**: Required for image processing features and visualization
+- **numpy**: Required for numerical operations and 3D model generation
+
+You can install these dependencies using pip:
+
+```bash
+pip install matplotlib numpy
+```
+
+### Error Handling
+
+The KiCad parser includes robust error handling to deal with various file formats and potential issues:
+
+- Graceful handling of parsing errors with informative error messages
+- Fallback diagrams when conversion fails
+- Support for both legacy (.sch) and new (.kicad_sch) file formats
+
+### CLI Usage
 
 ```bash
 # Parse a schematic file
 twinizer kicad parse-sch schematic.sch --format json --output schematic.json
-
-# Parse a PCB file
-twinizer kicad parse-pcb board.kicad_pcb --format json --output board.json
 
 # Generate a bill of materials
 twinizer kicad sch-to-bom schematic.sch --format csv --output bom.csv
@@ -53,45 +71,57 @@ from twinizer.hardware.kicad.converters import (
     SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel
 )
 
-# Parse a schematic file
-sch_parser = SchematicParser("schematic.sch")
-schematic_data = sch_parser.parse()
+# Parse schematic
+parser = SchematicParser("schematic.sch")
+schematic_data = parser.parse()
 
-# Access component information
+# Get components
 components = schematic_data.get("components", [])
-for component in components[:5]:  # Show first 5 components
-    print(f"Reference: {component.get('reference')}, Value: {component.get('value')}")
-
-# Access net information
-nets = schematic_data.get("nets", [])
-print(f"Found {len(nets)} nets")
+print(f"Found {len(components)} components")
 
 # Convert schematic to Mermaid diagram
 converter = SchematicToMermaid("schematic.sch")
-output_path = converter.to_flowchart("schematic.mmd")
-print(f"Mermaid diagram saved to: {output_path}")
+flowchart = converter.to_flowchart("schematic.mmd")
 
-# Generate BOM from schematic
+# Generate bill of materials
 bom_converter = SchematicToBOM("schematic.sch")
-bom_path = bom_converter.to_csv("bom.csv")
-print(f"BOM saved to: {bom_path}")
+bom_csv = bom_converter.to_csv("bom.csv")
+
+# Parse PCB
+pcb_parser = PCBParser("board.kicad_pcb")
+pcb_data = pcb_parser.parse()
+
+# Get modules
+modules = pcb_data.get("modules", [])
+print(f"Found {len(modules)} modules")
 
 # Convert PCB to Mermaid diagram
 pcb_converter = PCBToMermaid("board.kicad_pcb")
-pcb_diagram_path = pcb_converter.to_flowchart("pcb.mmd")
-print(f"PCB diagram saved to: {pcb_diagram_path}")
+pcb_diagram = pcb_converter.to_flowchart("pcb.mmd")
 
 # Convert PCB to 3D model
 model_converter = PCBTo3DModel("board.kicad_pcb")
 model_path = model_converter.to_step("board.step")
-print(f"3D model saved to: {model_path}")
+```
+
+### Error Handling in Code
+
+The converters include built-in error handling to gracefully handle parsing issues:
+
+```python
+try:
+    converter = SchematicToMermaid("schematic.sch")
+    output_path = converter.to_flowchart("output.mmd")
+except Exception as e:
+    print(f"Error converting schematic: {str(e)}")
+    # Handle the error appropriately
 ```
 
 ### Schematic Parsing
 
 The schematic parser extracts the following information from KiCad schematic files:
 
-- **Components**: Reference designators, values, footprints, datasheets, etc.
+- **Components**: Reference designators, values, footprints, etc.
 - **Nets**: Connections between components
 - **Hierarchical Sheets**: Sheet structure and hierarchy
 - **Labels and Power Symbols**: Signal labels and power connections
@@ -317,7 +347,7 @@ with open("schematic_class.mmd", "w") as f:
 
 Twinizer can parse Altium Designer schematic (.SchDoc) and PCB (.PcbDoc) files to extract component information, connections, and other design data.
 
-### Command Line Usage
+### CLI Usage
 
 ```bash
 # Parse a schematic file

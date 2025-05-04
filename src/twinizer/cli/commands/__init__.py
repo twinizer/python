@@ -6,11 +6,13 @@ including analyze, compile, debug, convert, and test commands.
 """
 
 from .analyze import analyze
-from .convert import convert
-from .kicad import kicad_group as kicad
+from .kicad import kicad_group
+from .kicad_with_deps import kicad_deps_group
+from .image import image
 
 __all__ = [
-    'analyze',
-    'convert',
-    'kicad',
+    "analyze",
+    "kicad_group",
+    "kicad_deps_group",
+    "image",
 ]

@@ -432,40 +432,48 @@ class SchematicToMermaid:
         Returns:
             Path to the output Mermaid file
         """
-        if output_path is None:
-            base_path = os.path.splitext(self.schematic_path)[0]
-            output_path = f"{base_path}_flowchart.mmd"
+        try:
+            if output_path is None:
+                base_path = os.path.splitext(self.schematic_path)[0]
+                output_path = f"{base_path}_flowchart.mmd"
+                
+            # Parse the schematic
+            self.parser.parse()
             
-        # Parse the schematic
-        self.parser.parse()
-        
-        # Generate flowchart
-        mermaid_lines = ["flowchart TD"]
-        
-        # Add components as nodes
-        for component in self.parser.components:
-            comp_id = component.get('reference', 'UNKNOWN')
-            comp_value = component.get('value', '')
-            comp_name = f"{comp_id}[{comp_id}: {comp_value}]"
-            mermaid_lines.append(f"    {comp_name}")
-        
-        # Add connections
-        for net in self.parser.nets:
-            net_name = net.get('name', '')
-            connections = net.get('connections', [])
+            # Generate flowchart
+            mermaid_lines = ["flowchart TD"]
             
-            if len(connections) >= 2:
-                for i in range(len(connections) - 1):
-                    src = connections[i]
-                    dst = connections[i + 1]
-                    mermaid_lines.append(f"    {src} -- {net_name} --> {dst}")
-        
-        # Write to file
-        with open(output_path, 'w') as f:
-            f.write('\n'.join(mermaid_lines))
+            # Add components as nodes
+            for component in self.parser.components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                comp_value = component.get('value', '')
+                comp_name = f"{comp_id}[{comp_id}: {comp_value}]"
+                mermaid_lines.append(f"    {comp_name}")
             
-        console.print(f"[green]Mermaid flowchart saved to:[/green] {output_path}")
-        return output_path
+            # Add connections
+            for net in self.parser.nets:
+                net_name = net.get('name', '')
+                connections = net.get('connections', [])
+                
+                if len(connections) >= 2:
+                    for i in range(len(connections) - 1):
+                        src = connections[i]
+                        dst = connections[i + 1]
+                        mermaid_lines.append(f"    {src} -- {net_name} --> {dst}")
+            
+            # Write to file
+            with open(output_path, 'w') as f:
+                f.write('\n'.join(mermaid_lines))
+                
+            console.print(f"[green]Mermaid flowchart saved to:[/green] {output_path}")
+            return output_path
+        except Exception as e:
+            console.print(f"[red]Error generating Mermaid flowchart:[/red] {str(e)}")
+            # Create a minimal valid Mermaid diagram as a fallback
+            with open(output_path, 'w') as f:
+                f.write("flowchart TD\n    A[Error] --> B[Could not parse schematic]\n")
+            console.print(f"[yellow]Created fallback diagram at:[/yellow] {output_path}")
+            return output_path
         
     def to_class_diagram(self, output_path: Optional[str] = None) -> str:
         """
@@ -477,65 +485,57 @@ class SchematicToMermaid:
         Returns:
             Path to the output Mermaid file
         """
-        if output_path is None:
-            base_path = os.path.splitext(self.schematic_path)[0]
-            output_path = f"{base_path}_class.mmd"
-            
-        # Parse the schematic
-        self.parser.parse()
-        
-        # Generate class diagram
-        mermaid_lines = ["classDiagram"]
-        
-        # Group components by type/library
-        components_by_type = {}
-        for component in self.parser.components:
-            comp_type = component.get('library', 'Unknown')
-            if comp_type not in components_by_type:
-                components_by_type[comp_type] = []
-            components_by_type[comp_type].append(component)
-        
-        # Add component types as classes
-        for comp_type, components in components_by_type.items():
-            mermaid_lines.append(f"    class {comp_type} {{")
-            
-            # Add component instances as class members
-            for component in components:
-                comp_id = component.get('reference', 'UNKNOWN')
-                comp_value = component.get('value', '')
-                mermaid_lines.append(f"        +{comp_id} {comp_value}")
-            
-            mermaid_lines.append("    }")
-        
-        # Add connections between component types
-        for net in self.parser.nets:
-            connections = net.get('connections', [])
-            if len(connections) >= 2:
-                # Extract component types for connections
-                connection_types = set()
-                for conn in connections:
-                    # Extract component reference from connection (e.g., "R1:1" -> "R1")
-                    comp_ref = conn.split(':')[0] if ':' in conn else conn
-                    
-                    # Find the component type
-                    for component in self.parser.components:
-                        if component.get('reference') == comp_ref:
-                            connection_types.add(component.get('library', 'Unknown'))
-                            break
+        try:
+            if output_path is None:
+                base_path = os.path.splitext(self.schematic_path)[0]
+                output_path = f"{base_path}_class.mmd"
                 
-                # Add relationships between types
-                connection_types = list(connection_types)
-                if len(connection_types) >= 2:
-                    for i in range(len(connection_types) - 1):
-                        mermaid_lines.append(f"    {connection_types[i]} -- {connection_types[i+1]}")
-        
-        # Write to file
-        with open(output_path, 'w') as f:
-            f.write('\n'.join(mermaid_lines))
+            # Parse the schematic
+            self.parser.parse()
             
-        console.print(f"[green]Mermaid class diagram saved to:[/green] {output_path}")
-        return output_path
-
+            # Generate class diagram
+            mermaid_lines = ["classDiagram"]
+            
+            # Group components by type/library
+            components_by_type = {}
+            
+            for component in self.parser.components:
+                lib_id = component.get('lib_id', 'Unknown')
+                if lib_id not in components_by_type:
+                    components_by_type[lib_id] = []
+                components_by_type[lib_id].append(component)
+            
+            # Add classes for each component type
+            for lib_id, components in components_by_type.items():
+                class_name = lib_id.replace(':', '_').replace('/', '_')
+                mermaid_lines.append(f"    class {class_name} {{")
+                
+                # Add properties based on the first component
+                if components:
+                    for key, value in components[0].items():
+                        if key not in ['lib_id', 'reference']:
+                            mermaid_lines.append(f"        +{key}: {value}")
+                
+                mermaid_lines.append("    }")
+                
+                # Add instances
+                for component in components:
+                    reference = component.get('reference', 'UNKNOWN')
+                    mermaid_lines.append(f"    {class_name} <|-- {reference}")
+            
+            # Write to file
+            with open(output_path, 'w') as f:
+                f.write('\n'.join(mermaid_lines))
+                
+            console.print(f"[green]Mermaid class diagram saved to:[/green] {output_path}")
+            return output_path
+        except Exception as e:
+            console.print(f"[red]Error generating Mermaid class diagram:[/red] {str(e)}")
+            # Create a minimal valid Mermaid diagram as a fallback
+            with open(output_path, 'w') as f:
+                f.write("classDiagram\n    class Error {\n        +message: Could not parse schematic\n    }\n")
+            console.print(f"[yellow]Created fallback diagram at:[/yellow] {output_path}")
+            return output_path
 
 class SchematicToBOM:
     """

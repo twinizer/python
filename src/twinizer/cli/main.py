@@ -8,12 +8,13 @@ Provides the main command-line interface and command registration.
 """
 
 import os
+import sys
 import click
 from rich.console import Console
 from rich.panel import Panel
 
 from twinizer import __version__
-from twinizer.cli.commands import analyze, convert, kicad
+from twinizer.cli.commands import analyze, kicad_group, kicad_deps_group, image
 from twinizer.utils.env import bootstrap_environment
 
 # Create console for rich output
@@ -60,9 +61,16 @@ def run(ctx):
 
 
 # Register commands
+from twinizer.cli.commands import (
+    analyze,
+    kicad_group,
+    kicad_deps_group,
+    image,
+)
 cli.add_command(analyze)
-cli.add_command(convert)
-cli.add_command(kicad)
+cli.add_command(kicad_group)
+cli.add_command(kicad_deps_group)
+cli.add_command(image)
 
 
 def main():

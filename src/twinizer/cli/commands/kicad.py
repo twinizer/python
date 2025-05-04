@@ -129,9 +129,10 @@ def parse_pcb(pcb_file: str, output: Optional[str] = None,
 
 @kicad_group.command(name="sch-to-mermaid", help="Convert KiCad schematic to Mermaid diagram")
 @click.argument("schematic_file", type=click.Path(exists=True))
-@click.option("--output", "-o", type=click.Path(), help="Output file path")
 @click.option("--diagram-type", type=click.Choice(["flowchart", "class"]), default="flowchart",
               help="Type of diagram to generate")
+@click.option("--output", type=click.Path(), default=None,
+              help="Output file path (default: <schematic_name>_<diagram_type>.mmd)")
 @click.option("--include-components/--no-include-components", default=True, 
               help="Include component details")
 @click.option("--include-values/--no-include-values", default=True, 
@@ -156,21 +157,26 @@ def schematic_to_mermaid(schematic_file: str, output: Optional[str] = None,
         verbose: Enable verbose output
     """
     try:
-        # Create converter
+        from twinizer.hardware.kicad.converters import SchematicToMermaid
+        
         converter = SchematicToMermaid(schematic_file)
         
-        # Generate diagram based on type
         if diagram_type == "flowchart":
             output_path = converter.to_flowchart(output)
-        else:  # class diagram
+        elif diagram_type == "class":
             output_path = converter.to_class_diagram(output)
-            
-        if verbose:
-            console.print(f"[green]Mermaid diagram saved to:[/green] {output_path}")
-            
+        else:
+            console.print(f"[red]Unsupported diagram type:[/red] {diagram_type}")
+            return
+        
+        console.print(f"[green]Mermaid diagram generated:[/green] {output_path}")
     except Exception as e:
-        console.print(f"[red]Error converting schematic to Mermaid:[/red] {e}")
-        sys.exit(1)
+        console.print(f"[red]Error converting schematic to Mermaid:[/red] {str(e)}")
+        if output:
+            # Create a minimal valid Mermaid diagram as a fallback
+            with open(output, 'w') as f:
+                f.write(f"flowchart TD\n    A[Error] --> B[{str(e)}]\n")
+            console.print(f"[yellow]Created fallback diagram at:[/yellow] {output}")
 
 
 @kicad_group.command(name="sch-to-bom", help="Generate BOM from KiCad schematic")
