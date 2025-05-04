@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2025-05-04
+
+### Added
+- Changes in TODO.md
+- Changes in docs/hardware_analysis.md
+- Changes in docs/programator_2025_analysis.md
+- Changes in docs/programator_2025_hardware_analysis.md
+- Changes in docs/programator_2025_software_analysis.md
+- Changes in docs/twinizer_analysis.md
+- Changes in docs/twinizer_hardware_analysis.md
+- Changes in docs/twinizer_software_analysis.md
+- Changes in run.bat
+- Changes in run.py
+- Changes in run.sh
+- Changes in scripts/gitinit.sh
+- Changes in src/twinizer/code_analyzer/__init__.py
+- Changes in src/twinizer/code_analyzer/documentation/__init__.py
+- Changes in src/twinizer/code_analyzer/linters/__init__.py
+- Changes in src/twinizer/code_analyzer/linters/cpp.py
+- Changes in src/twinizer/code_analyzer/linters/python.py
+
+### Changed
+- Changes in .gitignore
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/SOURCES.txt
+
 ## [0.1.2] - 2025-05-04
 
 ### Added

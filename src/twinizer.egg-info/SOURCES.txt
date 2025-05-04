@@ -21,6 +21,14 @@ src/twinizer/cli/commands/image.py
 src/twinizer/cli/commands/kicad.py
 src/twinizer/cli/commands/software.py
 src/twinizer/cli/commands/test.py
+src/twinizer/code_analyzer/__init__.py
+src/twinizer/code_analyzer/analyzer.py
+src/twinizer/code_analyzer/documentation/__init__.py
+src/twinizer/code_analyzer/documentation/generator.py
+src/twinizer/code_analyzer/linters/__init__.py
+src/twinizer/code_analyzer/linters/cpp.py
+src/twinizer/code_analyzer/linters/javascript.py
+src/twinizer/code_analyzer/linters/python.py
 src/twinizer/converters/__init__.py
 src/twinizer/converters/bin2source.py
 src/twinizer/converters/image2ascii.py

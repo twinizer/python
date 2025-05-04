@@ -205,8 +205,8 @@ def create_html_page(diagrams: Dict[str, str], output_path: str,
         '            margin: 20px 0;',
         '        }',
         '    </style>',
-        '    <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>',
-    ])
+    ]
+    html_parts.append('    <script src="https://cdn.jsdelivr.net/npm/mermaid@9/dist/mermaid.min.js"></script>')
 
     # Add initialization script
     init_options = {}

@@ -302,6 +302,10 @@ class KiCadPCBParser:
         }
 
 
+# Create an alias for backward compatibility
+PCBParser = KiCadPCBParser
+
+
 def analyze_kicad_pcb(pcb_path: str) -> Dict[str, Any]:
     """
     Analyze a KiCad PCB layout file.

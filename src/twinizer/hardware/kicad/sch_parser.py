@@ -276,6 +276,10 @@ class KiCadSchematicParser:
         return len(self.nets)
 
 
+# Create an alias for backward compatibility
+SchematicParser = KiCadSchematicParser
+
+
 def analyze_kicad_schematic(schematic_path: str) -> Dict[str, Any]:
     """
     Analyze a KiCad schematic file.

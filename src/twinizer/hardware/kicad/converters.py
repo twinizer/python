@@ -406,6 +406,390 @@ def _generate_placeholder_image(kicad_file: str, output_path: str, format: str) 
         console.print(f"[red]Error generating placeholder image:[/red] {e}")
         return ""
 
+class SchematicToMermaid:
+    """
+    Converter for KiCad schematics to Mermaid diagrams.
+    """
+
+    def __init__(self, schematic_path: str):
+        """
+        Initialize the converter with a schematic file path.
+
+        Args:
+            schematic_path: Path to the KiCad schematic file
+        """
+        self.schematic_path = schematic_path
+        from twinizer.hardware.kicad.sch_parser import SchematicParser
+        self.parser = SchematicParser(schematic_path)
+        
+    def to_flowchart(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the schematic to a Mermaid flowchart diagram.
+
+        Args:
+            output_path: Path to save the Mermaid file, if None uses the same name with .mmd extension
+
+        Returns:
+            Path to the output Mermaid file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.schematic_path)[0]
+            output_path = f"{base_path}_flowchart.mmd"
+            
+        # Parse the schematic
+        self.parser.parse()
+        
+        # Generate flowchart
+        mermaid_lines = ["flowchart TD"]
+        
+        # Add components as nodes
+        for component in self.parser.components:
+            comp_id = component.get('reference', 'UNKNOWN')
+            comp_value = component.get('value', '')
+            comp_name = f"{comp_id}[{comp_id}: {comp_value}]"
+            mermaid_lines.append(f"    {comp_name}")
+        
+        # Add connections
+        for net in self.parser.nets:
+            net_name = net.get('name', '')
+            connections = net.get('connections', [])
+            
+            if len(connections) >= 2:
+                for i in range(len(connections) - 1):
+                    src = connections[i]
+                    dst = connections[i + 1]
+                    mermaid_lines.append(f"    {src} -- {net_name} --> {dst}")
+        
+        # Write to file
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(mermaid_lines))
+            
+        console.print(f"[green]Mermaid flowchart saved to:[/green] {output_path}")
+        return output_path
+        
+    def to_class_diagram(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the schematic to a Mermaid class diagram.
+
+        Args:
+            output_path: Path to save the Mermaid file, if None uses the same name with .mmd extension
+
+        Returns:
+            Path to the output Mermaid file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.schematic_path)[0]
+            output_path = f"{base_path}_class.mmd"
+            
+        # Parse the schematic
+        self.parser.parse()
+        
+        # Generate class diagram
+        mermaid_lines = ["classDiagram"]
+        
+        # Group components by type/library
+        components_by_type = {}
+        for component in self.parser.components:
+            comp_type = component.get('library', 'Unknown')
+            if comp_type not in components_by_type:
+                components_by_type[comp_type] = []
+            components_by_type[comp_type].append(component)
+        
+        # Add component types as classes
+        for comp_type, components in components_by_type.items():
+            mermaid_lines.append(f"    class {comp_type} {{")
+            
+            # Add component instances as class members
+            for component in components:
+                comp_id = component.get('reference', 'UNKNOWN')
+                comp_value = component.get('value', '')
+                mermaid_lines.append(f"        +{comp_id} {comp_value}")
+            
+            mermaid_lines.append("    }")
+        
+        # Add connections between component types
+        for net in self.parser.nets:
+            connections = net.get('connections', [])
+            if len(connections) >= 2:
+                # Extract component types for connections
+                connection_types = set()
+                for conn in connections:
+                    # Extract component reference from connection (e.g., "R1:1" -> "R1")
+                    comp_ref = conn.split(':')[0] if ':' in conn else conn
+                    
+                    # Find the component type
+                    for component in self.parser.components:
+                        if component.get('reference') == comp_ref:
+                            connection_types.add(component.get('library', 'Unknown'))
+                            break
+                
+                # Add relationships between types
+                connection_types = list(connection_types)
+                if len(connection_types) >= 2:
+                    for i in range(len(connection_types) - 1):
+                        mermaid_lines.append(f"    {connection_types[i]} -- {connection_types[i+1]}")
+        
+        # Write to file
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(mermaid_lines))
+            
+        console.print(f"[green]Mermaid class diagram saved to:[/green] {output_path}")
+        return output_path
+
+
+class SchematicToBOM:
+    """
+    Converter for KiCad schematics to Bill of Materials (BOM).
+    """
+
+    def __init__(self, schematic_path: str):
+        """
+        Initialize the converter with a schematic file path.
+
+        Args:
+            schematic_path: Path to the KiCad schematic file
+        """
+        self.schematic_path = schematic_path
+        from twinizer.hardware.kicad.sch_parser import SchematicParser
+        self.parser = SchematicParser(schematic_path)
+        
+    def to_csv(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the schematic to a CSV BOM file.
+
+        Args:
+            output_path: Path to save the CSV file, if None uses the same name with .csv extension
+
+        Returns:
+            Path to the output CSV file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.schematic_path)[0]
+            output_path = f"{base_path}_bom.csv"
+            
+        # Parse the schematic
+        self.parser.parse()
+        
+        # Group components by value and footprint
+        grouped_components = {}
+        for component in self.parser.components:
+            comp_value = component.get('value', 'Unknown')
+            comp_footprint = component.get('footprint', 'Unknown')
+            key = f"{comp_value}_{comp_footprint}"
+            
+            if key not in grouped_components:
+                grouped_components[key] = {
+                    'value': comp_value,
+                    'footprint': comp_footprint,
+                    'references': [],
+                    'datasheet': component.get('datasheet', ''),
+                    'description': component.get('description', ''),
+                }
+            
+            grouped_components[key]['references'].append(component.get('reference', 'Unknown'))
+        
+        # Write to CSV file
+        import csv
+        with open(output_path, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['Item', 'Quantity', 'References', 'Value', 'Footprint', 'Datasheet', 'Description'])
+            
+            for i, (_, component) in enumerate(grouped_components.items(), 1):
+                writer.writerow([
+                    i,
+                    len(component['references']),
+                    ', '.join(sorted(component['references'])),
+                    component['value'],
+                    component['footprint'],
+                    component['datasheet'],
+                    component['description']
+                ])
+        
+        console.print(f"[green]BOM saved to:[/green] {output_path}")
+        return output_path
+        
+    def to_markdown(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the schematic to a Markdown BOM file.
+
+        Args:
+            output_path: Path to save the Markdown file, if None uses the same name with .md extension
+
+        Returns:
+            Path to the output Markdown file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.schematic_path)[0]
+            output_path = f"{base_path}_bom.md"
+            
+        # Parse the schematic
+        self.parser.parse()
+        
+        # Group components by value and footprint
+        grouped_components = {}
+        for component in self.parser.components:
+            comp_value = component.get('value', 'Unknown')
+            comp_footprint = component.get('footprint', 'Unknown')
+            key = f"{comp_value}_{comp_footprint}"
+            
+            if key not in grouped_components:
+                grouped_components[key] = {
+                    'value': comp_value,
+                    'footprint': comp_footprint,
+                    'references': [],
+                    'datasheet': component.get('datasheet', ''),
+                    'description': component.get('description', ''),
+                }
+            
+            grouped_components[key]['references'].append(component.get('reference', 'Unknown'))
+        
+        # Write to Markdown file
+        with open(output_path, 'w') as f:
+            f.write(f"# Bill of Materials: {os.path.basename(self.schematic_path)}\n\n")
+            f.write("| Item | Quantity | References | Value | Footprint | Datasheet | Description |\n")
+            f.write("|------|----------|------------|-------|-----------|-----------|-------------|\n")
+            
+            for i, (_, component) in enumerate(grouped_components.items(), 1):
+                f.write(f"| {i} | {len(component['references'])} | {', '.join(sorted(component['references']))} | ")
+                f.write(f"{component['value']} | {component['footprint']} | {component['datasheet']} | ")
+                f.write(f"{component['description']} |\n")
+        
+        console.print(f"[green]BOM saved to:[/green] {output_path}")
+        return output_path
+
+
+class PCBToMermaid:
+    """
+    Converter for KiCad PCB layouts to Mermaid diagrams.
+    """
+
+    def __init__(self, pcb_path: str):
+        """
+        Initialize the converter with a PCB file path.
+
+        Args:
+            pcb_path: Path to the KiCad PCB file
+        """
+        self.pcb_path = pcb_path
+        from twinizer.hardware.kicad.pcb_parser import PCBParser
+        self.parser = PCBParser(pcb_path)
+        
+    def to_flowchart(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the PCB to a Mermaid flowchart diagram.
+
+        Args:
+            output_path: Path to save the Mermaid file, if None uses the same name with .mmd extension
+
+        Returns:
+            Path to the output Mermaid file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.pcb_path)[0]
+            output_path = f"{base_path}_pcb_flowchart.mmd"
+            
+        # Parse the PCB
+        self.parser.parse()
+        
+        # Generate flowchart
+        mermaid_lines = ["flowchart TD"]
+        
+        # Add modules as nodes
+        for module in self.parser.modules:
+            module_ref = module.get('reference', 'UNKNOWN')
+            module_value = module.get('value', '')
+            module_name = f"{module_ref}[{module_ref}: {module_value}]"
+            mermaid_lines.append(f"    {module_name}")
+        
+        # Add connections based on nets
+        for net in self.parser.nets:
+            net_name = net.get('name', '')
+            pads = net.get('pads', [])
+            
+            if len(pads) >= 2:
+                for i in range(len(pads) - 1):
+                    src = pads[i].split(':')[0]  # Extract module reference from pad
+                    dst = pads[i + 1].split(':')[0]
+                    mermaid_lines.append(f"    {src} -- {net_name} --> {dst}")
+        
+        # Write to file
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(mermaid_lines))
+            
+        console.print(f"[green]Mermaid PCB flowchart saved to:[/green] {output_path}")
+        return output_path
+        
+    def to_class_diagram(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the PCB to a Mermaid class diagram.
+
+        Args:
+            output_path: Path to save the Mermaid file, if None uses the same name with .mmd extension
+
+        Returns:
+            Path to the output Mermaid file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.pcb_path)[0]
+            output_path = f"{base_path}_pcb_class.mmd"
+            
+        # Parse the PCB
+        self.parser.parse()
+        
+        # Generate class diagram
+        mermaid_lines = ["classDiagram"]
+        
+        # Group modules by type/value
+        modules_by_type = {}
+        for module in self.parser.modules:
+            module_type = module.get('value', 'Unknown')
+            if module_type not in modules_by_type:
+                modules_by_type[module_type] = []
+            modules_by_type[module_type].append(module)
+        
+        # Add module types as classes
+        for module_type, modules in modules_by_type.items():
+            safe_type = module_type.replace(' ', '_').replace('-', '_')
+            mermaid_lines.append(f"    class {safe_type} {{")
+            
+            # Add module instances as class members
+            for module in modules:
+                module_ref = module.get('reference', 'UNKNOWN')
+                module_pos = f"({module.get('position', {}).get('x', 0)}, {module.get('position', {}).get('y', 0)})"
+                mermaid_lines.append(f"        +{module_ref} {module_pos}")
+            
+            mermaid_lines.append("    }")
+        
+        # Add connections between module types based on nets
+        for net in self.parser.nets:
+            pads = net.get('pads', [])
+            if len(pads) >= 2:
+                # Extract module types for connections
+                connection_types = set()
+                for pad in pads:
+                    # Extract module reference from pad (e.g., "R1:1" -> "R1")
+                    module_ref = pad.split(':')[0] if ':' in pad else pad
+                    
+                    # Find the module type
+                    for module in self.parser.modules:
+                        if module.get('reference') == module_ref:
+                            connection_types.add(module.get('value', 'Unknown').replace(' ', '_').replace('-', '_'))
+                            break
+                
+                # Add relationships between types
+                connection_types = list(connection_types)
+                if len(connection_types) >= 2:
+                    for i in range(len(connection_types) - 1):
+                        mermaid_lines.append(f"    {connection_types[i]} -- {connection_types[i+1]}")
+        
+        # Write to file
+        with open(output_path, 'w') as f:
+            f.write('\n'.join(mermaid_lines))
+            
+        console.print(f"[green]Mermaid PCB class diagram saved to:[/green] {output_path}")
+        return output_path
+
+
 def convert_kicad_schematic_to_netlist(schematic_path: str, output_path: Optional[str] = None) -> str:
     """
     Convert a KiCad schematic to a netlist file.

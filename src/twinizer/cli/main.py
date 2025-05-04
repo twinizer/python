@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from twinizer import __version__
-from twinizer.cli.commands import analyze, compile, debug, convert, test
+from twinizer.cli.commands import analyze, convert
 from twinizer.utils.env import bootstrap_environment
 
 # Create console for rich output
@@ -60,11 +60,8 @@ def run(ctx):
 
 
 # Register commands
-cli.add_command(analyze.analyze)
-cli.add_command(compile.compile)
-cli.add_command(debug.debug)
-cli.add_command(convert.convert)
-cli.add_command(test.test)
+cli.add_command(analyze)
+cli.add_command(convert)
 
 
 def main():
