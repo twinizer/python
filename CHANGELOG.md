@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.2] - 2025-05-04
+
+### Added
+- Changes in docs/image_processing.md
+- Changes in docs/pdf_to_markdown.md
+- Changes in docs/user_guide.md
+
+### Changed
+- Changes in src/twinizer.egg-info/PKG-INFO
+
 ## [0.1.1] - 2025-05-04
 
 ### Added
