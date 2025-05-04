@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Twinizer
 
 ## Overview
@@ -141,7 +140,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-=======
-# python
-python.twinizer.com
->>>>>>> c8fe2c9bc796ab86afdd2ab9816b87460154dd25

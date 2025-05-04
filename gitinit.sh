@@ -29,3 +29,8 @@ git push -u origin main
 git merge origin/main --allow-unrelated-histories
 
 git status
+
+# Dodaj wszystkie pliki do poczekalni i aktualizacja remote
+git add .
+git commit -m "Zakończenie merge z origin/main"
+git push -u origin main

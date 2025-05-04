@@ -17,6 +17,9 @@ src/twinizer/cli/commands/analyze.py
 src/twinizer/cli/commands/compile.py
 src/twinizer/cli/commands/convert.py
 src/twinizer/cli/commands/debug.py
+src/twinizer/cli/commands/image.py
+src/twinizer/cli/commands/kicad.py
+src/twinizer/cli/commands/software.py
 src/twinizer/cli/commands/test.py
 src/twinizer/converters/__init__.py
 src/twinizer/converters/bin2source.py
@@ -26,6 +29,7 @@ src/twinizer/converters/bin2source/__init__.py
 src/twinizer/converters/bin2source/converters.py
 src/twinizer/converters/image/__init__.py
 src/twinizer/converters/image/ascii.py
+src/twinizer/converters/image/image_to_3d.py
 src/twinizer/converters/image/mermaid/__init__.py
 src/twinizer/converters/image/mermaid/base.py
 src/twinizer/converters/image/mermaid/constants.py
@@ -69,6 +73,7 @@ src/twinizer/software/analyze/dependency.py
 src/twinizer/software/decompile/__init__.py
 src/twinizer/software/decompile/elf.py
 src/twinizer/software/disassemble/__init__.py
+src/twinizer/software/disassemble/binary.py
 src/twinizer/utils/__init__.py
 src/twinizer/utils/env.py
 src/twinizer/utils/logging.py
