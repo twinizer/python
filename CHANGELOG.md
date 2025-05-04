@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.9] - 2025-05-04
+
+### Added
+- Changes in TODO2.md
+- Changes in light_colors.txt
+- Changes in plotkicadsch
+- Changes in sch2svg2.py
+
 ## [0.1.8] - 2025-05-04
 
 ## [0.1.7] - 2025-05-04
