@@ -135,7 +135,7 @@ def parse_schematic(schematic_path: str) -> Dict:
             return {'components': [], 'nets': []}
 
 
-def create_svg_from_components(components: List[Dict], nets: List[Dict], 
+def create_svg_from_components(components: List[Dict], nets: List[Dict], labels: List[Dict], 
                               output_path: str, theme: str = 'default') -> str:
     """
     Create an SVG diagram from components and nets.
@@ -143,6 +143,7 @@ def create_svg_from_components(components: List[Dict], nets: List[Dict],
     Args:
         components: List of component dictionaries
         nets: List of net dictionaries
+        labels: List of label dictionaries
         output_path: Path to save the SVG file
         theme: Theme to use for the SVG output
         
@@ -171,14 +172,14 @@ def create_svg_from_components(components: List[Dict], nets: List[Dict],
     # Component type to schemdraw element mapping
     component_map = {
         # Connectors
-        'CONN_2': elm.Connector(num=2),
-        'CONN_3': elm.Connector(num=3),
-        'CONN_4': elm.Connector(num=4),
-        'CONN_5X2': elm.Connector(num=10, cols=2),
-        'Conn_01x02': elm.Connector(num=2),
-        'Conn_01x03': elm.Connector(num=3),
-        'Conn_01x04': elm.Connector(num=4),
-        'Conn_02x05': elm.Connector(num=10, cols=2),
+        'CONN_2': elm.Header(rows=2),
+        'CONN_3': elm.Header(rows=3),
+        'CONN_4': elm.Header(rows=4),
+        'CONN_5X2': elm.Header(rows=5, cols=2),
+        'Conn_01x02': elm.Header(rows=2),
+        'Conn_01x03': elm.Header(rows=3),
+        'Conn_01x04': elm.Header(rows=4),
+        'Conn_02x05': elm.Header(rows=5, cols=2),
         
         # Basic components
         'R': elm.Resistor,
@@ -203,8 +204,8 @@ def create_svg_from_components(components: List[Dict], nets: List[Dict],
         
         # ICs and specialized components
         'Opamp': elm.Opamp,
-        'Opamp_Dual': elm.Opamp2,
-        'Regulator_Linear': elm.Vdd,
+        'Opamp_Dual': elm.Opamp,
+        'Regulator_Linear': elm.VoltageRegulator,
         'Crystal': elm.Crystal,
         'Speaker': elm.Speaker,
         'Microphone': elm.Mic,
@@ -213,10 +214,10 @@ def create_svg_from_components(components: List[Dict], nets: List[Dict],
         # Default fallbacks for common prefixes
         'U': elm.Ic,
         'IC': elm.Ic,
-        'X': elm.Block,
+        'X': elm.Rect,
         'SW': elm.Switch,
-        'J': elm.Connector,
-        'P': elm.Connector,
+        'J': elm.Header,
+        'P': elm.Header,
         'BT': elm.Battery,
         'F': elm.Fuse,
     }
@@ -317,6 +318,19 @@ def create_svg_from_components(components: List[Dict], nets: List[Dict],
                     except Exception as e:
                         print_message(f"Warning: Error drawing connection: {e}", style="yellow")
     
+    # Draw labels
+    for label in labels:
+        text = label.get('text', '')
+        x = label.get('x', 0)
+        y = label.get('y', 0)
+        
+        # Adjust position
+        x_pos = (x - min_x) * scale
+        y_pos = (y - min_y) * scale
+        
+        # Add label to drawing
+        d += elm.Text(text).at((x_pos, y_pos))
+    
     # Save as SVG
     d.save(output_path)
     print_message(f"SVG saved to: {output_path}", style="green")
@@ -379,14 +393,69 @@ def generate_html(svg_path: str, schematic_path: str) -> str:
         return ""
 
 
+def process_folder(input_path: str, output_path: Optional[str] = None, theme: str = 'default') -> List[str]:
+    """
+    Process all schematic files in a folder.
+    
+    Args:
+        input_path: Path to the folder containing KiCad schematic files
+        output_path: Path to save the SVG files, if None uses the same folder
+        theme: Theme to use for the SVG output
+        
+    Returns:
+        List of paths to the output SVG files
+    """
+    if not os.path.isdir(input_path):
+        print_message(f"Error: {input_path} is not a directory", style="red")
+        return []
+    
+    svg_files = []
+    
+    # Get all schematic files in the folder
+    schematic_files = [f for f in os.listdir(input_path) if f.endswith('.sch')]
+    
+    for sch_file in schematic_files:
+        sch_path = os.path.join(input_path, sch_file)
+        
+        # Prepare output path
+        if output_path:
+            output_dir = output_path
+        else:
+            output_dir = input_path
+            
+        output_svg_path = os.path.join(output_dir, f"{os.path.splitext(sch_file)[0]}.svg")
+        
+        print_message(f"Processing {sch_path} -> {output_svg_path}")
+        
+        try:
+            # Parse the schematic
+            data = parse_schematic(sch_path)
+            components = data['components']
+            nets = data['nets']
+            labels = data.get('labels', [])
+            
+            print_message(f"Extracted: {len(components)} components, {len(nets)} nets, {len(labels)} labels")
+            
+            # Create the SVG
+            svg_path = create_svg_from_components(components, nets, labels, output_svg_path, theme)
+            
+            if svg_path:
+                svg_files.append(svg_path)
+                print_message(f"SVG saved to {svg_path}", style="green")
+        except Exception as e:
+            print_message(f"Error processing {sch_file}: {e}", style="red")
+    
+    return svg_files
+
+
 def main():
     """Main function to handle command-line arguments and run the conversion."""
     parser = argparse.ArgumentParser(description='Convert KiCad schematic to SVG')
-    parser.add_argument('schematic_file', help='Path to KiCad schematic file')
-    parser.add_argument('--output', '-o', help='Output SVG file path')
+    parser.add_argument('input_path', help='Path to KiCad schematic file or directory')
+    parser.add_argument('--output', '-o', help='Output SVG file path or directory')
     parser.add_argument('--theme', '-t', choices=['default', 'dark', 'blue', 'minimal'], 
                         default='default', help='Theme for the SVG output')
-    parser.add_argument('--html', '-h', action='store_true', help='Generate HTML file with embedded SVG')
+    parser.add_argument('--html', '-w', action='store_true', help='Generate HTML file with embedded SVG')
     
     args = parser.parse_args()
     
@@ -396,33 +465,87 @@ def main():
         print_message("pip install schemdraw", style="yellow")
         sys.exit(1)
     
-    # Prepare output path
-    if args.output is None:
-        base_path = os.path.splitext(args.schematic_file)[0]
-        output_path = f"{base_path}.svg"
-    else:
-        output_path = args.output
+    input_path = args.input_path
+    output_path = args.output
+    theme = args.theme
+    generate_html_output = args.html
     
     try:
-        # Use Twinizer if available
-        if TWINIZER_AVAILABLE:
-            result = convert_kicad_to_svg(args.schematic_file, output_path, args.theme, args.html)
+        # Check if input is a directory
+        if os.path.isdir(input_path):
+            # Process all schematic files in the directory
+            svg_files = process_folder(input_path, output_path, theme)
             
-            if args.html:
-                svg_path, html_path = result
-                print_message(f"SVG file created: {svg_path}", style="green")
-                print_message(f"HTML file created: {html_path}", style="green")
-            else:
-                print_message(f"SVG file created: {result}", style="green")
+            # Generate HTML with all SVGs if requested
+            if generate_html_output and svg_files:
+                html_path = os.path.join(os.path.dirname(svg_files[0]), "sch2svg.html")
+                
+                with open(html_path, "w", encoding="utf-8") as f:
+                    f.write(f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>KiCad Schematics</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        h1, h2 {{ color: #333; }}
+        .svg-container {{ 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            margin-bottom: 20px;
+            background-color: white;
+        }}
+        svg {{ max-width: 100%; height: auto; }}
+    </style>
+</head>
+<body>
+    <h1>KiCad Schematics</h1>
+""")
+                    
+                    for svg_file in svg_files:
+                        schematic_name = os.path.basename(os.path.splitext(svg_file)[0])
+                        f.write(f'    <h2>{schematic_name}</h2>\n')
+                        f.write('    <div class="svg-container">\n')
+                        
+                        # Embed the SVG
+                        try:
+                            with open(svg_file, "r", encoding="utf-8") as svg_f:
+                                svg_content = svg_f.read()
+                            f.write(f'        {svg_content}\n')
+                        except Exception as e:
+                            f.write(f'        <p>Error embedding SVG: {e}</p>\n')
+                        
+                        f.write('    </div>\n\n')
+                    
+                    f.write("""</body>
+</html>""")
+                
+                print_message(f"HTML file generated: {html_path}", style="green")
         else:
-            # Fallback to built-in implementation
-            data = parse_schematic(args.schematic_file)
-            svg_path = create_svg_from_components(data['components'], data['nets'], output_path, args.theme)
+            # Process single schematic file
+            # Prepare output path
+            if output_path is None:
+                base_path = os.path.splitext(input_path)[0]
+                output_path = f"{base_path}.svg"
             
-            if args.html and svg_path:
-                html_path = generate_html(svg_path, args.schematic_file)
-                if html_path:
+            # Use Twinizer if available
+            if TWINIZER_AVAILABLE:
+                result = convert_kicad_to_svg(input_path, output_path, theme, generate_html_output)
+                
+                if generate_html_output:
+                    svg_path, html_path = result
+                    print_message(f"SVG file created: {svg_path}", style="green")
                     print_message(f"HTML file created: {html_path}", style="green")
+                else:
+                    print_message(f"SVG file created: {result}", style="green")
+            else:
+                # Fallback to built-in implementation
+                data = parse_schematic(input_path)
+                svg_path = create_svg_from_components(data['components'], data['nets'], data.get('labels', []), output_path, theme)
+                
+                if generate_html_output and svg_path:
+                    html_path = generate_html(svg_path, input_path)
+                    if html_path:
+                        print_message(f"HTML file created: {html_path}", style="green")
     
     except Exception as e:
         print_message(f"Error during conversion: {e}", style="red")

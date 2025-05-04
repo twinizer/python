@@ -297,7 +297,7 @@ def pcb_to_3d(pcb_file: str, output: Optional[str] = None,
 @click.option('--output', '-o', help='Output SVG file path')
 @click.option('--theme', '-t', type=click.Choice(['default', 'dark', 'blue', 'minimal']), 
               default='default', help='Theme for the SVG output')
-@click.option('--html', '-h', is_flag=True, help='Generate HTML file with embedded SVG')
+@click.option('--html', '-w', is_flag=True, help='Generate HTML file with embedded SVG')
 def schematic_to_svg(schematic_file, output, theme, html):
     """
     Convert KiCad schematic to SVG format.

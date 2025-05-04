@@ -1329,6 +1329,30 @@ def convert_kicad_pcb_to_gerber(pcb_path: str, output_dir: Optional[str] = None)
             console.print(f"[red]Error during conversion:[/red] {e}")
             return ""
 
+def convert_kicad_to_mermaid(schematic_path: str, output_path: Optional[str] = None, 
+                           diagram_type: str = 'flowchart') -> str:
+    """
+    Convert a KiCad schematic to Mermaid diagram format.
+    
+    Args:
+        schematic_path: Path to the KiCad schematic file
+        output_path: Path to save the Mermaid file, if None uses the same name with .mmd extension
+        diagram_type: Type of Mermaid diagram to generate (flowchart, class, etc.)
+        
+    Returns:
+        Path to the output Mermaid file
+    """
+    converter = SchematicToMermaid(schematic_path)
+    
+    if diagram_type == 'flowchart':
+        return converter.to_flowchart(output_path)
+    elif diagram_type == 'class':
+        return converter.to_class_diagram(output_path)
+    elif diagram_type == 'graph':
+        return converter.to_graph(output_path)
+    else:
+        console.print(f"[red]Error: Unknown diagram type: {diagram_type}[/red]")
+        return ""
 
 class SchematicToSVG:
     """
@@ -1343,6 +1367,7 @@ class SchematicToSVG:
             schematic_path: Path to the KiCad schematic file
         """
         self.schematic_path = schematic_path
+        from twinizer.hardware.kicad.sch_parser import SchematicParser
         self.parser = SchematicParser(schematic_path)
         
         if not SCHEMDRAW_AVAILABLE:
@@ -1371,85 +1396,66 @@ class SchematicToSVG:
             base_path = os.path.splitext(self.schematic_path)[0]
             output_path = f"{base_path}.svg"
         
-        # Set theme
-        if theme == 'dark':
-            schemdraw.theme('dark')
-        elif theme == 'blue':
-            schemdraw.theme(bgcolor='aliceblue', fgcolor='black')
-        elif theme == 'minimal':
-            schemdraw.theme(bgcolor='white', fgcolor='black', 
-                           color='black', lw=1, fontsize=10)
-        else:  # default
-            schemdraw.theme('default')
+        # Sprawdź, czy lista komponentów nie jest pusta
+        components_with_x = [c for c in self.parser.components if 'x' in c]
+        components_with_y = [c for c in self.parser.components if 'y' in c]
         
-        # Create the drawing
-        d = schemdraw.Drawing()
+        if not components_with_x or not components_with_y:
+            console.print("[yellow]Warning: Components without coordinates found in the schematic.[/yellow]")
+            # Utwórz pusty rysunek z informacją
+            d = schemdraw.Drawing()
+            d += elm.Annotate(label="Components without proper coordinates found").at((0, 0))
+            d.save(output_path)
+            console.print(f"[green]SVG saved to:[/green] {output_path}")
+            
+            # Generate HTML if requested
+            if generate_html:
+                html_path = f"{os.path.splitext(output_path)[0]}.html"
+                with open(html_path, "w", encoding="utf-8") as f:
+                    f.write(f"""<!DOCTYPE html>
+<html>
+<head>
+    <title>KiCad Schematic: {os.path.basename(self.schematic_path)}</title>
+    <style>
+        body {{ font-family: Arial, sans-serif; margin: 20px; }}
+        h1 {{ color: #333; }}
+        .svg-container {{ 
+            border: 1px solid #ddd; 
+            padding: 10px; 
+            margin-bottom: 20px;
+            background-color: white;
+        }}
+        svg {{ max-width: 100%; height: auto; }}
+        .warning {{ color: orange; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <h1>KiCad Schematic: {os.path.basename(self.schematic_path)}</h1>
+    <p class="warning">Warning: Components without proper coordinates found in the schematic.</p>
+    <div class="svg-container">
+""")
+                    
+                    # Embed the SVG
+                    try:
+                        with open(output_path, "r", encoding="utf-8") as svg_f:
+                            svg_content = svg_f.read()
+                        f.write(f'        {svg_content}\n')
+                    except Exception as e:
+                        f.write(f'        <p>Error embedding SVG: {e}</p>\n')
+                    
+                    f.write("""    </div>
+</body>
+</html>""")
+                
+                console.print(f"[green]HTML file generated:[/green] {html_path}")
+                return output_path, html_path
+            
+            return output_path
         
-        # Component type to schemdraw element mapping
-        component_map = {
-            # Connectors
-            'CONN_2': elm.Connector(num=2),
-            'CONN_3': elm.Connector(num=3),
-            'CONN_4': elm.Connector(num=4),
-            'CONN_5X2': elm.Connector(num=10, cols=2),
-            'Conn_01x02': elm.Connector(num=2),
-            'Conn_01x03': elm.Connector(num=3),
-            'Conn_01x04': elm.Connector(num=4),
-            'Conn_02x05': elm.Connector(num=10, cols=2),
-            
-            # Basic components
-            'R': elm.Resistor,
-            'C': elm.Capacitor,
-            'CP': elm.Capacitor(polar=True),
-            'L': elm.Inductor,
-            'D': elm.Diode,
-            'LED': elm.LED,
-            'Q_NPN': elm.BjtNpn,
-            'Q_PNP': elm.BjtPnp,
-            'MOSFET_N': elm.NFet,
-            'MOSFET_P': elm.PFet,
-            
-            # Power symbols
-            '+24V': elm.SourceV,
-            '+12V': elm.SourceV,
-            '+5V': elm.SourceV,
-            '+3V3': elm.SourceV,
-            'GND': elm.Ground,
-            'GNDA': elm.Ground,
-            'GNDREF': elm.Ground,
-            
-            # ICs and specialized components
-            'Opamp': elm.Opamp,
-            'Opamp_Dual': elm.Opamp2,
-            'Regulator_Linear': elm.Vdd,
-            'Crystal': elm.Crystal,
-            'Speaker': elm.Speaker,
-            'Microphone': elm.Mic,
-            'Transformer': elm.Transformer,
-            
-            # Default fallbacks for common prefixes
-            'U': elm.Ic,
-            'IC': elm.Ic,
-            'X': elm.Block,
-            'SW': elm.Switch,
-            'J': elm.Connector,
-            'P': elm.Connector,
-            'BT': elm.Battery,
-            'F': elm.Fuse,
-        }
-        
-        # Get components and connections
-        components = self.parser.components
-        nets = self.parser.nets
-        
-        # Normalize coordinates
-        if components:
-            min_x = min(c.get('x', 0) for c in components if 'x' in c)
-            min_y = min(c.get('y', 0) for c in components if 'y' in c)
-            max_x = max(c.get('x', 0) for c in components if 'x' in c)
-            max_y = max(c.get('y', 0) for c in components if 'y' in c)
-        else:
-            min_x = min_y = max_x = max_y = 0
+        min_x = min(c['x'] for c in components_with_x)
+        min_y = min(c['y'] for c in components_with_y)
+        max_x = max(c['x'] for c in components_with_x)
+        max_y = max(c['y'] for c in components_with_y)
         
         # Scale factors - ensure we don't divide by zero
         width = max_x - min_x
@@ -1465,7 +1471,7 @@ class SchematicToSVG:
         used_positions = set()
         
         # Draw components
-        for comp in components:
+        for comp in self.parser.components:
             # Get component properties
             comp_type = comp.get('lib_id', '').split(':')[-1]
             ref = comp.get('reference', 'UNKNOWN')
@@ -1519,13 +1525,13 @@ class SchematicToSVG:
                 d += elm.Block().at(pos).label(label)
         
         # Draw connections
-        for net in nets:
+        for net in self.parser.nets:
             connections = net.get('connections', [])
             if len(connections) >= 2:
                 for i in range(len(connections) - 1):
                     # Find component positions for the connection endpoints
-                    start_comp = next((c for c in components if c.get('reference') == connections[i]), None)
-                    end_comp = next((c for c in components if c.get('reference') == connections[i+1]), None)
+                    start_comp = next((c for c in self.parser.components if c.get('reference') == connections[i]), None)
+                    end_comp = next((c for c in self.parser.components if c.get('reference') == connections[i+1]), None)
                     
                     if start_comp and end_comp:
                         start_x = (start_comp.get('x', 0) - min_x) * scale
