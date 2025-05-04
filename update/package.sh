@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Build script for inspectomat Hardware library
+# Build script for twinizer Hardware library
 
-echo "Building inspectomat Hardware Library..."
+echo "Building twinizer Hardware Library..."
 
 # Clean previous builds
 echo "Cleaning previous builds..."
@@ -15,7 +15,7 @@ python -m build
 
 # Create documentation
 echo "Generating documentation..."
-sphinx-apidoc -o docs/source src/inspectomat_hardware
+sphinx-apidoc -o docs/source src/twinizer_hardware
 cd docs && make html && cd ..
 
 echo "Build complete!"

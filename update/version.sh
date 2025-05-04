@@ -22,11 +22,11 @@ fi
 pip install -r requirements.txt
 
 # Uninstall and reinstall to be safe
-pip uninstall -y inspectomat
+pip uninstall -y twinizer
 pip install -e .
 
-python update/src.py -f inspectomat/__init__.py --type patch
-python update/src.py -f inspectomat/_version.py --type patch
+python update/src.py -f twinizer/__init__.py --type patch
+python update/src.py -f twinizer/_version.py --type patch
 python update/src.py -f pyproject.toml --type patch
 # python update/project.sh
 python update/changelog.py
