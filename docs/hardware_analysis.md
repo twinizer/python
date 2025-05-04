@@ -32,10 +32,16 @@ twinizer kicad parse-sch schematic.sch --format json --output schematic.json
 twinizer kicad parse-pcb board.kicad_pcb --format json --output board.json
 
 # Generate a bill of materials
-twinizer kicad generate-bom schematic.sch --format csv --output bom.csv
+twinizer kicad sch-to-bom schematic.sch --format csv --output bom.csv
 
 # Convert a schematic to a Mermaid diagram
-twinizer kicad to-mermaid schematic.sch --diagram-type flowchart --output schematic.mmd
+twinizer kicad sch-to-mermaid schematic.sch --diagram-type flowchart --output schematic.mmd
+
+# Convert a PCB to a Mermaid diagram
+twinizer kicad pcb-to-mermaid board.kicad_pcb --diagram-type flowchart --output pcb.mmd
+
+# Convert a PCB to a 3D model
+twinizer kicad pcb-to-3d board.kicad_pcb --format step --output board.step
 ```
 
 ### Python API
@@ -44,7 +50,7 @@ twinizer kicad to-mermaid schematic.sch --diagram-type flowchart --output schema
 from twinizer.hardware.kicad.sch_parser import SchematicParser
 from twinizer.hardware.kicad.pcb_parser import PCBParser
 from twinizer.hardware.kicad.converters import (
-    schematic_to_mermaid, pcb_to_mermaid, generate_bom
+    SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel
 )
 
 # Parse a schematic file
@@ -60,26 +66,25 @@ for component in components[:5]:  # Show first 5 components
 nets = schematic_data.get("nets", [])
 print(f"Found {len(nets)} nets")
 
-# Convert to Mermaid diagram
-mermaid_diagram = schematic_to_mermaid(
-    schematic_data,
-    diagram_type="flowchart",
-    direction="TB"
-)
+# Convert schematic to Mermaid diagram
+converter = SchematicToMermaid("schematic.sch")
+output_path = converter.to_flowchart("schematic.mmd")
+print(f"Mermaid diagram saved to: {output_path}")
 
-# Generate bill of materials
-bom = generate_bom(
-    schematic_data,
-    format="csv"
-)
+# Generate BOM from schematic
+bom_converter = SchematicToBOM("schematic.sch")
+bom_path = bom_converter.to_csv("bom.csv")
+print(f"BOM saved to: {bom_path}")
 
-# Parse a PCB file
-pcb_parser = PCBParser("board.kicad_pcb")
-pcb_data = pcb_parser.parse()
+# Convert PCB to Mermaid diagram
+pcb_converter = PCBToMermaid("board.kicad_pcb")
+pcb_diagram_path = pcb_converter.to_flowchart("pcb.mmd")
+print(f"PCB diagram saved to: {pcb_diagram_path}")
 
-# Access module information
-modules = pcb_data.get("modules", [])
-print(f"Found {len(modules)} modules")
+# Convert PCB to 3D model
+model_converter = PCBTo3DModel("board.kicad_pcb")
+model_path = model_converter.to_step("board.step")
+print(f"3D model saved to: {model_path}")
 ```
 
 ### Schematic Parsing
@@ -219,27 +224,22 @@ The BOM generator creates a bill of materials from a schematic file, with the fo
 
 ```python
 from twinizer.hardware.kicad.sch_parser import SchematicParser
-from twinizer.hardware.kicad.converters import generate_bom
+from twinizer.hardware.kicad.converters import SchematicToBOM
 
 # Parse schematic
 parser = SchematicParser("schematic.sch")
 schematic_data = parser.parse()
 
 # Generate BOM in CSV format
-bom_csv = generate_bom(
-    schematic_data,
-    format="csv"
-)
+bom_converter = SchematicToBOM("schematic.sch")
+bom_csv = bom_converter.to_csv("bom.csv")
 
 # Save to file
 with open("bom.csv", "w") as f:
     f.write(bom_csv)
 
 # Generate BOM in JSON format
-bom_json = generate_bom(
-    schematic_data,
-    format="json"
-)
+bom_json = bom_converter.to_json("bom.json")
 
 # Save to file
 with open("bom.json", "w") as f:
@@ -250,16 +250,16 @@ with open("bom.json", "w") as f:
 
 ```python
 from twinizer.hardware.kicad.sch_parser import SchematicParser
-from twinizer.hardware.kicad.converters import generate_bom
+from twinizer.hardware.kicad.converters import SchematicToBOM
 
 # Parse schematic
 parser = SchematicParser("schematic.sch")
 schematic_data = parser.parse()
 
 # Generate BOM with custom options
-bom_csv = generate_bom(
-    schematic_data,
-    format="csv",
+bom_converter = SchematicToBOM("schematic.sch")
+bom_csv = bom_converter.to_csv(
+    "custom_bom.csv",
     group_by=["value", "footprint"],  # Group components by value and footprint
     exclude_references=["TP.*", "MH.*"],  # Exclude test points and mounting holes
     include_fields=["Reference", "Value", "Footprint", "Datasheet", "Supplier", "Cost"],  # Specify fields to include
@@ -279,18 +279,15 @@ Twinizer can convert KiCad schematics to Mermaid diagrams for visualization.
 
 ```python
 from twinizer.hardware.kicad.sch_parser import SchematicParser
-from twinizer.hardware.kicad.converters import schematic_to_mermaid
+from twinizer.hardware.kicad.converters import SchematicToMermaid
 
 # Parse schematic
 parser = SchematicParser("schematic.sch")
 schematic_data = parser.parse()
 
 # Convert to Mermaid flowchart
-flowchart = schematic_to_mermaid(
-    schematic_data,
-    diagram_type="flowchart",
-    direction="TB"
-)
+converter = SchematicToMermaid("schematic.sch")
+flowchart = converter.to_flowchart("schematic.mmd")
 
 # Save to file
 with open("schematic_flowchart.mmd", "w") as f:
@@ -301,17 +298,15 @@ with open("schematic_flowchart.mmd", "w") as f:
 
 ```python
 from twinizer.hardware.kicad.sch_parser import SchematicParser
-from twinizer.hardware.kicad.converters import schematic_to_mermaid
+from twinizer.hardware.kicad.converters import SchematicToMermaid
 
 # Parse schematic
 parser = SchematicParser("schematic.sch")
 schematic_data = parser.parse()
 
 # Convert to Mermaid class diagram
-class_diagram = schematic_to_mermaid(
-    schematic_data,
-    diagram_type="class"
-)
+converter = SchematicToMermaid("schematic.sch")
+class_diagram = converter.to_class("schematic_class.mmd")
 
 # Save to file
 with open("schematic_class.mmd", "w") as f:
@@ -341,7 +336,7 @@ twinizer altium generate-bom project.PrjPcb --format csv --output bom.csv
 from twinizer.hardware.altium.sch_parser import AltiumSchematicParser
 from twinizer.hardware.altium.pcb_parser import AltiumPCBParser
 from twinizer.hardware.altium.converters import (
-    schematic_to_mermaid, pcb_to_mermaid, generate_bom
+    SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel
 )
 
 # Parse a schematic file
@@ -354,10 +349,10 @@ for component in components[:5]:  # Show first 5 components
     print(f"Designator: {component.get('designator')}, Comment: {component.get('comment')}")
 
 # Convert to Mermaid diagram
-mermaid_diagram = schematic_to_mermaid(schematic_data)
+mermaid_diagram = SchematicToMermaid(schematic_data)
 
 # Generate bill of materials
-bom = generate_bom(schematic_data, format="csv")
+bom = SchematicToBOM(schematic_data, format="csv")
 ```
 
 ### Altium Schematic Parsing
@@ -449,17 +444,15 @@ The BOM generator creates a bill of materials from an Altium project file, with 
 
 ```python
 from twinizer.hardware.altium.project_parser import AltiumProjectParser
-from twinizer.hardware.altium.converters import generate_bom
+from twinizer.hardware.altium.converters import SchematicToBOM
 
 # Parse project
 parser = AltiumProjectParser("project.PrjPcb")
 project_data = parser.parse()
 
 # Generate BOM in CSV format
-bom_csv = generate_bom(
-    project_data,
-    format="csv"
-)
+bom_converter = SchematicToBOM(project_data)
+bom_csv = bom_converter.to_csv("bom.csv")
 
 # Save to file
 with open("bom.csv", "w") as f:
@@ -473,8 +466,8 @@ with open("bom.csv", "w") as f:
 ```python
 from twinizer.hardware.kicad.sch_parser import SchematicParser as KiCadSchematicParser
 from twinizer.hardware.altium.sch_parser import AltiumSchematicParser
-from twinizer.hardware.kicad.converters import generate_bom as kicad_generate_bom
-from twinizer.hardware.altium.converters import generate_bom as altium_generate_bom
+from twinizer.hardware.kicad.converters import SchematicToBOM as KiCadSchematicToBOM
+from twinizer.hardware.altium.converters import SchematicToBOM as AltiumSchematicToBOM
 
 def compare_designs(kicad_sch_path, altium_sch_path, output_dir="comparison"):
     """Compare KiCad and Altium designs."""
@@ -493,15 +486,18 @@ def compare_designs(kicad_sch_path, altium_sch_path, output_dir="comparison"):
     altium_data = altium_parser.parse()
     
     # Generate BOMs
-    kicad_bom = kicad_generate_bom(kicad_data, format="json")
-    altium_bom = altium_generate_bom(altium_data, format="json")
+    kicad_bom_converter = KiCadSchematicToBOM(kicad_sch_path)
+    kicad_bom_csv = kicad_bom_converter.to_csv("kicad_bom.csv")
+    
+    altium_bom_converter = AltiumSchematicToBOM(altium_sch_path)
+    altium_bom_csv = altium_bom_converter.to_csv("altium_bom.csv")
     
     # Save BOMs
-    with open(os.path.join(output_dir, "kicad_bom.json"), "w") as f:
-        f.write(kicad_bom)
+    with open(os.path.join(output_dir, "kicad_bom.csv"), "w") as f:
+        f.write(kicad_bom_csv)
     
-    with open(os.path.join(output_dir, "altium_bom.json"), "w") as f:
-        f.write(altium_bom)
+    with open(os.path.join(output_dir, "altium_bom.csv"), "w") as f:
+        f.write(altium_bom_csv)
     
     # Compare component counts
     kicad_components = kicad_data.get("components", [])
@@ -531,7 +527,7 @@ print(f"Comparison results: {comparison}")
 from twinizer.hardware.kicad.sch_parser import SchematicParser
 from twinizer.hardware.kicad.pcb_parser import PCBParser
 from twinizer.hardware.kicad.converters import (
-    schematic_to_mermaid, pcb_to_mermaid, generate_bom
+    SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel
 )
 import os
 import json
@@ -550,29 +546,32 @@ def analyze_kicad_design(sch_path, pcb_path, output_dir="analysis"):
     pcb_data = pcb_parser.parse()
     
     # Generate BOM
-    bom_csv = generate_bom(schematic_data, format="csv")
+    bom_converter = SchematicToBOM(sch_path)
+    bom_csv = bom_converter.to_csv("bom.csv")
     with open(os.path.join(output_dir, "bom.csv"), "w") as f:
         f.write(bom_csv)
     
     # Generate Mermaid diagrams
-    sch_flowchart = schematic_to_mermaid(
-        schematic_data,
-        diagram_type="flowchart",
-        direction="TB"
-    )
+    sch_flowchart_converter = SchematicToMermaid(sch_path)
+    sch_flowchart = sch_flowchart_converter.to_flowchart("schematic.mmd")
     with open(os.path.join(output_dir, "schematic_flowchart.mmd"), "w") as f:
         f.write(sch_flowchart)
     
-    sch_class = schematic_to_mermaid(
-        schematic_data,
-        diagram_type="class"
-    )
+    sch_class_converter = SchematicToMermaid(sch_path)
+    sch_class = sch_class_converter.to_class("schematic_class.mmd")
     with open(os.path.join(output_dir, "schematic_class.mmd"), "w") as f:
         f.write(sch_class)
     
-    pcb_diagram = pcb_to_mermaid(pcb_data)
+    pcb_diagram_converter = PCBToMermaid(pcb_path)
+    pcb_diagram = pcb_diagram_converter.to_flowchart("pcb.mmd")
     with open(os.path.join(output_dir, "pcb_diagram.mmd"), "w") as f:
         f.write(pcb_diagram)
+    
+    # Convert PCB to 3D model
+    model_converter = PCBTo3DModel(pcb_path)
+    model_step = model_converter.to_step("board.step")
+    with open(os.path.join(output_dir, "board.step"), "w") as f:
+        f.write(model_step)
     
     # Extract component statistics
     components = schematic_data.get("components", [])
@@ -624,6 +623,7 @@ def analyze_kicad_design(sch_path, pcb_path, output_dir="analysis"):
             "pcb_diagram": os.path.join(output_dir, "pcb_diagram.mmd"),
             "component_stats": os.path.join(output_dir, "component_stats.json"),
             "net_stats": os.path.join(output_dir, "net_stats.json"),
+            "3d_model": os.path.join(output_dir, "board.step"),
         }
     }
     
@@ -701,76 +701,157 @@ class PCBParser:
 ### KiCad Converters
 
 ```python
-def schematic_to_mermaid(schematic_data, diagram_type="flowchart", direction="TB"):
-    """
-    Convert schematic data to a Mermaid diagram.
+class SchematicToMermaid:
+    """Convert KiCad schematics to Mermaid diagrams."""
     
-    Parameters:
-    -----------
-    schematic_data : dict
-        Parsed schematic data from SchematicParser.
-    diagram_type : str, optional
-        Type of diagram to generate. Can be "flowchart", "class", or "entity".
-        Default is "flowchart".
-    direction : str, optional
-        Direction for flowchart. Can be "TB", "BT", "LR", or "RL".
-        Default is "TB".
+    def __init__(self, sch_path):
+        """
+        Initialize the converter.
         
-    Returns:
-    --------
-    str
-        Mermaid diagram as a string.
-    """
-    pass
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the KiCad schematic file.
+        """
+        pass
+    
+    def to_flowchart(self, output_path):
+        """
+        Convert the schematic to a Mermaid flowchart.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
+    
+    def to_class(self, output_path):
+        """
+        Convert the schematic to a Mermaid class diagram.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
 
-def pcb_to_mermaid(pcb_data, diagram_type="flowchart", direction="TB"):
-    """
-    Convert PCB data to a Mermaid diagram.
+class SchematicToBOM:
+    """Generate a bill of materials from a KiCad schematic."""
     
-    Parameters:
-    -----------
-    pcb_data : dict
-        Parsed PCB data from PCBParser.
-    diagram_type : str, optional
-        Type of diagram to generate. Can be "flowchart", "class", or "entity".
-        Default is "flowchart".
-    direction : str, optional
-        Direction for flowchart. Can be "TB", "BT", "LR", or "RL".
-        Default is "TB".
+    def __init__(self, sch_path):
+        """
+        Initialize the converter.
         
-    Returns:
-    --------
-    str
-        Mermaid diagram as a string.
-    """
-    pass
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the KiCad schematic file.
+        """
+        pass
+    
+    def to_csv(self, output_path):
+        """
+        Generate a BOM in CSV format.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the BOM.
+        
+        Returns:
+        --------
+        str
+            BOM in CSV format.
+        """
+        pass
+    
+    def to_json(self, output_path):
+        """
+        Generate a BOM in JSON format.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the BOM.
+        
+        Returns:
+        --------
+        str
+            BOM in JSON format.
+        """
+        pass
 
-def generate_bom(schematic_data, format="csv", group_by=None, exclude_references=None,
-                include_fields=None, sort_by=None):
-    """
-    Generate a bill of materials from schematic data.
+class PCBToMermaid:
+    """Convert KiCad PCBs to Mermaid diagrams."""
     
-    Parameters:
-    -----------
-    schematic_data : dict
-        Parsed schematic data from SchematicParser.
-    format : str, optional
-        Output format. Can be "csv", "json", or "xml". Default is "csv".
-    group_by : list, optional
-        Fields to group components by. Default is ["value", "footprint"].
-    exclude_references : list, optional
-        Regular expressions for references to exclude. Default is None.
-    include_fields : list, optional
-        Fields to include in the BOM. Default is None (include all).
-    sort_by : str, optional
-        Field to sort by. Default is None.
+    def __init__(self, pcb_path):
+        """
+        Initialize the converter.
         
-    Returns:
-    --------
-    str
-        BOM in the specified format.
-    """
-    pass
+        Parameters:
+        -----------
+        pcb_path : str
+            Path to the KiCad PCB file.
+        """
+        pass
+    
+    def to_flowchart(self, output_path):
+        """
+        Convert the PCB to a Mermaid flowchart.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
+
+class PCBTo3DModel:
+    """Convert KiCad PCBs to 3D models."""
+    
+    def __init__(self, pcb_path):
+        """
+        Initialize the converter.
+        
+        Parameters:
+        -----------
+        pcb_path : str
+            Path to the KiCad PCB file.
+        """
+        pass
+    
+    def to_step(self, output_path):
+        """
+        Convert the PCB to a STEP 3D model.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the 3D model.
+        
+        Returns:
+        --------
+        str
+            3D model as a string.
+        """
+        pass
 ```
 
 ### Altium Schematic Parser
@@ -830,3 +911,98 @@ class AltiumPCBParser:
         """
         pass
 ```
+
+### Altium Converters
+
+```python
+class SchematicToMermaid:
+    """Convert Altium schematics to Mermaid diagrams."""
+    
+    def __init__(self, sch_path):
+        """
+        Initialize the converter.
+        
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the Altium schematic file.
+        """
+        pass
+    
+    def to_flowchart(self, output_path):
+        """
+        Convert the schematic to a Mermaid flowchart.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
+    
+    def to_class(self, output_path):
+        """
+        Convert the schematic to a Mermaid class diagram.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the Mermaid diagram.
+        
+        Returns:
+        --------
+        str
+            Mermaid diagram as a string.
+        """
+        pass
+
+class SchematicToBOM:
+    """Generate a bill of materials from an Altium schematic."""
+    
+    def __init__(self, sch_path):
+        """
+        Initialize the converter.
+        
+        Parameters:
+        -----------
+        sch_path : str
+            Path to the Altium schematic file.
+        """
+        pass
+    
+    def to_csv(self, output_path):
+        """
+        Generate a BOM in CSV format.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the BOM.
+        
+        Returns:
+        --------
+        str
+            BOM in CSV format.
+        """
+        pass
+    
+    def to_json(self, output_path):
+        """
+        Generate a BOM in JSON format.
+        
+        Parameters:
+        -----------
+        output_path : str
+            Path to save the BOM.
+        
+        Returns:
+        --------
+        str
+            BOM in JSON format.
+        """
+        pass

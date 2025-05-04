@@ -790,6 +790,137 @@ class PCBToMermaid:
         return output_path
 
 
+class PCBTo3DModel:
+    """
+    Converter for KiCad PCB layouts to 3D models.
+    """
+
+    def __init__(self, pcb_path: str):
+        """
+        Initialize the converter with a PCB file path.
+
+        Args:
+            pcb_path: Path to the KiCad PCB file
+        """
+        self.pcb_path = pcb_path
+        from twinizer.hardware.kicad.pcb_parser import PCBParser
+        self.parser = PCBParser(pcb_path)
+        
+    def to_stl(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the PCB to an STL 3D model file.
+
+        Args:
+            output_path: Path to save the STL file, if None uses the same name with .stl extension
+
+        Returns:
+            Path to the output STL file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.pcb_path)[0]
+            output_path = f"{base_path}.stl"
+            
+        # Check if KiCad CLI is available
+        if not _check_kicad_cli():
+            console.print("[yellow]Warning: KiCad CLI not found, cannot generate STL file.[/yellow]")
+            console.print("[yellow]Please install KiCad with command-line tools to use this feature.[/yellow]")
+            return ""
+            
+        # Use KiCad CLI to export 3D model
+        try:
+            cmd = ["kicad-cli", "pcb", "export", "step", "--output", output_path, self.pcb_path]
+            console.print(f"[blue]Running:[/blue] {' '.join(cmd)}")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                console.print(f"[red]Error exporting STL:[/red] {result.stderr}")
+                return ""
+                
+            console.print(f"[green]STL file saved to:[/green] {output_path}")
+            return output_path
+            
+        except Exception as e:
+            console.print(f"[red]Error exporting STL:[/red] {e}")
+            return ""
+            
+    def to_step(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the PCB to a STEP 3D model file.
+
+        Args:
+            output_path: Path to save the STEP file, if None uses the same name with .step extension
+
+        Returns:
+            Path to the output STEP file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.pcb_path)[0]
+            output_path = f"{base_path}.step"
+            
+        # Check if KiCad CLI is available
+        if not _check_kicad_cli():
+            console.print("[yellow]Warning: KiCad CLI not found, cannot generate STEP file.[/yellow]")
+            console.print("[yellow]Please install KiCad with command-line tools to use this feature.[/yellow]")
+            return ""
+            
+        # Use KiCad CLI to export 3D model
+        try:
+            cmd = ["kicad-cli", "pcb", "export", "step", "--output", output_path, self.pcb_path]
+            console.print(f"[blue]Running:[/blue] {' '.join(cmd)}")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                console.print(f"[red]Error exporting STEP:[/red] {result.stderr}")
+                return ""
+                
+            console.print(f"[green]STEP file saved to:[/green] {output_path}")
+            return output_path
+            
+        except Exception as e:
+            console.print(f"[red]Error exporting STEP:[/red] {e}")
+            return ""
+            
+    def to_vrml(self, output_path: Optional[str] = None) -> str:
+        """
+        Convert the PCB to a VRML 3D model file.
+
+        Args:
+            output_path: Path to save the VRML file, if None uses the same name with .wrl extension
+
+        Returns:
+            Path to the output VRML file
+        """
+        if output_path is None:
+            base_path = os.path.splitext(self.pcb_path)[0]
+            output_path = f"{base_path}.wrl"
+            
+        # Check if KiCad CLI is available
+        if not _check_kicad_cli():
+            console.print("[yellow]Warning: KiCad CLI not found, cannot generate VRML file.[/yellow]")
+            console.print("[yellow]Please install KiCad with command-line tools to use this feature.[/yellow]")
+            return ""
+            
+        # Use KiCad CLI to export 3D model
+        try:
+            cmd = ["kicad-cli", "pcb", "export", "vrml", "--output", output_path, self.pcb_path]
+            console.print(f"[blue]Running:[/blue] {' '.join(cmd)}")
+            
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                console.print(f"[red]Error exporting VRML:[/red] {result.stderr}")
+                return ""
+                
+            console.print(f"[green]VRML file saved to:[/green] {output_path}")
+            return output_path
+            
+        except Exception as e:
+            console.print(f"[red]Error exporting VRML:[/red] {e}")
+            return ""
+
+
 def convert_kicad_schematic_to_netlist(schematic_path: str, output_path: Optional[str] = None) -> str:
     """
     Convert a KiCad schematic to a netlist file.

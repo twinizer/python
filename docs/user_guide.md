@@ -452,25 +452,29 @@ for image_path in extracted_images:
 
 ### KiCad File Parsing
 
-The KiCad parser extracts information from KiCad schematic and PCB files.
+The KiCad parser extracts information from KiCad schematic (.sch) and PCB (.kicad_pcb) files.
 
 #### CLI Usage
 
 ```bash
+# Parse a schematic file
 twinizer kicad parse-sch schematic.sch --format json --output schematic.json
+
+# Parse a PCB file
 twinizer kicad parse-pcb board.kicad_pcb --format json --output board.json
-twinizer kicad generate-bom schematic.sch --format csv --output bom.csv
-twinizer kicad to-mermaid schematic.sch --output schematic.mmd
+
+# Generate a bill of materials
+twinizer kicad sch-to-bom schematic.sch --format csv --output bom.csv
+
+# Convert a schematic to a Mermaid diagram
+twinizer kicad sch-to-mermaid schematic.sch --diagram-type flowchart --output schematic.mmd
+
+# Convert a PCB to a Mermaid diagram
+twinizer kicad pcb-to-mermaid board.kicad_pcb --diagram-type flowchart --output pcb.mmd
+
+# Convert a PCB to a 3D model
+twinizer kicad pcb-to-3d board.kicad_pcb --format step --output board.step
 ```
-
-Options for `parse-sch`:
-- `--format`: Output format (`json`, `mermaid`, or `bom`) (default: `json`)
-- `--output`: Output file path (optional)
-
-Options for `to-mermaid`:
-- `--diagram-type`: Type of diagram to generate (`flowchart`, `class`, or `entity`) (default: `flowchart`)
-- `--direction`: Direction for flowchart (`TB`, `BT`, `LR`, or `RL`) (default: `TB`)
-- `--output`: Output file path (optional)
 
 #### Python API
 
@@ -478,7 +482,7 @@ Options for `to-mermaid`:
 from twinizer.hardware.kicad.sch_parser import SchematicParser
 from twinizer.hardware.kicad.pcb_parser import PCBParser
 from twinizer.hardware.kicad.converters import (
-    schematic_to_mermaid, pcb_to_mermaid, generate_bom
+    SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel
 )
 
 # Parse schematic
@@ -489,22 +493,13 @@ schematic_data = parser.parse()
 components = schematic_data.get("components", [])
 print(f"Found {len(components)} components")
 
-# Get nets
-nets = schematic_data.get("nets", [])
-print(f"Found {len(nets)} nets")
-
-# Convert to Mermaid diagram
-mermaid_diagram = schematic_to_mermaid(
-    schematic_data,
-    diagram_type="flowchart",
-    direction="TB"
-)
+# Convert schematic to Mermaid diagram
+converter = SchematicToMermaid("schematic.sch")
+flowchart = converter.to_flowchart("schematic.mmd")
 
 # Generate bill of materials
-bom = generate_bom(
-    schematic_data,
-    format="csv"
-)
+bom_converter = SchematicToBOM("schematic.sch")
+bom_csv = bom_converter.to_csv("bom.csv")
 
 # Parse PCB
 pcb_parser = PCBParser("board.kicad_pcb")
@@ -514,8 +509,13 @@ pcb_data = pcb_parser.parse()
 modules = pcb_data.get("modules", [])
 print(f"Found {len(modules)} modules")
 
-# Convert to Mermaid diagram
-pcb_diagram = pcb_to_mermaid(pcb_data)
+# Convert PCB to Mermaid diagram
+pcb_converter = PCBToMermaid("board.kicad_pcb")
+pcb_diagram = pcb_converter.to_flowchart("pcb.mmd")
+
+# Convert PCB to 3D model
+model_converter = PCBTo3DModel("board.kicad_pcb")
+model_path = model_converter.to_step("board.step")
 ```
 
 #### Features
@@ -589,7 +589,7 @@ schematic_data = parser.parse()
 components = schematic_data.get("components", [])
 print(f"Found {len(components)} components")
 
-# Convert to Mermaid diagram
+# Convert schematic to Mermaid diagram
 mermaid_diagram = schematic_to_mermaid(schematic_data)
 
 # Generate bill of materials

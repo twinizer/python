@@ -130,6 +130,8 @@ def parse_pcb(pcb_file: str, output: Optional[str] = None,
 @kicad_group.command(name="sch-to-mermaid", help="Convert KiCad schematic to Mermaid diagram")
 @click.argument("schematic_file", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
+@click.option("--diagram-type", type=click.Choice(["flowchart", "class"]), default="flowchart",
+              help="Type of diagram to generate")
 @click.option("--include-components/--no-include-components", default=True, 
               help="Include component details")
 @click.option("--include-values/--no-include-values", default=True, 
@@ -138,6 +140,7 @@ def parse_pcb(pcb_file: str, output: Optional[str] = None,
               help="Include component pins")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def schematic_to_mermaid(schematic_file: str, output: Optional[str] = None,
+                        diagram_type: str = "flowchart",
                         include_components: bool = True, include_values: bool = True,
                         include_pins: bool = False, verbose: bool = False):
     """
@@ -146,48 +149,36 @@ def schematic_to_mermaid(schematic_file: str, output: Optional[str] = None,
     Args:
         schematic_file: Path to the KiCad schematic file
         output: Output file path (optional)
+        diagram_type: Type of diagram to generate (flowchart or class)
         include_components: Include component details
         include_values: Include component values
         include_pins: Include component pins
         verbose: Enable verbose output
     """
     try:
-        # Parse the schematic
-        parser = SchematicParser(verbose=verbose)
-        schematic = parser.parse(schematic_file)
+        # Create converter
+        converter = SchematicToMermaid(schematic_file)
         
-        # Convert to Mermaid
-        converter = SchematicToMermaid()
-        mermaid = converter.convert(
-            schematic,
-            include_components=include_components,
-            include_values=include_values,
-            include_pins=include_pins
-        )
-        
-        # Output the result
-        if output:
-            with open(output, "w") as f:
-                f.write(mermaid)
-            console.print(f"[green]Mermaid diagram saved to {output}[/green]")
-        else:
-            syntax = Syntax(mermaid, "mermaid", theme="monokai", line_numbers=True)
-            console.print(syntax)
-    
-    except Exception as e:
-        console.print(f"[red]Error converting schematic to Mermaid: {e}[/red]")
+        # Generate diagram based on type
+        if diagram_type == "flowchart":
+            output_path = converter.to_flowchart(output)
+        else:  # class diagram
+            output_path = converter.to_class_diagram(output)
+            
         if verbose:
-            import traceback
-            console.print(traceback.format_exc())
+            console.print(f"[green]Mermaid diagram saved to:[/green] {output_path}")
+            
+    except Exception as e:
+        console.print(f"[red]Error converting schematic to Mermaid:[/red] {e}")
         sys.exit(1)
 
 
 @kicad_group.command(name="sch-to-bom", help="Generate BOM from KiCad schematic")
 @click.argument("schematic_file", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--format", "-f", type=click.Choice(["csv", "json", "markdown", "html"]), default="csv", 
+@click.option("--format", "-f", type=click.Choice(["csv", "markdown"]), default="csv",
               help="Output format")
-@click.option("--group-by", type=click.Choice(["value", "footprint", "library", "none"]), default="value", 
+@click.option("--group-by", type=click.Choice(["value", "footprint", "library", "none"]), default="value",
               help="Group components by")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def schematic_to_bom(schematic_file: str, output: Optional[str] = None,
@@ -204,164 +195,92 @@ def schematic_to_bom(schematic_file: str, output: Optional[str] = None,
         verbose: Enable verbose output
     """
     try:
-        # Parse the schematic
-        parser = SchematicParser(verbose=verbose)
-        schematic = parser.parse(schematic_file)
+        # Create converter
+        converter = SchematicToBOM(schematic_file)
         
-        # Generate BOM
-        converter = SchematicToBOM()
-        bom = converter.convert(
-            schematic,
-            group_by=group_by
-        )
-        
-        # Format the output
+        # Generate BOM based on format
         if format == "csv":
-            import csv
-            import io
-            output_buffer = io.StringIO()
-            writer = csv.writer(output_buffer)
-            writer.writerow(["Reference", "Value", "Footprint", "Datasheet", "Quantity"])
-            for item in bom:
-                writer.writerow([
-                    item["reference"],
-                    item["value"],
-                    item["footprint"],
-                    item["datasheet"],
-                    item["quantity"]
-                ])
-            result = output_buffer.getvalue()
-        elif format == "json":
-            import json
-            result = json.dumps(bom, indent=2)
-        elif format == "markdown":
-            result = "| Reference | Value | Footprint | Datasheet | Quantity |\n"
-            result += "|-----------|-------|-----------|-----------|----------|\n"
-            for item in bom:
-                result += f"| {item['reference']} | {item['value']} | {item['footprint']} | {item['datasheet']} | {item['quantity']} |\n"
-        elif format == "html":
-            result = "<table>\n"
-            result += "  <tr>\n"
-            result += "    <th>Reference</th>\n"
-            result += "    <th>Value</th>\n"
-            result += "    <th>Footprint</th>\n"
-            result += "    <th>Datasheet</th>\n"
-            result += "    <th>Quantity</th>\n"
-            result += "  </tr>\n"
-            for item in bom:
-                result += "  <tr>\n"
-                result += f"    <td>{item['reference']}</td>\n"
-                result += f"    <td>{item['value']}</td>\n"
-                result += f"    <td>{item['footprint']}</td>\n"
-                result += f"    <td>{item['datasheet']}</td>\n"
-                result += f"    <td>{item['quantity']}</td>\n"
-                result += "  </tr>\n"
-            result += "</table>"
-        
-        # Output the result
-        if output:
-            with open(output, "w") as f:
-                f.write(result)
-            console.print(f"[green]BOM saved to {output}[/green]")
-        else:
-            console.print(result)
-    
-    except Exception as e:
-        console.print(f"[red]Error generating BOM: {e}[/red]")
+            output_path = converter.to_csv(output)
+        else:  # markdown
+            output_path = converter.to_markdown(output)
+            
         if verbose:
-            import traceback
-            console.print(traceback.format_exc())
+            console.print(f"[green]BOM saved to:[/green] {output_path}")
+            
+    except Exception as e:
+        console.print(f"[red]Error generating BOM:[/red] {e}")
         sys.exit(1)
 
 
 @kicad_group.command(name="pcb-to-mermaid", help="Convert KiCad PCB to Mermaid diagram")
 @click.argument("pcb_file", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--diagram-type", "-t", type=click.Choice(["layout", "layers", "connections"]), default="layout", 
+@click.option("--diagram-type", type=click.Choice(["flowchart", "class"]), default="flowchart",
               help="Type of diagram to generate")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def pcb_to_mermaid(pcb_file: str, output: Optional[str] = None,
-                  diagram_type: str = "layout", verbose: bool = False):
+                  diagram_type: str = "flowchart", verbose: bool = False):
     """
     Convert a KiCad PCB to a Mermaid diagram.
     
     Args:
         pcb_file: Path to the KiCad PCB file
         output: Output file path (optional)
-        diagram_type: Type of diagram to generate (layout, layers, or connections)
+        diagram_type: Type of diagram to generate (flowchart or class)
         verbose: Enable verbose output
     """
     try:
-        # Parse the PCB
-        parser = PCBParser(verbose=verbose)
-        pcb = parser.parse(pcb_file)
+        # Create converter
+        converter = PCBToMermaid(pcb_file)
         
-        # Convert to Mermaid
-        converter = PCBToMermaid()
-        mermaid = converter.convert(
-            pcb,
-            diagram_type=diagram_type
-        )
-        
-        # Output the result
-        if output:
-            with open(output, "w") as f:
-                f.write(mermaid)
-            console.print(f"[green]Mermaid diagram saved to {output}[/green]")
-        else:
-            syntax = Syntax(mermaid, "mermaid", theme="monokai", line_numbers=True)
-            console.print(syntax)
-    
-    except Exception as e:
-        console.print(f"[red]Error converting PCB to Mermaid: {e}[/red]")
+        # Generate diagram based on type
+        if diagram_type == "flowchart":
+            output_path = converter.to_flowchart(output)
+        else:  # class diagram
+            output_path = converter.to_class_diagram(output)
+            
         if verbose:
-            import traceback
-            console.print(traceback.format_exc())
+            console.print(f"[green]Mermaid PCB diagram saved to:[/green] {output_path}")
+            
+    except Exception as e:
+        console.print(f"[red]Error converting PCB to Mermaid:[/red] {e}")
         sys.exit(1)
 
 
 @kicad_group.command(name="pcb-to-3d", help="Convert KiCad PCB to 3D model")
 @click.argument("pcb_file", type=click.Path(exists=True))
 @click.option("--output", "-o", type=click.Path(), help="Output file path")
-@click.option("--format", "-f", type=click.Choice(["stl", "step", "obj"]), default="stl", 
+@click.option("--format", "-f", type=click.Choice(["stl", "step", "vrml"]), default="step",
               help="Output format")
-@click.option("--include-models/--no-include-models", default=True, 
-              help="Include 3D models for components")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
 def pcb_to_3d(pcb_file: str, output: Optional[str] = None,
-             format: str = "stl", include_models: bool = True,
-             verbose: bool = False):
+             format: str = "step", verbose: bool = False):
     """
     Convert a KiCad PCB to a 3D model.
     
     Args:
         pcb_file: Path to the KiCad PCB file
         output: Output file path (optional)
-        format: Output format (stl, step, or obj)
-        include_models: Include 3D models for components
+        format: Output format (stl, step, or vrml)
         verbose: Enable verbose output
     """
     try:
-        # Parse the PCB
-        parser = PCBParser(verbose=verbose)
-        pcb = parser.parse(pcb_file)
+        # Create converter
+        converter = PCBTo3DModel(pcb_file)
         
-        # Convert to 3D model
-        converter = PCBTo3DModel()
-        model_path = converter.convert(
-            pcb,
-            output_format=format,
-            output_path=output,
-            include_models=include_models
-        )
-        
-        console.print(f"[green]3D model saved to {model_path}[/green]")
-    
+        # Generate 3D model based on format
+        if format == "stl":
+            output_path = converter.to_stl(output)
+        elif format == "step":
+            output_path = converter.to_step(output)
+        else:  # vrml
+            output_path = converter.to_vrml(output)
+            
+        if verbose and output_path:
+            console.print(f"[green]3D model saved to:[/green] {output_path}")
+            
     except Exception as e:
-        console.print(f"[red]Error converting PCB to 3D model: {e}[/red]")
-        if verbose:
-            import traceback
-            console.print(traceback.format_exc())
+        console.print(f"[red]Error converting PCB to 3D model:[/red] {e}")
         sys.exit(1)
 
 

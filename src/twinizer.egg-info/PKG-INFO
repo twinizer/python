@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.2
+Version: 0.1.3
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -87,6 +87,24 @@ cd twinizer
 pip install -e .
 ```
 
+### Dependencies
+
+Twinizer has several optional dependencies that enable specific features:
+
+```bash
+# For image processing features
+pip install matplotlib
+
+# For KiCad integration (required for hardware analysis)
+# KiCad must be installed on your system for full functionality
+
+# For PDF conversion
+pip install pdfminer.six
+
+# For all optional dependencies
+pip install twinizer[all]
+```
+
 ## Usage
 
 ### Command Line Interface
@@ -94,41 +112,19 @@ pip install -e .
 Twinizer provides a comprehensive command-line interface for all its functionality:
 
 ```bash
-# Show available commands
-twinizer list-commands
+# Show help and available commands
+twinizer --help
 
-# Convert an image to ASCII art
-twinizer image to-ascii input.jpg --width 80
+# Analyze project structure
+twinizer analyze structure --source-dir /path/to/project
 
-# Generate a 3D mesh from an image
-twinizer image to-mesh input.jpg --output output.obj
+# Convert between file formats
+twinizer convert pdf-to-markdown /path/to/document.pdf --output document.md
 
-# Analyze software dependencies
-twinizer software analyze-deps /path/to/project
-
-# Parse a KiCad schematic
-twinizer kicad parse-sch schematic.sch --format json
-```
-
-### Python API
-
-You can also use Twinizer as a Python library:
-
-```python
-from twinizer.converters.image.ascii import AsciiArtConverter
-from twinizer.converters.image.image_to_3d import image_to_mesh
-from twinizer.software.analyze.dependency import DependencyAnalyzer
-
-# Convert image to ASCII art
-converter = AsciiArtConverter()
-ascii_art = converter.convert("input.jpg", width=80)
-
-# Generate 3D mesh from image
-mesh_path = image_to_mesh("input.jpg", scale_z=0.1, output_format="obj")
-
-# Analyze project dependencies
-analyzer = DependencyAnalyzer("/path/to/project")
-dependencies = analyzer.analyze()
+# Work with KiCad files
+twinizer kicad sch-to-mermaid /path/to/schematic.sch --diagram-type flowchart --output schematic.mmd
+twinizer kicad sch-to-bom /path/to/schematic.sch --format csv --output bom.csv
+twinizer kicad pcb-to-mermaid /path/to/pcb.kicad_pcb --diagram-type flowchart --output pcb.mmd
 ```
 
 ## Project Structure
@@ -158,23 +154,6 @@ twinizer/
 ├── pyproject.toml             # Project configuration
 └── README.md                  # This file
 ```
-
-## Dependencies
-
-Twinizer has the following core dependencies:
-
-- Python 3.8+
-- Click: Command-line interface
-- Rich: Terminal formatting
-- Pillow: Image processing
-- NumPy: Numerical operations
-
-Optional dependencies for specific features:
-
-- trimesh: 3D mesh processing
-- scikit-image: Advanced image processing
-- matplotlib: Visualization
-- PyPDF2: PDF processing
 
 ## Examples
 

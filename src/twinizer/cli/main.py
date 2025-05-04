@@ -13,7 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from twinizer import __version__
-from twinizer.cli.commands import analyze, convert
+from twinizer.cli.commands import analyze, convert, kicad
 from twinizer.utils.env import bootstrap_environment
 
 # Create console for rich output
@@ -62,6 +62,7 @@ def run(ctx):
 # Register commands
 cli.add_command(analyze)
 cli.add_command(convert)
+cli.add_command(kicad)
 
 
 def main():
