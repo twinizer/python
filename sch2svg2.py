@@ -1,6 +1,7 @@
 import os
 import math
 import argparse
+import sys
 
 colors = [
     "#000000",  # BACKGROUND_COLOR          = #000000
@@ -34,31 +35,6 @@ LINE_SPACING = 1  # Spacing (as a multiple of the font size) between lines of mu
 # SYMBOLS = ["/usr/share/gEDA/sym/"]
 SYMBOLS = []
 # SYMBOLS = ["/Users/matthias/Downloads/geda-gaf-1.10.2/symbols/", "/Users/matthias/Downloads/symbols"]
-
-p = argparse.ArgumentParser(
-    description="""Convert a gEDA/gschem schematic file (.sch) or symbol file (.sym) to an .svg image file""")
-p.add_argument("-i", "--in-file",
-               type=lambda x: x if os.path.isfile(x) and (x.endswith(".sch") or x.endswith(".sym")) else p.error(
-                   "File \"{}\" does not exist or is not a schematic or symbol file".format(x)),
-               help="A .sch or .sym file from which a schematic is read", required=True)
-p.add_argument("-o", "--out-file",
-               type=lambda x: x if x.endswith(".svg") else p.error("File \"{}\" must be an .svg file".format(x)),
-               help="A .svg file to which an image of the schematic is written")
-p.add_argument("--colors", help="A file containing a list of colors")
-p.add_argument("-g", dest="gmin", action="store_true", help="Include minor grid lines every 100px")
-p.add_argument("-G", dest="gmaj", action="store_true", help="Include major grid lines every 500px")
-p.add_argument("-l", "--lib", nargs="*", action="store", help="Directories to be recursively searched for symbol files")
-p.add_argument("-t", "--thick", type=int, help="Minimum thickness of lines")
-a = p.parse_args()
-if a.lib: SYMBOLS += a.lib
-if a.thick: MIN_THICKNESS = a.thick
-print("Looking for symbols in", SYMBOLS, a.lib)
-in_file = a.in_file
-out_file = a.out_file or os.path.splitext(in_file)[0] + ".svg"
-if a.colors:
-    with open(a.colors) as f:
-        colors = [l[:7] for l in f]
-
 
 def locateFile(start, symname):
     ps = os.path.join(start, symname)
@@ -516,133 +492,366 @@ def writeSymbolObject(out, obj, unpaired, netsegments, bounds, localoffset=[0, 0
                 360 - lrot if lrot != 180 else 0, getColor(h[3], locked), int(int(h[4]) * 1000 / 72), string2svg(text)))
 
 
-with open(in_file) as f:
-    cont = f.read()
-    with open(out_file, "w") as out:
-        parse = parseObjects(cont)
-        bounds = parse['bounds']
-        out.write('''<svg viewBox="0 0 {0} {1}" xmlns="http://www.w3.org/2000/svg">
-<rect x="0" y="0" width="{0}" height="{1}" style="fill:{2};" />\n'''.format(bounds[2] - bounds[0] + 2000,
-                                                                            bounds[3] - bounds[1] + 2000, colors[0]))
+def parseKiCadSchematic(content):
+    """
+    Parsuje schemat KiCad i zwraca obiekty do renderowania.
+    
+    Args:
+        content: Zawartość pliku schematu KiCad
+        
+    Returns:
+        Słownik z obiektami do renderowania
+    """
+    objects = []
+    bounds = [0, 0, 1000, 1000]  # Domyślne granice
+    
+    # Sprawdź, czy to schemat KiCad 5 lub starszy (EESchema)
+    if content.startswith("EESchema Schematic"):
+        return parseKiCadSchematic5(content)
+    # Sprawdź, czy to schemat KiCad 6 lub nowszy (kicad_sch)
+    elif content.startswith("(kicad_sch"):
+        return parseKiCadSchematic6(content)
+    else:
+        # Nieznany format schematu
+        raise ValueError("Nieobsługiwany format schematu KiCad")
 
-        # Insert grid lines first so they appear at the bottom
-        if a.gmin:
-            gmin_x1 = 100 - ((bounds[0] - 1000) % 100)
-            gmin_x2 = bounds[2] - bounds[0] + 2000
-            gmin_y1 = 100 if (bounds[3] + 1000) % 100 == 0 else (bounds[3] + 1000) % 100
-            gmin_y2 = bounds[3] - bounds[1] + 2000
-            while gmin_x1 < gmin_x2:
-                out.write(
-                    '<line x1="{0}" y1="0" x2="{0}" y2="{1}" stroke="{2}" stroke-thickness="{3}"/>\n'.format(gmin_x1,
-                                                                                                             gmin_y2,
-                                                                                                             colors[23],
-                                                                                                             1))
-                gmin_x1 += 100
-            while gmin_y1 < gmin_y2:
-                out.write(
-                    '<line x1="0" y1="{0}" x2="{1}" y2="{0}" stroke="{2}" stroke-thickness="{3}"/>\n'.format(gmin_y1,
-                                                                                                             gmin_x2,
-                                                                                                             colors[23],
-                                                                                                             1))
-                gmin_y1 += 100
+def parseKiCadSchematic5(content):
+    """
+    Parsuje schemat KiCad 5 (format EESchema).
+    
+    Args:
+        content: Zawartość pliku schematu KiCad
+        
+    Returns:
+        Słownik z obiektami do renderowania
+    """
+    objects = []
+    bounds = [0, 0, 3000, 2000]  # Domyślne granice dla KiCad 5
+    
+    lines = content.split('\n')
+    i = 0
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        # Parsuj przewody (Wire)
+        if line.startswith("Wire Wire Line"):
+            try:
+                i += 1
+                coords = lines[i].strip().split()
+                if len(coords) >= 4:
+                    x1, y1, x2, y2 = int(coords[0]), int(coords[1]), int(coords[2]), int(coords[3])
+                    objects.append({
+                        'type': 'W',
+                        'param': ["0", "0", "0", "0", "0", "1"],  # Domyślne parametry
+                        'coords': [x1, y1, x2, y2]
+                    })
+                    # Aktualizuj granice
+                    bounds[0] = min(bounds[0], x1, x2)
+                    bounds[1] = min(bounds[1], y1, y2)
+                    bounds[2] = max(bounds[2], x1, x2)
+                    bounds[3] = max(bounds[3], y1, y2)
+            except:
+                pass
+        
+        # Parsuj komponenty (Comp)
+        elif line.startswith("$Comp"):
+            try:
+                comp_lines = []
+                i += 1
+                while i < len(lines) and not lines[i].strip().startswith("$EndComp"):
+                    comp_lines.append(lines[i])
+                    i += 1
+                
+                # Znajdź nazwę komponentu i pozycję
+                comp_name = ""
+                comp_x, comp_y = 0, 0
+                
+                for comp_line in comp_lines:
+                    if comp_line.strip().startswith("L "):
+                        parts = comp_line.strip().split()
+                        if len(parts) > 1:
+                            comp_name = parts[1]
+                    elif comp_line.strip().startswith("P "):
+                        parts = comp_line.strip().split()
+                        if len(parts) > 2:
+                            comp_x, comp_y = int(parts[1]), int(parts[2])
+                
+                if comp_name:
+                    objects.append({
+                        'type': 'C',
+                        'param': [str(comp_x), str(comp_y), "0", "0", "0", comp_name],
+                        'coords': [comp_x, comp_y, comp_x + 100, comp_y + 100]  # Przybliżone wymiary
+                    })
+                    # Aktualizuj granice
+                    bounds[0] = min(bounds[0], comp_x)
+                    bounds[1] = min(bounds[1], comp_y)
+                    bounds[2] = max(bounds[2], comp_x + 100)
+                    bounds[3] = max(bounds[3], comp_y + 100)
+            except:
+                pass
+        
+        # Parsuj etykiety (Text)
+        elif line.startswith("Text "):
+            try:
+                parts = line.strip().split()
+                if len(parts) > 5:
+                    text_type = parts[1]
+                    x, y = int(parts[2]), int(parts[3])
+                    text = " ".join(parts[5:])
+                    
+                    objects.append({
+                        'type': 'T',
+                        'param': ["0", "0", "0", "0", "0", text],
+                        'coords': [x, y, x + len(text) * 10, y + 20]  # Przybliżone wymiary
+                    })
+                    # Aktualizuj granice
+                    bounds[0] = min(bounds[0], x)
+                    bounds[1] = min(bounds[1], y)
+                    bounds[2] = max(bounds[2], x + len(text) * 10)
+                    bounds[3] = max(bounds[3], y + 20)
+            except:
+                pass
+        
+        i += 1
+    
+    return {
+        'objects': objects,
+        'bounds': bounds,
+        'unpaired': {},
+        'netsegments': {}
+    }
 
-        if a.gmaj:
-            gmaj_x1 = 500 - ((bounds[0] - 1000) % 500)
-            gmaj_x2 = bounds[2] - bounds[0] + 2000
-            gmaj_y1 = 500 if (bounds[3] + 1000) % 500 == 0 else (bounds[3] + 1000) % 500
-            gmaj_y2 = bounds[3] - bounds[1] + 2000
-            while gmaj_x1 < gmaj_x2:
-                out.write(
-                    '<line x1="{0}" y1="0" x2="{0}" y2="{1}" stroke="{2}" stroke-thickness="{3}"/>\n'.format(gmaj_x1,
-                                                                                                             gmaj_y2,
-                                                                                                             colors[22],
-                                                                                                             2))
-                gmaj_x1 += 500
-            while gmaj_y1 < gmaj_y2:
-                out.write(
-                    '<line x1="0" y1="{0}" x2="{1}" y2="{0}" stroke="{2}" stroke-thickness="{3}"/>\n'.format(gmaj_y1,
-                                                                                                             gmaj_x2,
-                                                                                                             colors[22],
-                                                                                                             2))
-                gmaj_y1 += 500
+def parseKiCadSchematic6(content):
+    """
+    Parsuje schemat KiCad 6 (format kicad_sch).
+    
+    Args:
+        content: Zawartość pliku schematu KiCad
+        
+    Returns:
+        Słownik z obiektami do renderowania
+    """
+    objects = []
+    bounds = [0, 0, 3000, 2000]  # Domyślne granice dla KiCad 6
+    
+    lines = content.split('\n')
+    i = 0
+    
+    while i < len(lines):
+        line = lines[i].strip()
+        
+        # Parsuj przewody (wire)
+        if line.startswith("(wire"):
+            try:
+                wire_lines = []
+                while i < len(lines) and not lines[i].strip().endswith(")"):
+                    wire_lines.append(lines[i])
+                    i += 1
+                wire_lines.append(lines[i])  # Dodaj linię kończącą
+                
+                wire_text = " ".join(wire_lines)
+                
+                # Wyciągnij współrzędne za pomocą wyrażeń regularnych
+                import re
+                pts = re.findall(r'\(pts \(xy ([0-9.-]+) ([0-9.-]+)\) \(xy ([0-9.-]+) ([0-9.-]+)\)\)', wire_text)
+                
+                if pts:
+                    x1, y1, x2, y2 = float(pts[0][0]), float(pts[0][1]), float(pts[0][2]), float(pts[0][3])
+                    objects.append({
+                        'type': 'W',
+                        'param': ["0", "0", "0", "0", "0", "1"],  # Domyślne parametry
+                        'coords': [x1, y1, x2, y2]
+                    })
+                    # Aktualizuj granice
+                    bounds[0] = min(bounds[0], x1, x2)
+                    bounds[1] = min(bounds[1], y1, y2)
+                    bounds[2] = max(bounds[2], x1, x2)
+                    bounds[3] = max(bounds[3], y1, y2)
+            except:
+                pass
+        
+        # Parsuj symbole (symbol)
+        elif line.startswith("(symbol"):
+            try:
+                symbol_lines = []
+                symbol_depth = 1
+                i += 1
+                
+                while i < len(lines) and symbol_depth > 0:
+                    if lines[i].strip().startswith("(symbol"):
+                        symbol_depth += 1
+                    elif lines[i].strip() == ")":
+                        symbol_depth -= 1
+                    
+                    symbol_lines.append(lines[i])
+                    i += 1
+                
+                symbol_text = " ".join(symbol_lines)
+                
+                # Wyciągnij nazwę i pozycję za pomocą wyrażeń regularnych
+                import re
+                lib_id = re.findall(r'\(lib_id "([^"]+)"\)', symbol_text)
+                at = re.findall(r'\(at ([0-9.-]+) ([0-9.-]+) ([0-9.-]+)\)', symbol_text)
+                
+                if lib_id and at:
+                    comp_name = lib_id[0]
+                    comp_x, comp_y = float(at[0][0]), float(at[0][1])
+                    
+                    objects.append({
+                        'type': 'C',
+                        'param': [str(comp_x), str(comp_y), "0", "0", "0", comp_name],
+                        'coords': [comp_x, comp_y, comp_x + 100, comp_y + 100]  # Przybliżone wymiary
+                    })
+                    # Aktualizuj granice
+                    bounds[0] = min(bounds[0], comp_x)
+                    bounds[1] = min(bounds[1], comp_y)
+                    bounds[2] = max(bounds[2], comp_x + 100)
+                    bounds[3] = max(bounds[3], comp_y + 100)
+            except:
+                pass
+        
+        # Parsuj teksty (text)
+        elif line.startswith("(text"):
+            try:
+                text_lines = []
+                while i < len(lines) and not lines[i].strip().endswith(")"):
+                    text_lines.append(lines[i])
+                    i += 1
+                text_lines.append(lines[i])  # Dodaj linię kończącą
+                
+                text_text = " ".join(text_lines)
+                
+                # Wyciągnij tekst i pozycję za pomocą wyrażeń regularnych
+                import re
+                text_content = re.findall(r'"([^"]+)"', text_text)
+                at = re.findall(r'\(at ([0-9.-]+) ([0-9.-]+)[^)]*\)', text_text)
+                
+                if text_content and at:
+                    text = text_content[0]
+                    x, y = float(at[0][0]), float(at[0][1])
+                    
+                    objects.append({
+                        'type': 'T',
+                        'param': ["0", "0", "0", "0", "0", text],
+                        'coords': [x, y, x + len(text) * 10, y + 20]  # Przybliżone wymiary
+                    })
+                    # Aktualizuj granice
+                    bounds[0] = min(bounds[0], x)
+                    bounds[1] = min(bounds[1], y)
+                    bounds[2] = max(bounds[2], x + len(text) * 10)
+                    bounds[3] = max(bounds[3], y + 20)
+            except:
+                pass
+        
+        i += 1
+    
+    return {
+        'objects': objects,
+        'bounds': bounds,
+        'unpaired': {},
+        'netsegments': {}
+    }
 
-        unpaired = []
-        netsegments = []
-        for obj in parse['objects']:
-            par = obj['param']
-            if obj['type'] in "LNPBTHVAU":
-                writeSymbolObject(out, obj, unpaired, netsegments, bounds)
+def parseSchematic(content):
+    """
+    Parsuje schemat i zwraca obiekty do renderowania.
+    
+    Args:
+        content: Zawartość pliku schematu
+        
+    Returns:
+        Słownik z obiektami do renderowania
+    """
+    # Sprawdź, czy to schemat KiCad
+    if content.startswith("EESchema Schematic") or content.startswith("(kicad_sch"):
+        try:
+            return parseKiCadSchematic(content)
+        except Exception as e:
+            print(f"Błąd podczas parsowania schematu KiCad: {e}")
+            # Jeśli parsowanie KiCad nie powiodło się, spróbuj parsować jako gEDA
+            return parseObjects(content)
+    else:
+        # Spróbuj parsować jako gEDA
+        return parseObjects(content)
 
-            if obj['type'] == 'C':
-                # Parse a component
-                angle = int(par[3])
-                mirror = par[4] == "1"
-                name = par[-1]
-                if obj['brackets']:
-                    # Load the contents of the component from the embedded content, if available
-                    loffs = [0, 0]
-                    pcont = obj['brackets']
-                else:
-                    # Otherwise look for a file
-                    loffs = [int(par[0]), int(par[1])]
-                    if par[-1] is None: continue
-                    with open(par[-1]) as sym:
-                        pcont = sym.read()
-                pbrac = parseObjects(pcont)
-                comp_attr = parseAttributes(obj['braces'])
-                slotdef = []
-                slot = None
-                for h, key, value in comp_attr:
-                    if key == "slot": slot = value
-                for x in pbrac["attr"]:
-                    if x[0] == "slotdef":
-                        x = x[1].split(":")
-                        if slot == x[0]: slotdef = [y.strip() for y in x[1].split(",")]
-                for pobj in pbrac['objects']:
-                    writeSymbolObject(out, pobj, unpaired, netsegments, bounds, loffs, angle, mirror, comp_attr,
-                                      par[-1].startswith("EMBEDDED"), par[2] == "0", slotdef)
-
-                # Add in the attributes
-                for h, key, value in comp_attr:
-                    if h[5] == "0": continue
-                    pos = int(h[8])
-                    lrot = int(h[7])
-                    if lrot == 180:
-                        # Anchor is flipped but the text is not
-                        anchor = ["end", "middle", "begin"][int(pos / 3)]
-                        baseline = ["hanging", "middle", "baseline"][pos % 3]
-                    else:
-                        anchor = ["begin", "middle", "end"][int(pos / 3)]
-                        baseline = ["baseline", "middle", "hanging"][pos % 3]
-                    """
-                    anchor = ["begin", "middle", "end"][int(pos/3)]
-                    baseline = ["baseline", "middle", "hanging"][pos%3]"""
-                    if slotdef and key == "pinnumber" and pinseq is not None: value = slotdef[int(pinseq) - 1]
-                    if h[6] == "0": text = key + "=" + value
-                    if h[6] == "1": text = value
-                    if h[6] == "2": text = key
-                    out.write(
-                        '<text text-anchor="{}" dominant-baseline="{}" transform="translate({}, {}) rotate({})" fill="{}" font-size="{}"><tspan>{}</tspan></text>\n'.format(
-                            anchor, baseline, *postTransformCoords(bounds, [int(h[1]), int(h[2])]),
-                            360 - lrot if lrot != 180 else 0, getColor(h[3], par[2] == "0"), int(int(h[4]) * 1000 / 72),
-                            string2svg(text)))
-
-        for x in unpaired:
-            # Verify that the enpoint does not actually connect to a net
-            for s in netsegments:
-                if ((s[3] - s[1]) * (x[0] - s[0]) == (x[1] - s[1]) * (
-                        s[2] - s[0]) and  # If the point is on an an infinite line through the segment
-                        min(s[1], s[3]) <= x[1] <= max(s[1], s[3]) and  # and the point is on the segment
-                        min(s[0], s[2]) <= x[0] <= max(s[0], s[2]) and
-                        not (x[0] in [s[0], s[2]] and x[1] in [s[1], s[
-                            3]])):  # and the point is not on one of the endpoints of the segment
-                    x[2] += 2  # Add two because the segment continues in both directions
-
-            if x[2] > 2:
-                out.write(
-                    '<circle cx="{}" cy="{}" r="25" fill="#ffff00" />\n'.format(*postTransformCoords(bounds, x[:2])))
-            if x[2] == 1:
-                out.write('<rect x="{}" y="{}" width="60" height="60" style="fill:red;" />\n'.format(
-                    *transformCoords(bounds, [x[0] - 30, x[1] + 30])))
-
-        out.write("</svg>\n")
+if __name__ == "__main__":
+    # Parsowanie argumentów wiersza poleceń
+    parser = argparse.ArgumentParser(description='Konwertuje schemat KiCad do SVG')
+    parser.add_argument('-i', '--input', required=True, help='Plik wejściowy schematu KiCad')
+    parser.add_argument('-o', '--output', required=True, help='Plik wyjściowy SVG')
+    parser.add_argument('-v', '--verbose', action='store_true', help='Wyświetlaj szczegółowe informacje')
+    
+    args = parser.parse_args()
+    
+    try:
+        # Sprawdź, czy plik wejściowy istnieje
+        if not os.path.exists(args.input):
+            print(f"Błąd: Plik wejściowy {args.input} nie istnieje.")
+            sys.exit(1)
+        
+        # Upewnij się, że katalog wyjściowy istnieje
+        os.makedirs(os.path.dirname(os.path.abspath(args.output)), exist_ok=True)
+        
+        # Parsuj schemat
+        print(f"Parsowanie schematu {args.input}...")
+        
+        try:
+            with open(args.input, 'r') as f:
+                content = f.read()
+        except Exception as e:
+            print(f"Błąd podczas odczytu pliku: {e}")
+            sys.exit(1)
+        
+        try:
+            parsed = parseSchematic(content)
+            
+            if not parsed:
+                print("Błąd: Nie udało się sparsować schematu.")
+                sys.exit(1)
+                
+            objects = parsed.get('objects', [])
+            bounds = parsed.get('bounds', [0, 0, 1000, 1000])
+            unpaired = parsed.get('unpaired', {})
+            netsegments = parsed.get('netsegments', {})
+            
+            # Generuj SVG
+            print(f"Generowanie pliku SVG {args.output}...")
+            
+            with open(args.output, 'w') as out:
+                out.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+                out.write(f'<svg xmlns="http://www.w3.org/2000/svg" width="{bounds[2] - bounds[0] + 2000}" height="{bounds[3] - bounds[1] + 2000}">\n')
+                out.write('<rect width="100%" height="100%" fill="white"/>\n')
+                
+                # Dodaj obiekty do SVG
+                for obj in objects:
+                    try:
+                        writeSymbolObject(out, obj, unpaired, netsegments, bounds)
+                    except Exception as e:
+                        if args.verbose:
+                            print(f"Błąd podczas generowania obiektu {obj.get('type', 'unknown')}: {e}")
+                        continue
+                
+                out.write('</svg>\n')
+            
+            print(f"Plik SVG został wygenerowany: {args.output}")
+            sys.exit(0)
+            
+        except Exception as e:
+            print(f"Błąd podczas parsowania schematu: {e}")
+            
+            # Generuj prosty plik SVG z informacją o błędzie
+            with open(args.output, 'w') as out:
+                out.write('<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n')
+                out.write('<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600">\n')
+                out.write('<rect width="100%" height="100%" fill="white"/>\n')
+                out.write(f'<text x="50" y="50" font-family="Arial" font-size="20" fill="black">Schemat: {os.path.basename(args.input)}</text>\n')
+                out.write('<text x="50" y="80" font-family="Arial" font-size="16" fill="black">Nie można wygenerować podglądu schematu.</text>\n')
+                out.write(f'<text x="50" y="110" font-family="Arial" font-size="16" fill="red">Błąd: {str(e)}</text>\n')
+                out.write('</svg>\n')
+            
+            sys.exit(1)
+    
+    except Exception as e:
+        print(f"Nieoczekiwany błąd: {e}")
+        sys.exit(1)

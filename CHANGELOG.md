@@ -2,6 +2,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.10] - 2025-05-04
+
+### Added
+- Changes in KICAD.md
+- Changes in README.md
+- Changes in TODO3.md
+- Changes in pyproject.toml
+- Changes in run.bat
+- Changes in run.sh
+- Changes in sch2svg2.py
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/SOURCES.txt
+- Changes in src/twinizer/cli/commands/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in update/README.md
+- Changes in update/changelog.py
+- Changes in update/env_manager.py
+- Changes in update/git.sh
+- Changes in update/pypi.sh
+- Changes in update/version.sh
+
+### Changed
+- Changes in .env.example
+- Changes in docs/kicad_docker.md
+- Changes in examples/kicad_docker_conversion.py
+- Changes in src/twinizer/cli/commands/kicad_docker.py
+- Changes in src/twinizer/converters/kicad2image.py
+- Changes in docs/hardware_analysis.md
+- Changes in docs/image_processing.md
+- Changes in docs/pdf_to_markdown.md
+- Changes in docs/user_guide.md
+- Changes in examples/README.md
+- Changes in examples/image_to_3d.py
+- Changes in examples/image_to_ascii.py
+- Changes in examples/kicad_parsing.py
+- Changes in examples/pdf_to_markdown.py
+- Changes in examples/software_analysis.py
+- Changes in scripts/gitinit.sh
+- Changes in scripts/install_kicad.py
+- Changes in scripts/twinizer
+- Changes in tests/__init__.py
+- Changes in tests/run_tests.py
+- Changes in tests/test_cli.py
+- Changes in tests/test_env.py
+- Changes in tests/test_pdf2md.py
+- Changes in tests/test_project.py
+- Changes in update/config.py
+
 ## [0.1.9] - 2025-05-04
 
 ### Added

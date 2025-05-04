@@ -14,7 +14,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from twinizer import __version__
-from twinizer.cli.commands import analyze, kicad_group, kicad_deps_group, image_group
+from twinizer.cli.commands import analyze, kicad_group, kicad_deps_group, image_group, kicad_docker_group
 from twinizer.utils.env import bootstrap_environment
 
 # Create console for rich output
@@ -66,11 +66,13 @@ from twinizer.cli.commands import (
     kicad_group,
     kicad_deps_group,
     image_group,
+    kicad_docker_group,
 )
 cli.add_command(analyze)
 cli.add_command(kicad_group)
 cli.add_command(kicad_deps_group)
 cli.add_command(image_group)
+cli.add_command(kicad_docker_group)
 
 
 def main():

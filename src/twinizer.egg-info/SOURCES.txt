@@ -19,6 +19,7 @@ src/twinizer/cli/commands/convert.py
 src/twinizer/cli/commands/debug.py
 src/twinizer/cli/commands/image.py
 src/twinizer/cli/commands/kicad.py
+src/twinizer/cli/commands/kicad_docker.py
 src/twinizer/cli/commands/kicad_with_deps.py
 src/twinizer/cli/commands/software.py
 src/twinizer/cli/commands/test.py
@@ -33,6 +34,7 @@ src/twinizer/code_analyzer/linters/python.py
 src/twinizer/converters/__init__.py
 src/twinizer/converters/bin2source.py
 src/twinizer/converters/image2ascii.py
+src/twinizer/converters/kicad2image.py
 src/twinizer/converters/pdf2md.py
 src/twinizer/converters/bin2source/__init__.py
 src/twinizer/converters/bin2source/converters.py

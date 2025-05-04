@@ -8,6 +8,7 @@ Twinizer is a comprehensive toolkit for creating and manipulating digital twins 
 
 ### Hardware Analysis
 - **KiCad Integration**: Parse and convert KiCad schematics and PCB layouts
+- **KiCad Docker Integration**: Convert KiCad files to various formats (SVG, PNG, PDF, DXF, HPGL, PS, EPS) and analyze projects using Docker
 - **Altium Integration**: Support for Altium Designer files
 - **3D Model Generation**: Convert PCB designs to 3D models
 
@@ -51,6 +52,9 @@ pip install matplotlib
 # For KiCad integration (required for hardware analysis)
 # KiCad must be installed on your system for full functionality
 
+# For KiCad Docker integration
+# Docker must be installed and running on your system
+
 # For PDF conversion
 pip install pdfminer.six
 
@@ -78,6 +82,12 @@ twinizer convert pdf-to-markdown /path/to/document.pdf --output document.md
 twinizer kicad sch-to-mermaid /path/to/schematic.sch --diagram-type flowchart --output schematic.mmd
 twinizer kicad sch-to-bom /path/to/schematic.sch --format csv --output bom.csv
 twinizer kicad pcb-to-mermaid /path/to/pcb.kicad_pcb --diagram-type flowchart --output pcb.mmd
+
+# Work with KiCad files using Docker
+twinizer kicad-docker convert /path/to/schematic.kicad_sch --format svg --output schematic.svg
+twinizer kicad-docker convert /path/to/schematic.kicad_sch --format pdf --color-theme dark --paper-size A3 --orientation landscape
+twinizer kicad-docker analyze /path/to/kicad_project --format html --output report.html
+twinizer kicad-docker formats
 ```
 
 ## Project Structure
