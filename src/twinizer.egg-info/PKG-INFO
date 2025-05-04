@@ -1,0 +1,23 @@
+Metadata-Version: 2.1
+Name: twinizer
+Version: 0.1.0
+Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
+Author-email: Your Name <your.email@example.com>
+License: MIT
+Project-URL: Homepage, https://github.com/yourusername/twinizer
+Project-URL: Bug Tracker, https://github.com/yourusername/twinizer/issues
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Embedded Systems
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Provides-Extra: dev
+License-File: LICENSE
+
+# Project Documentation
+
+## Overview
+

@@ -1,0 +1,2 @@
+[console_scripts]
+twinizer = twinizer.__main__:main
