@@ -2,21 +2,21 @@
 
 echo "Publishing new version to GitHub..."
 
-# Pobierz konfigurację projektu
-echo "Pobieranie konfiguracji projektu..."
+# Get project configuration
+echo "Getting project configuration..."
 PROJECT_CONFIG=$(python -c "
 import sys
 sys.path.append('update')
 from env_manager import get_project_name
 
-# Pobierz nazwę projektu
+# Get project name
 project_name = get_project_name(False)
 print(f\"PROJECT_NAME={project_name}\")
 ")
 
-# Przetwórz konfigurację
+# Process configuration
 eval "$PROJECT_CONFIG"
-echo "Nazwa projektu: $PROJECT_NAME"
+echo "Project name: $PROJECT_NAME"
 
 # Function to extract latest version from CHANGELOG.md
 get_latest_version() {
@@ -73,13 +73,13 @@ if [[ -n $(git status --porcelain) ]]; then
 $(cat "$TEMP_FILE")"
 fi
 
-# Pobierz najnowsze zmiany z repozytorium zdalnego
-echo "Pobieranie zmian z repozytorium zdalnego..."
-git pull origin main || { echo "Nie udało się pobrać zmian. Kontynuowanie..."; }
+# Get latest changes from remote repository
+echo "Getting latest changes from remote repository..."
+git pull origin main || { echo "Failed to get changes. Continuing..."; }
 
-# Sprawdź, czy tag już istnieje
+# Check if tag already exists
 if git rev-parse "v$VERSION" >/dev/null 2>&1; then
-    echo "Tag v$VERSION już istnieje. Usuwanie istniejącego tagu..."
+    echo "Tag v$VERSION already exists. Deleting existing tag..."
     git tag -d "v$VERSION"
     git push origin --delete "v$VERSION" || true
 fi
@@ -92,9 +92,9 @@ $(cat "$TEMP_FILE")"
 # Push changes and tags
 echo "Pushing changes and tags to GitHub..."
 git push origin main || { 
-    echo "Nie udało się wypchnąć zmian. Próba ponowna po pobraniu zmian..."
+    echo "Failed to push changes. Trying again after getting changes..."
     git pull origin main
-    git push origin main || { echo "Nie udało się wypchnąć zmian po synchronizacji. Przerywanie."; exit 1; }
+    git push origin main || { echo "Failed to push changes after synchronization. Aborting."; exit 1; }
 }
 git push origin "v$VERSION"
 

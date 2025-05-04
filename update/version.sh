@@ -1,12 +1,12 @@
 #!/bin/bash
-set -e  # Zatrzymaj skrypt przy pierwszym błędzie
+set -e  # Stop script on first error
 
-# Wyczyść ekran i pokaż informację o rozpoczęciu procesu
+# Clear screen and show start information
 clear
 echo "Starting publication process..."
 
-# Pobierz konfigurację projektu
-echo "Pobieranie konfiguracji projektu..."
+# Get project configuration
+echo "Getting project configuration..."
 PROJECT_CONFIG=$(python3 -c "
 import sys
 import os
@@ -14,15 +14,15 @@ sys.path.append(os.path.join(os.getcwd(), 'update'))
 try:
     from env_manager import get_project_name, get_package_path, get_project_root
     
-    # Zapytaj użytkownika o nazwę projektu, jeśli nie jest zdefiniowana
+    # Ask user for project name if not defined
     project_name = get_project_name(True)
     package_path = get_package_path(True)
     
-    # Pobierz pliki z wersją - używaj tylko pyproject.toml, który jest zwykle dostępny
+    # Get version files - use only pyproject.toml which is usually accessible
     version_files = []
     project_root = get_project_root()
     
-    # Sprawdź pyproject.toml
+    # Check pyproject.toml
     pyproject_path = os.path.join(project_root, 'pyproject.toml')
     if os.path.exists(pyproject_path) and os.access(pyproject_path, os.W_OK):
         version_files.append(pyproject_path)
@@ -34,81 +34,81 @@ except Exception as e:
     print(f\"PROJECT_NAME=twinizer\")
     print(f\"PACKAGE_PATH=twinizer\")
     print(f\"VERSION_FILES=pyproject.toml\")
-    print(f\"# Błąd: {e}\", file=sys.stderr)
+    print(f\"# Error: {e}\", file=sys.stderr)
 ")
 
-# Przetwórz konfigurację
+# Process configuration
 eval "$PROJECT_CONFIG"
-echo "Nazwa projektu: $PROJECT_NAME"
-echo "Ścieżka pakietu: $PACKAGE_PATH"
-echo "Pliki z wersją: $VERSION_FILES"
+echo "Project name: $PROJECT_NAME"
+echo "Package path: $PACKAGE_PATH"
+echo "Version files: $VERSION_FILES"
 
-# Sprawdź, czy virtualenv jest już aktywowany
+# Check if virtualenv is already activated
 if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Tworzenie i aktywacja środowiska wirtualnego..."
-    # Utwórz virtualenv, jeśli nie istnieje
+    echo "Creating and activating virtual environment..."
+    # Create virtualenv if it doesn't exist
     if [ ! -d "venv" ]; then
         python -m venv venv
     fi
     source venv/bin/activate
 else
-    echo "Środowisko wirtualne już aktywne: $VIRTUAL_ENV"
+    echo "Virtual environment already active: $VIRTUAL_ENV"
 fi
 
-# Upewnij się, że mamy najnowsze narzędzia
+# Make sure we have the latest tools
 echo "Upgrading build tools..."
 pip install --upgrade pip build twine
 
-# Sprawdź, czy jesteśmy w virtualenv
+# Check if we're in virtualenv
 if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Błąd: Nie udało się aktywować środowiska wirtualnego!"
+    echo "Error: Failed to activate virtual environment!"
     exit 1
 fi
 
-# Zainstaluj zależności projektu
-echo "Instalacja zależności projektu..."
+# Install project dependencies
+echo "Installing project dependencies..."
 if [ -f "requirements.txt" ]; then
     pip install -r requirements.txt
 fi
 
-# Odinstaluj i zainstaluj ponownie pakiet w trybie edycji
-echo "Reinstalacja pakietu w trybie deweloperskim..."
+# Uninstall and reinstall package in edit mode
+echo "Reinstalling package in development mode..."
 pip uninstall -y "$PROJECT_NAME" || true
 pip install -e .
 
-# Aktualizacja wersji w plikach źródłowych
-echo "Aktualizacja numeru wersji..."
+# Update version in source files
+echo "Updating version number..."
 if [ -n "$VERSION_FILES" ]; then
     IFS=';' read -ra FILES <<< "$VERSION_FILES"
     for file in "${FILES[@]}"; do
         if [ -w "$file" ]; then
-            echo "Aktualizacja wersji w pliku: $file"
-            python update/src.py -f "$file" --type patch || echo "Nie udało się zaktualizować wersji w pliku $file"
+            echo "Updating version in file: $file"
+            python update/src.py -f "$file" --type patch || echo "Failed to update version in file $file"
         else
-            echo "Pominięto plik $file (brak uprawnień do zapisu)"
+            echo "Skipped file $file (no write permission)"
         fi
     done
 else
-    echo "Brak plików do aktualizacji wersji"
-    echo "Używanie domyślnej wersji z CHANGELOG.md"
+    echo "No files to update version"
+    echo "Using default version from CHANGELOG.md"
 fi
 
-# Generowanie wpisu w CHANGELOG.md
-echo "Generowanie wpisu w CHANGELOG.md..."
+# Generate entry in CHANGELOG.md
+echo "Generating entry in CHANGELOG.md..."
 if [ -f "CHANGELOG.md" ] && [ ! -w "CHANGELOG.md" ]; then
-    echo "Ostrzeżenie: Brak uprawnień do pliku CHANGELOG.md"
-    echo "Tworzenie tymczasowego pliku CHANGELOG.md.new"
-    python update/changelog.py --output CHANGELOG.md.new || echo "Nie udało się wygenerować wpisu w CHANGELOG.md"
+    echo "Warning: No write permission to CHANGELOG.md file"
+    echo "Creating temporary file CHANGELOG.md.new"
+    python update/changelog.py --output CHANGELOG.md.new || echo "Failed to generate entry in CHANGELOG.md"
 else
-    python update/changelog.py || echo "Nie udało się wygenerować wpisu w CHANGELOG.md"
+    python update/changelog.py || echo "Failed to generate entry in CHANGELOG.md"
 fi
 
-# Publikacja na GitHub
-echo "push changes..."
+# Publish to GitHub
+echo "Push changes..."
 bash update/git.sh
 
-# Publikacja na PyPI
-echo "Publikacja na PyPI..."
+# Publish to PyPI
+echo "Publishing to PyPI..."
 bash update/pypi.sh
 
-echo "Proces publikacji zakończony pomyślnie!"
+echo "Publication process completed successfully!"

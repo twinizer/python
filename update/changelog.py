@@ -6,19 +6,18 @@ import sys
 from datetime import datetime
 from typing import List, Optional, Tuple, Dict
 
-# Dodaj ścieżkę do katalogu update, aby można było zaimportować moduły
+# Add path to the update directory to import modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
     from env_manager import get_project_name, get_package_path, get_project_root
 except ImportError:
-    print("Nie można zaimportować modułu env_manager. Używam wartości domyślnych.")
+    print("Cannot import env_manager module. Using default values.")
     def get_project_name():
         return "twinizer"
     def get_package_path():
         return "twinizer"
     def get_project_root():
         return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 def get_version_from_changelog(file_path="CHANGELOG.md"):
     """Extract the most recent version from the changelog file."""
@@ -274,10 +273,10 @@ def main():
     args = parser.parse_args()
 
     project_name = get_project_name()
-    print(f"Aktualizacja CHANGELOG.md dla projektu {project_name}...")
+    print(f"Updating CHANGELOG.md for project {project_name}...")
     generator = ChangelogGenerator()
     generator.update_changelog_file(output_file=args.output, staged=args.staged, increment_type=args.increment)
-    print(f"CHANGELOG.md zaktualizowany do wersji {generator.version}")
+    print(f"CHANGELOG.md updated to version {generator.version}")
 
 
 if __name__ == "__main__":

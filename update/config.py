@@ -9,11 +9,11 @@ import configparser
 import re
 from pathlib import Path
 
-# Importuj moduł env_manager
+# Import env_manager module
 try:
     from env_manager import get_project_name, get_package_path, get_project_root
 except ImportError:
-    # Jeśli nie można zaimportować, dodaj katalog update do ścieżki
+    # If import fails, add update directory to path
     import sys
     sys.path.append(os.path.dirname(os.path.abspath(__file__)))
     from env_manager import get_project_name, get_package_path, get_project_root
@@ -24,7 +24,7 @@ def get_version_files():
     project_name = get_project_name()
     package_path = get_package_path()
     
-    # Konwertuj względną ścieżkę pakietu na bezwzględną
+    # Convert relative package path to absolute
     if package_path:
         package_path = os.path.join(get_project_root(), package_path)
     else:
@@ -35,7 +35,7 @@ def get_version_files():
         os.path.join(get_project_root(), "pyproject.toml"),
     ]
     
-    # Dodaj pliki specyficzne dla pakietu
+    # Add package-specific files
     init_file = os.path.join(package_path, "__init__.py")
     version_file = os.path.join(package_path, "_version.py")
     

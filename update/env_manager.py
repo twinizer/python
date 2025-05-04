@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Moduł do zarządzania zmiennymi środowiskowymi projektu.
-Pozwala na odczytywanie i zapisywanie zmiennych do pliku .env
-oraz interakcję z użytkownikiem w celu ustawienia wartości zmiennych.
+Module for managing project environment variables.
+Allows reading and writing variables to the .env file
+and interacting with the user to set variable values.
 """
 
 import os
@@ -14,52 +14,52 @@ from typing import Dict, Optional, Any
 
 
 def get_project_root() -> Path:
-    """Zwraca ścieżkę do katalogu głównego projektu."""
-    # Zakładamy, że ten skrypt znajduje się w katalogu update
+    """Returns the path to the project root directory."""
+    # Assuming this script is in the update directory
     return Path(__file__).parent.parent
 
 
 def create_env_file_if_not_exists(env_file: Path = None) -> None:
     """
-    Tworzy plik .env, jeśli nie istnieje.
+    Creates a .env file if it doesn't exist.
     
     Args:
-        env_file: Ścieżka do pliku .env. Jeśli None, używa domyślnej ścieżki.
+        env_file: Path to the .env file. If None, uses the default path.
     """
     if env_file is None:
         env_file = get_project_root() / ".env"
     
     if not env_file.exists():
-        # Sprawdź, czy istnieje plik .env.example
+        # Check if .env.example exists
         env_example = get_project_root() / ".env.example"
         
         if env_example.exists():
-            # Kopiuj .env.example do .env
+            # Copy .env.example to .env
             shutil.copy2(env_example, env_file)
-            print(f"Utworzono plik {env_file} na podstawie {env_example}")
+            print(f"Created file {env_file} based on {env_example}")
         else:
-            # Utwórz pusty plik .env
+            # Create an empty .env file
             with open(env_file, 'w', encoding='utf-8') as f:
-                f.write("# Konfiguracja projektu\n")
+                f.write("# Project Configuration\n")
                 f.write("PROJECT_NAME=\n")
                 f.write("PACKAGE_PATH=\n")
-            print(f"Utworzono pusty plik {env_file}")
+            print(f"Created empty file {env_file}")
 
 
 def load_env_file(env_file: Path = None) -> Dict[str, str]:
     """
-    Wczytuje zmienne środowiskowe z pliku .env.
+    Loads environment variables from the .env file.
     
     Args:
-        env_file: Ścieżka do pliku .env. Jeśli None, używa domyślnej ścieżki.
+        env_file: Path to the .env file. If None, uses the default path.
         
     Returns:
-        Słownik ze zmiennymi środowiskowymi.
+        Dictionary with environment variables.
     """
     if env_file is None:
         env_file = get_project_root() / ".env"
     
-    # Utwórz plik .env, jeśli nie istnieje
+    # Create .env file if it doesn't exist
     create_env_file_if_not_exists(env_file)
     
     env_vars = {}
@@ -80,25 +80,25 @@ def load_env_file(env_file: Path = None) -> Dict[str, str]:
 
 def save_env_file(env_vars: Dict[str, str], env_file: Path = None) -> None:
     """
-    Zapisuje zmienne środowiskowe do pliku .env.
+    Saves environment variables to the .env file.
     
     Args:
-        env_vars: Słownik ze zmiennymi środowiskowymi.
-        env_file: Ścieżka do pliku .env. Jeśli None, używa domyślnej ścieżki.
+        env_vars: Dictionary with environment variables.
+        env_file: Path to the .env file. If None, uses the default path.
     """
     if env_file is None:
         env_file = get_project_root() / ".env"
     
-    # Utwórz plik .env, jeśli nie istnieje
+    # Create .env file if it doesn't exist
     create_env_file_if_not_exists(env_file)
     
-    # Zachowaj komentarze i formatowanie z istniejącego pliku
+    # Preserve comments and formatting from the existing file
     existing_lines = []
     if env_file.exists():
         with open(env_file, 'r', encoding='utf-8') as f:
             existing_lines = f.readlines()
     
-    # Przygotuj nowe linie z aktualnymi wartościami
+    # Prepare new lines with current values
     new_lines = []
     processed_keys = set()
     
@@ -119,28 +119,28 @@ def save_env_file(env_vars: Dict[str, str], env_file: Path = None) -> None:
         else:
             new_lines.append(line)
     
-    # Dodaj nowe zmienne, które nie były w pliku
+    # Add new variables that weren't in the file
     for key, value in env_vars.items():
         if key not in processed_keys:
             new_lines.append(f"{key}={value}")
     
-    # Zapisz plik
+    # Save the file
     with open(env_file, 'w', encoding='utf-8') as f:
         f.write('\n'.join(new_lines) + '\n')
 
 
 def get_env_var(key: str, default: Any = None, prompt: bool = True) -> str:
     """
-    Pobiera wartość zmiennej środowiskowej.
-    Jeśli zmienna nie istnieje, pyta użytkownika o jej wartość.
+    Gets the value of an environment variable.
+    If the variable doesn't exist, asks the user for its value.
     
     Args:
-        key: Nazwa zmiennej środowiskowej.
-        default: Domyślna wartość, jeśli zmienna nie istnieje.
-        prompt: Czy pytać użytkownika o wartość, jeśli zmienna nie istnieje.
+        key: Name of the environment variable.
+        default: Default value if the variable doesn't exist.
+        prompt: Whether to ask the user for the value if the variable doesn't exist.
         
     Returns:
-        Wartość zmiennej środowiskowej.
+        Value of the environment variable.
     """
     env_vars = load_env_file()
     
@@ -149,14 +149,14 @@ def get_env_var(key: str, default: Any = None, prompt: bool = True) -> str:
     
     if prompt:
         if default:
-            value = input(f"Podaj wartość dla {key} [{default}]: ").strip()
+            value = input(f"Enter value for {key} [{default}]: ").strip()
             if not value:
                 value = default
         else:
-            value = input(f"Podaj wartość dla {key}: ").strip()
+            value = input(f"Enter value for {key}: ").strip()
             while not value:
-                print("Wartość nie może być pusta.")
-                value = input(f"Podaj wartość dla {key}: ").strip()
+                print("Value cannot be empty.")
+                value = input(f"Enter value for {key}: ").strip()
     else:
         value = default
     
@@ -169,94 +169,94 @@ def get_env_var(key: str, default: Any = None, prompt: bool = True) -> str:
 
 def get_project_name(prompt: bool = True) -> str:
     """
-    Pobiera nazwę projektu z pliku .env lub pyproject.toml.
-    Jeśli nazwa nie jest zdefiniowana, pyta użytkownika.
+    Gets the project name from the .env file or pyproject.toml.
+    If the name is not defined, asks the user.
     
     Args:
-        prompt: Czy pytać użytkownika, jeśli nazwa nie jest zdefiniowana.
+        prompt: Whether to ask the user if the name is not defined.
         
     Returns:
-        Nazwa projektu.
+        Project name.
     """
-    # Najpierw sprawdź w .env
+    # First check in .env
     project_name = get_env_var("PROJECT_NAME", None, False)
     if project_name:
         return project_name
     
-    # Jeśli nie ma w .env, sprawdź w pyproject.toml
+    # If not in .env, check in pyproject.toml
     pyproject_path = get_project_root() / "pyproject.toml"
     if pyproject_path.exists():
         with open(pyproject_path, 'r', encoding='utf-8') as f:
             content = f.read()
             
-        # Spróbuj znaleźć nazwę projektu za pomocą regex
+        # Try to find the project name using regex
         match = re.search(r'name\s*=\s*[\'"]([^\'"]+)[\'"]', content)
         if match:
             project_name = match.group(1)
             
-            # Zapisz do .env
+            # Save to .env
             env_vars = load_env_file()
             env_vars["PROJECT_NAME"] = project_name
             save_env_file(env_vars)
             
             return project_name
     
-    # Jeśli nadal nie ma, zapytaj użytkownika
+    # If still not found, ask the user
     if prompt:
         return get_env_var("PROJECT_NAME", "twinizer", True)
     
-    # Jeśli wszystko zawiedzie, zwróć domyślną wartość
+    # If all else fails, return the default value
     return "twinizer"
 
 
 def get_package_path(prompt: bool = True) -> str:
     """
-    Pobiera ścieżkę do katalogu pakietu.
-    Jeśli ścieżka nie jest zdefiniowana, próbuje ją wykryć automatycznie.
+    Gets the path to the package directory.
+    If the path is not defined, tries to detect it automatically.
     
     Args:
-        prompt: Czy pytać użytkownika, jeśli ścieżka nie jest zdefiniowana.
+        prompt: Whether to ask the user if the path is not defined.
         
     Returns:
-        Ścieżka do katalogu pakietu (względem katalogu głównego projektu).
+        Path to the package directory (relative to the project root directory).
     """
-    # Najpierw sprawdź w .env
+    # First check in .env
     package_path = get_env_var("PACKAGE_PATH", "", False)
     if package_path:
         return package_path
     
-    # Jeśli nie ma w .env, spróbuj wykryć automatycznie
+    # If not in .env, try to detect automatically
     project_name = get_project_name(False)
     
-    # Sprawdź, czy pakiet jest w src/project_name
+    # Check if the package is in src/project_name
     src_path = get_project_root() / "src" / project_name
     if src_path.exists():
         package_path = f"src/{project_name}"
         
-        # Zapisz do .env
+        # Save to .env
         env_vars = load_env_file()
         env_vars["PACKAGE_PATH"] = package_path
         save_env_file(env_vars)
         
         return package_path
     
-    # Sprawdź, czy pakiet jest bezpośrednio w katalogu głównym projektu
+    # Check if the package is directly in the project root directory
     root_path = get_project_root() / project_name
     if root_path.exists():
         package_path = project_name
         
-        # Zapisz do .env
+        # Save to .env
         env_vars = load_env_file()
         env_vars["PACKAGE_PATH"] = package_path
         save_env_file(env_vars)
         
         return package_path
     
-    # Jeśli nadal nie ma, zapytaj użytkownika
+    # If still not found, ask the user
     if prompt:
         return get_env_var("PACKAGE_PATH", project_name, True)
     
-    # Jeśli wszystko zawiedzie, zwróć domyślną wartość
+    # If all else fails, return the default value
     return project_name
 
 
@@ -265,7 +265,7 @@ def get_version_files():
     project_name = get_project_name()
     package_path = get_package_path()
     
-    # Konwertuj względną ścieżkę pakietu na bezwzględną
+    # Convert relative package path to absolute
     if package_path:
         package_path = os.path.join(get_project_root(), package_path)
     else:
@@ -276,7 +276,7 @@ def get_version_files():
         os.path.join(get_project_root(), "pyproject.toml"),
     ]
     
-    # Dodaj pliki specyficzne dla pakietu
+    # Add package-specific files
     init_file = os.path.join(package_path, "__init__.py")
     version_file = os.path.join(package_path, "_version.py")
     
@@ -291,11 +291,11 @@ def get_version_files():
 
 
 if __name__ == "__main__":
-    # Utwórz plik .env, jeśli nie istnieje
+    # Create .env file if it doesn't exist
     env_file = get_project_root() / ".env"
     create_env_file_if_not_exists(env_file)
     
-    # Wypisz informacje o projekcie
-    print(f"Nazwa projektu: {get_project_name()}")
-    print(f"Ścieżka pakietu: {get_package_path()}")
-    print(f"Pliki z wersją: {get_version_files()}")
+    # Print project information
+    print(f"Project name: {get_project_name()}")
+    print(f"Package path: {get_package_path()}")
+    print(f"Version files: {get_version_files()}")

@@ -3,21 +3,21 @@
 # Ensure script fails on any error
 set -e
 
-# Pobierz konfigurację projektu
-echo "Pobieranie konfiguracji projektu..."
+# Get project configuration
+echo "Getting project configuration..."
 PROJECT_CONFIG=$(python -c "
 import sys
 sys.path.append('update')
 from env_manager import get_project_name
 
-# Pobierz nazwę projektu
+# Get project name
 project_name = get_project_name(False)
 print(f\"PROJECT_NAME={project_name}\")
 ")
 
-# Przetwórz konfigurację
+# Process configuration
 eval "$PROJECT_CONFIG"
-echo "Nazwa projektu: $PROJECT_NAME"
+echo "Project name: $PROJECT_NAME"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -25,56 +25,46 @@ RED='\033[0;31m'
 YELLOW='\033[0;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}Rozpoczynanie procesu publikacji na PyPI...${NC}"
+echo -e "${GREEN}Starting PyPI publication process...${NC}"
 
-# Sprawdź, czy virtualenv jest już aktywowany
+# Check if virtualenv is already activated
 if [ -z "$VIRTUAL_ENV" ]; then
-    echo "Aktywacja środowiska wirtualnego..."
+    echo "Activating virtual environment..."
     source venv/bin/activate
 fi
 
-# Upewnij się, że mamy najnowsze narzędzia
-echo -e "${GREEN}Aktualizacja narzędzi budowania...${NC}"
+# Make sure we have the latest tools
+echo -e "${GREEN}Updating build tools...${NC}"
 pip install --upgrade pip build twine
 
-# Sprawdź, czy jesteśmy w virtualenv
+# Check if we're in virtualenv
 if [ -z "$VIRTUAL_ENV" ]; then
-    echo -e "${RED}Błąd: Nie udało się aktywować środowiska wirtualnego!${NC}"
-    echo -e "Zalecane jest najpierw opublikowanie zmian na GitHub (bash update/git.sh)."
+    echo -e "${RED}Error: Failed to activate virtual environment!${NC}"
+    echo -e "It is recommended to publish changes to GitHub first (bash update/git.sh)."
     exit 1
 fi
 
-echo -e "${GREEN}Sprawdzanie stanu repozytorium Git...${NC}"
+echo -e "${GREEN}Checking Git repository status...${NC}"
 if [[ -n $(git status --porcelain) ]]; then
-    echo -e "${YELLOW}Uwaga: Wykryto niezapisane zmiany w repozytorium.${NC}"
-    echo -e "Zalecane jest najpierw opublikowanie zmian na GitHub (bash update/git.sh)."
-    read -p "Czy chcesz kontynuować mimo to? (t/n): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Tt]$ ]]; then
-        echo -e "${RED}Przerwano publikację.${NC}"
-        exit 1
-    fi
+    echo -e "${YELLOW}Warning: Uncommitted changes detected in the repository.${NC}"
+    echo -e "It is recommended to publish changes to GitHub first (bash update/git.sh)."
+    echo -e "Continuing publication process despite uncommitted changes..."
 fi
 
 # Clean up previous builds
-echo -e "${GREEN}Czyszczenie poprzednich buildów...${NC}"
+echo -e "${GREEN}Cleaning previous builds...${NC}"
 rm -rf build/ dist/ *.egg-info/
 
 # Build the package
-echo -e "${GREEN}Budowanie pakietu...${NC}"
+echo -e "${GREEN}Building package...${NC}"
 python -m build
 
 # Check the distribution
-echo -e "${GREEN}Sprawdzanie paczki dystrybucyjnej...${NC}"
+echo -e "${GREEN}Checking distribution package...${NC}"
 twine check dist/*
 
-# Ask for confirmation before uploading
-echo -e "${YELLOW}Pakiet jest gotowy do publikacji na PyPI.${NC}"
-read -p "Czy chcesz opublikować pakiet $PROJECT_NAME na PyPI? (t/n): " publish
-if [[ $publish == "t" || $publish == "T" || $publish == "tak" ]]; then
-    echo -e "${GREEN}Publikowanie na PyPI...${NC}"
-    twine upload dist/*
-    echo -e "${GREEN}Pakiet został pomyślnie opublikowany na PyPI!${NC}"
-else
-    echo -e "${RED}Publikacja anulowana.${NC}"
-fi
+# Upload to PyPI
+echo -e "${GREEN}Uploading package to PyPI...${NC}"
+twine upload dist/*
+
+echo -e "${GREEN}Package $PROJECT_NAME has been successfully published on PyPI!${NC}"
