@@ -72,6 +72,7 @@ src/twinizer/hardware/kicad.py
 src/twinizer/hardware/altium/__init__.py
 src/twinizer/hardware/gerber/__init__.py
 src/twinizer/hardware/kicad/__init__.py
+src/twinizer/hardware/kicad/batch_processing.py
 src/twinizer/hardware/kicad/converters.py
 src/twinizer/hardware/kicad/pcb_parser.py
 src/twinizer/hardware/kicad/sch_parser.py

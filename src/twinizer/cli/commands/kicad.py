@@ -22,6 +22,9 @@ from twinizer.hardware.kicad.converters import (
     SchematicToMermaid, SchematicToBOM, PCBToMermaid, PCBTo3DModel,
     convert_kicad_to_image, convert_kicad_to_mermaid, convert_kicad_to_svg
 )
+from twinizer.hardware.kicad.batch_processing import (
+    batch_process_schematics, batch_process_pcbs, batch_process_hardware_files
+)
 
 console = Console()
 
@@ -323,6 +326,362 @@ def schematic_to_svg(schematic_file, output, theme, html):
         click.echo("Please install the required package with: pip install schemdraw")
     except Exception as e:
         click.echo(f"Error during conversion: {e}")
+
+
+@kicad_group.command(name="batch-sch-to-mermaid", help="Batch convert KiCad schematics to Mermaid diagrams")
+@click.option("--input-dir", "-i", required=True, type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              help="Input directory containing schematic files")
+@click.option("--output-dir", "-o", required=True, type=click.Path(file_okay=False, dir_okay=True),
+              help="Output directory for Mermaid diagrams")
+@click.option("--diagram-type", "-d", type=click.Choice(["flowchart", "class", "er"]), default="flowchart",
+              help="Type of diagram to generate")
+@click.option("--output-format", "-f", type=click.Choice(["mmd", "svg"]), default="mmd",
+              help="Output format")
+@click.option("--recursive", "-r", is_flag=True, help="Search recursively in subdirectories")
+@click.option("--max-workers", "-w", type=int, default=None, help="Maximum number of worker processes")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def batch_sch_to_mermaid(
+    input_dir: str,
+    output_dir: str,
+    diagram_type: str = "flowchart",
+    output_format: str = "mmd",
+    recursive: bool = False,
+    max_workers: Optional[int] = None,
+    verbose: bool = False
+):
+    """
+    Batch convert KiCad schematic files to Mermaid diagrams.
+    
+    This command finds all schematic files (.sch, .kicad_sch) in the input directory
+    and converts them to Mermaid diagrams in the output directory.
+    
+    Args:
+        input_dir: Input directory containing schematic files
+        output_dir: Output directory for Mermaid diagrams
+        diagram_type: Type of diagram to generate (flowchart, class, or er)
+        output_format: Output format (mmd or svg)
+        recursive: Search recursively in subdirectories
+        max_workers: Maximum number of worker processes
+        verbose: Enable verbose output
+    """
+    if verbose:
+        console.print(f"[bold green]Batch converting KiCad schematics to Mermaid diagrams[/bold green]")
+        console.print(f"Input directory: {input_dir}")
+        console.print(f"Output directory: {output_dir}")
+        console.print(f"Diagram type: {diagram_type}")
+        console.print(f"Output format: {output_format}")
+        console.print(f"Recursive search: {recursive}")
+        console.print(f"Max workers: {max_workers}")
+    
+    # Process schematic files
+    output_files = batch_process_schematics(
+        input_dir=input_dir,
+        output_dir=output_dir,
+        conversion_type="mermaid",
+        output_format=output_format,
+        diagram_type=diagram_type,
+        recursive=recursive,
+        max_workers=max_workers
+    )
+    
+    if verbose:
+        console.print(f"[bold green]Processed {len(output_files)} schematic files[/bold green]")
+        for output_file in output_files[:5]:  # Show first 5 files
+            console.print(f"  - {output_file}")
+        if len(output_files) > 5:
+            console.print(f"  - ... and {len(output_files) - 5} more files")
+
+
+@kicad_group.command(name="batch-sch-to-bom", help="Batch convert KiCad schematics to BOMs")
+@click.option("--input-dir", "-i", required=True, type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              help="Input directory containing schematic files")
+@click.option("--output-dir", "-o", required=True, type=click.Path(file_okay=False, dir_okay=True),
+              help="Output directory for BOMs")
+@click.option("--output-format", "-f", type=click.Choice(["csv", "json", "xlsx"]), default="csv",
+              help="Output format")
+@click.option("--recursive", "-r", is_flag=True, help="Search recursively in subdirectories")
+@click.option("--max-workers", "-w", type=int, default=None, help="Maximum number of worker processes")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def batch_sch_to_bom(
+    input_dir: str,
+    output_dir: str,
+    output_format: str = "csv",
+    recursive: bool = False,
+    max_workers: Optional[int] = None,
+    verbose: bool = False
+):
+    """
+    Batch convert KiCad schematic files to Bills of Materials (BOMs).
+    
+    This command finds all schematic files (.sch, .kicad_sch) in the input directory
+    and converts them to BOMs in the output directory.
+    
+    Args:
+        input_dir: Input directory containing schematic files
+        output_dir: Output directory for BOMs
+        output_format: Output format (csv, json, or xlsx)
+        recursive: Search recursively in subdirectories
+        max_workers: Maximum number of worker processes
+        verbose: Enable verbose output
+    """
+    if verbose:
+        console.print(f"[bold green]Batch converting KiCad schematics to BOMs[/bold green]")
+        console.print(f"Input directory: {input_dir}")
+        console.print(f"Output directory: {output_dir}")
+        console.print(f"Output format: {output_format}")
+        console.print(f"Recursive search: {recursive}")
+        console.print(f"Max workers: {max_workers}")
+    
+    # Process schematic files
+    output_files = batch_process_schematics(
+        input_dir=input_dir,
+        output_dir=output_dir,
+        conversion_type="bom",
+        output_format=output_format,
+        recursive=recursive,
+        max_workers=max_workers
+    )
+    
+    if verbose:
+        console.print(f"[bold green]Processed {len(output_files)} schematic files[/bold green]")
+        for output_file in output_files[:5]:  # Show first 5 files
+            console.print(f"  - {output_file}")
+        if len(output_files) > 5:
+            console.print(f"  - ... and {len(output_files) - 5} more files")
+
+
+@kicad_group.command(name="batch-pcb-to-mermaid", help="Batch convert KiCad PCBs to Mermaid diagrams")
+@click.option("--input-dir", "-i", required=True, type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              help="Input directory containing PCB files")
+@click.option("--output-dir", "-o", required=True, type=click.Path(file_okay=False, dir_okay=True),
+              help="Output directory for Mermaid diagrams")
+@click.option("--diagram-type", "-d", type=click.Choice(["flowchart", "class", "er"]), default="flowchart",
+              help="Type of diagram to generate")
+@click.option("--output-format", "-f", type=click.Choice(["mmd", "svg"]), default="mmd",
+              help="Output format")
+@click.option("--recursive", "-r", is_flag=True, help="Search recursively in subdirectories")
+@click.option("--max-workers", "-w", type=int, default=None, help="Maximum number of worker processes")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def batch_pcb_to_mermaid(
+    input_dir: str,
+    output_dir: str,
+    diagram_type: str = "flowchart",
+    output_format: str = "mmd",
+    recursive: bool = False,
+    max_workers: Optional[int] = None,
+    verbose: bool = False
+):
+    """
+    Batch convert KiCad PCB files to Mermaid diagrams.
+    
+    This command finds all PCB files (.kicad_pcb) in the input directory
+    and converts them to Mermaid diagrams in the output directory.
+    
+    Args:
+        input_dir: Input directory containing PCB files
+        output_dir: Output directory for Mermaid diagrams
+        diagram_type: Type of diagram to generate (flowchart, class, or er)
+        output_format: Output format (mmd or svg)
+        recursive: Search recursively in subdirectories
+        max_workers: Maximum number of worker processes
+        verbose: Enable verbose output
+    """
+    if verbose:
+        console.print(f"[bold green]Batch converting KiCad PCBs to Mermaid diagrams[/bold green]")
+        console.print(f"Input directory: {input_dir}")
+        console.print(f"Output directory: {output_dir}")
+        console.print(f"Diagram type: {diagram_type}")
+        console.print(f"Output format: {output_format}")
+        console.print(f"Recursive search: {recursive}")
+        console.print(f"Max workers: {max_workers}")
+    
+    # Process PCB files
+    output_files = batch_process_pcbs(
+        input_dir=input_dir,
+        output_dir=output_dir,
+        conversion_type="mermaid",
+        output_format=output_format,
+        diagram_type=diagram_type,
+        recursive=recursive,
+        max_workers=max_workers
+    )
+    
+    if verbose:
+        console.print(f"[bold green]Processed {len(output_files)} PCB files[/bold green]")
+        for output_file in output_files[:5]:  # Show first 5 files
+            console.print(f"  - {output_file}")
+        if len(output_files) > 5:
+            console.print(f"  - ... and {len(output_files) - 5} more files")
+
+
+@kicad_group.command(name="batch-pcb-to-3d", help="Batch convert KiCad PCBs to 3D models")
+@click.option("--input-dir", "-i", required=True, type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              help="Input directory containing PCB files")
+@click.option("--output-dir", "-o", required=True, type=click.Path(file_okay=False, dir_okay=True),
+              help="Output directory for 3D models")
+@click.option("--format", "-f", type=click.Choice(["step", "stl", "wrl", "obj"]), default="step",
+              help="Output format")
+@click.option("--recursive", "-r", is_flag=True, help="Search recursively in subdirectories")
+@click.option("--max-workers", "-w", type=int, default=None, help="Maximum number of worker processes")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def batch_pcb_to_3d(
+    input_dir: str,
+    output_dir: str,
+    format: str = "step",
+    recursive: bool = False,
+    max_workers: Optional[int] = None,
+    verbose: bool = False
+):
+    """
+    Batch convert KiCad PCB files to 3D models.
+    
+    This command finds all PCB files (.kicad_pcb) in the input directory
+    and converts them to 3D models in the output directory.
+    
+    Args:
+        input_dir: Input directory containing PCB files
+        output_dir: Output directory for 3D models
+        format: Output format (step, stl, wrl, or obj)
+        recursive: Search recursively in subdirectories
+        max_workers: Maximum number of worker processes
+        verbose: Enable verbose output
+    """
+    if verbose:
+        console.print(f"[bold green]Batch converting KiCad PCBs to 3D models[/bold green]")
+        console.print(f"Input directory: {input_dir}")
+        console.print(f"Output directory: {output_dir}")
+        console.print(f"Format: {format}")
+        console.print(f"Recursive search: {recursive}")
+        console.print(f"Max workers: {max_workers}")
+    
+    # Process PCB files
+    output_files = batch_process_pcbs(
+        input_dir=input_dir,
+        output_dir=output_dir,
+        conversion_type="3d",
+        output_format=format,
+        recursive=recursive,
+        max_workers=max_workers
+    )
+    
+    if verbose:
+        console.print(f"[bold green]Processed {len(output_files)} PCB files[/bold green]")
+        for output_file in output_files[:5]:  # Show first 5 files
+            console.print(f"  - {output_file}")
+        if len(output_files) > 5:
+            console.print(f"  - ... and {len(output_files) - 5} more files")
+
+
+@kicad_group.command(name="batch-process", help="Batch process KiCad files")
+@click.option("--input-dir", "-i", required=True, type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              help="Input directory containing KiCad files")
+@click.option("--output-dir", "-o", required=True, type=click.Path(file_okay=False, dir_okay=True),
+              help="Output directory for processed files")
+@click.option("--file-types", "-t", type=click.Choice(["sch", "pcb", "both"]), default="both",
+              help="Types of files to process")
+@click.option("--sch-conversion", type=click.Choice(["mermaid", "bom", "json"]), default="mermaid",
+              help="Conversion type for schematic files")
+@click.option("--pcb-conversion", type=click.Choice(["mermaid", "3d", "json"]), default="mermaid",
+              help="Conversion type for PCB files")
+@click.option("--sch-format", default="mmd", help="Output format for schematic conversion")
+@click.option("--pcb-format", default="mmd", help="Output format for PCB conversion")
+@click.option("--sch-diagram", type=click.Choice(["flowchart", "class", "er"]), default="flowchart",
+              help="Diagram type for schematic Mermaid conversion")
+@click.option("--pcb-diagram", type=click.Choice(["flowchart", "class", "er"]), default="flowchart",
+              help="Diagram type for PCB Mermaid conversion")
+@click.option("--recursive", "-r", is_flag=True, help="Search recursively in subdirectories")
+@click.option("--max-workers", "-w", type=int, default=None, help="Maximum number of worker processes")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose output")
+def batch_process(
+    input_dir: str,
+    output_dir: str,
+    file_types: str = "both",
+    sch_conversion: str = "mermaid",
+    pcb_conversion: str = "mermaid",
+    sch_format: str = "mmd",
+    pcb_format: str = "mmd",
+    sch_diagram: str = "flowchart",
+    pcb_diagram: str = "flowchart",
+    recursive: bool = False,
+    max_workers: Optional[int] = None,
+    verbose: bool = False
+):
+    """
+    Batch process KiCad files (schematics and PCBs).
+    
+    This command finds all KiCad files in the input directory
+    and processes them according to the specified options.
+    
+    Args:
+        input_dir: Input directory containing KiCad files
+        output_dir: Output directory for processed files
+        file_types: Types of files to process (sch, pcb, or both)
+        sch_conversion: Conversion type for schematic files
+        pcb_conversion: Conversion type for PCB files
+        sch_format: Output format for schematic conversion
+        pcb_format: Output format for PCB conversion
+        sch_diagram: Diagram type for schematic Mermaid conversion
+        pcb_diagram: Diagram type for PCB Mermaid conversion
+        recursive: Search recursively in subdirectories
+        max_workers: Maximum number of worker processes
+        verbose: Enable verbose output
+    """
+    if verbose:
+        console.print(f"[bold green]Batch processing KiCad files[/bold green]")
+        console.print(f"Input directory: {input_dir}")
+        console.print(f"Output directory: {output_dir}")
+        console.print(f"File types: {file_types}")
+        console.print(f"Schematic conversion: {sch_conversion}")
+        console.print(f"PCB conversion: {pcb_conversion}")
+        console.print(f"Schematic format: {sch_format}")
+        console.print(f"PCB format: {pcb_format}")
+        console.print(f"Schematic diagram: {sch_diagram}")
+        console.print(f"PCB diagram: {pcb_diagram}")
+        console.print(f"Recursive search: {recursive}")
+        console.print(f"Max workers: {max_workers}")
+    
+    # Determine file types to process
+    file_type_list = []
+    if file_types == "sch" or file_types == "both":
+        file_type_list.append("sch")
+    if file_types == "pcb" or file_types == "both":
+        file_type_list.append("pcb")
+    
+    # Process files
+    conversion_types = {
+        "sch": sch_conversion,
+        "pcb": pcb_conversion
+    }
+    
+    output_formats = {
+        "sch": sch_format,
+        "pcb": pcb_format
+    }
+    
+    diagram_types = {
+        "sch": sch_diagram,
+        "pcb": pcb_diagram
+    }
+    
+    results = batch_process_hardware_files(
+        input_dir=input_dir,
+        output_dir=output_dir,
+        file_types=file_type_list,
+        conversion_types=conversion_types,
+        output_formats=output_formats,
+        diagram_types=diagram_types,
+        recursive=recursive,
+        max_workers=max_workers
+    )
+    
+    if verbose:
+        console.print(f"[bold green]Processing summary:[/bold green]")
+        for file_type, output_files in results.items():
+            console.print(f"{file_type.upper()} files processed: {len(output_files)}")
+            for output_file in output_files[:5]:  # Show first 5 files
+                console.print(f"  - {output_file}")
+            if len(output_files) > 5:
+                console.print(f"  - ... and {len(output_files) - 5} more files")
 
 
 def _format_schematic_text(schematic) -> str:

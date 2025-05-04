@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.13] - 2025-05-04
+
+### Added
+- Changes in docs/hardware_analysis.md
+- Changes in docs/user_guide.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/SOURCES.txt
+- Changes in src/twinizer/cli/commands/kicad.py
+
 ## [0.1.12] - 2025-05-04
 
 ### Added

@@ -13,6 +13,7 @@
   - [PDF to Markdown](#pdf-to-markdown)
 - [Hardware Analysis](#hardware-analysis)
   - [KiCad File Parsing](#kicad-file-parsing)
+  - [KiCad Batch Processing](#kicad-batch-processing)
   - [Altium File Parsing](#altium-file-parsing)
 - [Software Analysis](#software-analysis)
   - [Dependency Analysis](#dependency-analysis)
@@ -565,6 +566,167 @@ The BOM generator creates a bill of materials from a schematic file, with the fo
 - Manufacturer
 - Manufacturer part number
 - Description
+
+### KiCad Batch Processing
+
+Twinizer provides powerful batch processing capabilities for KiCad files, allowing you to convert multiple schematic and PCB files at once.
+
+#### Batch Processing Commands
+
+##### Batch Convert Schematics to Mermaid Diagrams
+
+```bash
+twinizer kicad batch-sch-to-mermaid --input-dir /path/to/schematics --output-dir /path/to/output --diagram-type flowchart --output-format mmd --recursive
+```
+
+Options:
+- `--input-dir`, `-i`: Input directory containing schematic files (required)
+- `--output-dir`, `-o`: Output directory for Mermaid diagrams (required)
+- `--diagram-type`, `-d`: Type of diagram to generate (`flowchart`, `class`, or `er`) (default: `flowchart`)
+- `--output-format`, `-f`: Output format (`mmd` or `svg`) (default: `mmd`)
+- `--recursive`, `-r`: Search recursively in subdirectories (flag)
+- `--max-workers`, `-w`: Maximum number of worker processes (default: number of CPU cores)
+- `--verbose`, `-v`: Enable verbose output (flag)
+
+##### Batch Convert Schematics to BOMs
+
+```bash
+twinizer kicad batch-sch-to-bom --input-dir /path/to/schematics --output-dir /path/to/output --output-format csv --recursive
+```
+
+Options:
+- `--input-dir`, `-i`: Input directory containing schematic files (required)
+- `--output-dir`, `-o`: Output directory for BOMs (required)
+- `--output-format`, `-f`: Output format (`csv`, `json`, or `xlsx`) (default: `csv`)
+- `--recursive`, `-r`: Search recursively in subdirectories (flag)
+- `--max-workers`, `-w`: Maximum number of worker processes (default: number of CPU cores)
+- `--verbose`, `-v`: Enable verbose output (flag)
+
+##### Batch Convert PCBs to Mermaid Diagrams
+
+```bash
+twinizer kicad batch-pcb-to-mermaid --input-dir /path/to/pcbs --output-dir /path/to/output --diagram-type flowchart --output-format mmd --recursive
+```
+
+Options:
+- `--input-dir`, `-i`: Input directory containing PCB files (required)
+- `--output-dir`, `-o`: Output directory for Mermaid diagrams (required)
+- `--diagram-type`, `-d`: Type of diagram to generate (`flowchart`, `class`, or `er`) (default: `flowchart`)
+- `--output-format`, `-f`: Output format (`mmd` or `svg`) (default: `mmd`)
+- `--recursive`, `-r`: Search recursively in subdirectories (flag)
+- `--max-workers`, `-w`: Maximum number of worker processes (default: number of CPU cores)
+- `--verbose`, `-v`: Enable verbose output (flag)
+
+##### Batch Convert PCBs to 3D Models
+
+```bash
+twinizer kicad batch-pcb-to-3d --input-dir /path/to/pcbs --output-dir /path/to/output --format step --recursive
+```
+
+Options:
+- `--input-dir`, `-i`: Input directory containing PCB files (required)
+- `--output-dir`, `-o`: Output directory for 3D models (required)
+- `--format`, `-f`: Output format (`step`, `stl`, `wrl`, or `obj`) (default: `step`)
+- `--recursive`, `-r`: Search recursively in subdirectories (flag)
+- `--max-workers`, `-w`: Maximum number of worker processes (default: number of CPU cores)
+- `--verbose`, `-v`: Enable verbose output (flag)
+
+##### Universal Batch Processing Command
+
+For more flexibility, use the universal batch processing command:
+
+```bash
+twinizer kicad batch-process --input-dir /path/to/files --output-dir /path/to/output --file-types both --sch-conversion mermaid --pcb-conversion 3d --recursive
+```
+
+Options:
+- `--input-dir`, `-i`: Input directory containing KiCad files (required)
+- `--output-dir`, `-o`: Output directory for processed files (required)
+- `--file-types`, `-t`: Types of files to process (`sch`, `pcb`, or `both`) (default: `both`)
+- `--sch-conversion`: Conversion type for schematic files (`mermaid`, `bom`, or `json`) (default: `mermaid`)
+- `--pcb-conversion`: Conversion type for PCB files (`mermaid`, `3d`, or `json`) (default: `mermaid`)
+- `--sch-format`: Output format for schematic conversion (default: `mmd`)
+- `--pcb-format`: Output format for PCB conversion (default: `mmd`)
+- `--sch-diagram`: Diagram type for schematic Mermaid conversion (`flowchart`, `class`, or `er`) (default: `flowchart`)
+- `--pcb-diagram`: Diagram type for PCB Mermaid conversion (`flowchart`, `class`, or `er`) (default: `flowchart`)
+- `--recursive`, `-r`: Search recursively in subdirectories (flag)
+- `--max-workers`, `-w`: Maximum number of worker processes (default: number of CPU cores)
+- `--verbose`, `-v`: Enable verbose output (flag)
+
+#### Python API for Batch Processing
+
+You can also use the batch processing API in your Python code:
+
+```python
+from twinizer.hardware.kicad.batch_processing import (
+    batch_process_schematics, batch_process_pcbs, batch_process_hardware_files
+)
+
+# Batch process schematics to Mermaid diagrams
+output_files = batch_process_schematics(
+    input_dir="/path/to/schematics",
+    output_dir="/path/to/output",
+    conversion_type="mermaid",
+    output_format="mmd",
+    diagram_type="flowchart",
+    recursive=True,
+    max_workers=4
+)
+
+# Batch process PCBs to 3D models
+output_files = batch_process_pcbs(
+    input_dir="/path/to/pcbs",
+    output_dir="/path/to/output",
+    conversion_type="3d",
+    output_format="step",
+    recursive=True,
+    max_workers=4
+)
+
+# Batch process both schematics and PCBs
+results = batch_process_hardware_files(
+    input_dir="/path/to/files",
+    output_dir="/path/to/output",
+    file_types=["sch", "pcb"],
+    conversion_types={"sch": "mermaid", "pcb": "3d"},
+    output_formats={"sch": "mmd", "pcb": "step"},
+    diagram_types={"sch": "flowchart", "pcb": "flowchart"},
+    recursive=True,
+    max_workers=4
+)
+
+# Results is a dictionary with file types as keys and lists of output files as values
+sch_output_files = results["sch"]
+pcb_output_files = results["pcb"]
+```
+
+#### Example Workflow
+
+Here's a complete example workflow for batch processing KiCad files:
+
+1. Convert all schematics in a project to Mermaid diagrams:
+
+```bash
+twinizer kicad batch-sch-to-mermaid --input-dir /path/to/project --output-dir /path/to/output/mermaid --recursive --verbose
+```
+
+2. Generate BOMs for all schematics:
+
+```bash
+twinizer kicad batch-sch-to-bom --input-dir /path/to/project --output-dir /path/to/output/bom --output-format csv --recursive --verbose
+```
+
+3. Convert all PCBs to 3D models:
+
+```bash
+twinizer kicad batch-pcb-to-3d --input-dir /path/to/project --output-dir /path/to/output/3d --format step --recursive --verbose
+```
+
+4. Or do all of the above in one command:
+
+```bash
+twinizer kicad batch-process --input-dir /path/to/project --output-dir /path/to/output --sch-conversion mermaid --pcb-conversion 3d --recursive --verbose
+```
 
 ### Altium File Parsing
 

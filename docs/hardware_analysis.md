@@ -13,6 +13,7 @@
   - [BOM Generation](#altium-bom-generation)
 - [Advanced Usage](#advanced-usage)
 - [API Reference](#api-reference)
+- [Batch Processing](#batch-processing)
 
 ## Introduction
 
@@ -1169,3 +1170,112 @@ class SchematicToBOM:
             BOM in JSON format.
         """
         pass
+
+```
+
+## Batch Processing
+
+Twinizer provides comprehensive batch processing capabilities for KiCad files, allowing you to process multiple schematic and PCB files at once. This is particularly useful for large projects with many files or for processing multiple projects simultaneously.
+
+### CLI Usage
+
+```bash
+# Batch process all schematic files in a directory to Mermaid diagrams
+twinizer kicad batch-sch-to-mermaid --input-dir project_directory --output-dir output_directory --diagram-type flowchart
+
+# Batch process all PCB files in a directory to 3D models
+twinizer kicad batch-pcb-to-3d --input-dir project_directory --output-dir output_directory --format step
+
+# Batch process both schematics and PCBs with recursive search
+twinizer kicad batch-process --input-dir project_directory --output-dir output_directory --recursive
+```
+
+### Python API
+
+```python
+from twinizer.hardware.kicad.batch_processing import (
+    batch_process_schematics,
+    batch_process_pcbs,
+    batch_process_hardware_files
+)
+
+# Batch process all schematic files in a directory to Mermaid diagrams
+output_files = batch_process_schematics(
+    input_dir="project_directory",
+    output_dir="output_directory",
+    conversion_type="mermaid",
+    output_format="mmd",
+    diagram_type="flowchart",
+    recursive=True  # Search recursively in subdirectories
+)
+
+# Batch process all PCB files in a directory to 3D models
+output_files = batch_process_pcbs(
+    input_dir="project_directory",
+    output_dir="output_directory",
+    conversion_type="3d",
+    output_format="step",
+    recursive=True
+)
+
+# Batch process both schematics and PCBs
+results = batch_process_hardware_files(
+    input_dir="project_directory",
+    output_dir="output_directory",
+    file_types=["sch", "pcb"],
+    conversion_types={"sch": "mermaid", "pcb": "3d"},
+    output_formats={"sch": "mmd", "pcb": "step"},
+    diagram_types={"sch": "flowchart", "pcb": "flowchart"},
+    recursive=True
+)
+
+# Access the results
+sch_output_files = results.get("sch", [])
+pcb_output_files = results.get("pcb", [])
+```
+
+### Supported Conversions
+
+The batch processing module supports the following conversions:
+
+#### For Schematic Files (.sch, .kicad_sch):
+- **Mermaid Diagrams**: Convert to flowchart, class diagram, or entity-relationship diagram
+- **Bill of Materials (BOM)**: Convert to CSV, JSON, or Excel format
+- **JSON**: Parse and save as JSON for further processing
+
+#### For PCB Files (.kicad_pcb):
+- **Mermaid Diagrams**: Convert to flowchart, class diagram, or entity-relationship diagram
+- **3D Models**: Convert to STEP, STL, VRML, or OBJ format
+- **JSON**: Parse and save as JSON for further processing
+
+### Advanced Options
+
+The batch processing functions provide several advanced options:
+
+- **Recursive Search**: Search for files in subdirectories
+- **Parallel Processing**: Process multiple files simultaneously for better performance
+- **Custom Output Formats**: Specify different output formats for each file type
+- **Diagram Types**: Choose between different Mermaid diagram types
+
+### Example: Complete Batch Processing Workflow
+
+```python
+from twinizer.hardware.kicad.batch_processing import batch_process_hardware_files
+
+# Process all KiCad files in a project
+results = batch_process_hardware_files(
+    input_dir="kicad_project",
+    output_dir="digital_twin",
+    file_types=["sch", "pcb"],
+    conversion_types={"sch": "mermaid", "pcb": "3d"},
+    output_formats={"sch": "mmd", "pcb": "step"},
+    diagram_types={"sch": "flowchart", "pcb": "flowchart"},
+    recursive=True,
+    max_workers=4  # Use 4 worker processes for parallel processing
+)
+
+# Print summary
+for file_type, output_files in results.items():
+    print(f"{file_type.upper()} files processed: {len(output_files)}")
+    for output_file in output_files[:5]:  # Show first 5 files
+        print(f"  - {output_file}")
