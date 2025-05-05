@@ -17,21 +17,10 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.progress import Progress, SpinnerColumn, TextColumn
 
-# Import required modules from twinizer
-from twinizer.cli.commands.analyze import analyze_structure
-from twinizer.cli.commands.image import to_svg
-from twinizer.cli.commands.kicad import parse_sch, sch_to_bom
-
 console = Console()
 
 
-@click.group(name="generate-report")
-def generate_report_group():
-    """Generate comprehensive project reports with multiple formats."""
-    pass
-
-
-@generate_report_group.command(name="project")
+@click.command(name="generate-report")
 @click.argument("project_path", type=click.Path(exists=True))
 @click.option(
     "--output-dir",
@@ -227,6 +216,23 @@ def analyze_project_structure(project_path: str, output_dir: str) -> dict:
         "file_types": {},
     }
 
+    # Collect basic directory and file information
+    for root, dirs, files in os.walk(project_path):
+        rel_path = os.path.relpath(root, project_path)
+        if rel_path != ".":
+            structure_info["directories"].append(rel_path)
+
+        for file in files:
+            file_path = os.path.join(rel_path, file)
+            structure_info["files"].append(file_path)
+
+            # Track file types
+            ext = os.path.splitext(file)[1].lower()
+            if ext:
+                if ext not in structure_info["file_types"]:
+                    structure_info["file_types"][ext] = 0
+                structure_info["file_types"][ext] += 1
+
     # Write structure info to file
     with open(os.path.join(output_dir, "structure.json"), "w") as f:
         import json
@@ -246,6 +252,38 @@ def analyze_project_code(project_path: str, output_dir: str) -> dict:
         "security": {},
     }
 
+    # Collect basic code metrics
+    code_files = []
+    for root, dirs, files in os.walk(project_path):
+        for file in files:
+            if file.endswith(
+                (".py", ".c", ".cpp", ".h", ".hpp", ".js", ".ts", ".html", ".css")
+            ):
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, project_path)
+
+                try:
+                    with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+
+                    lines = content.count("\n") + 1
+                    code_files.append(
+                        {
+                            "path": rel_path,
+                            "lines": lines,
+                            "size": os.path.getsize(file_path),
+                        }
+                    )
+                except Exception as e:
+                    console.print(
+                        f"[yellow]Warning: Could not analyze {rel_path}: {e}[/yellow]"
+                    )
+
+    code_info["metrics"]["files"] = code_files
+    code_info["metrics"]["total_files"] = len(code_files)
+    code_info["metrics"]["total_lines"] = sum(f["lines"] for f in code_files)
+    code_info["metrics"]["total_size"] = sum(f["size"] for f in code_files)
+
     # Write code info to file
     with open(os.path.join(output_dir, "code", "analysis.json"), "w") as f:
         import json
@@ -264,6 +302,23 @@ def analyze_project_hardware(project_path: str, output_dir: str) -> dict:
         "connections": [],
         "schematics": [],
     }
+
+    # Find KiCad schematic files
+    schematic_files = []
+    for root, dirs, files in os.walk(project_path):
+        for file in files:
+            if file.endswith((".sch", ".kicad_sch")):
+                file_path = os.path.join(root, file)
+                rel_path = os.path.relpath(file_path, project_path)
+                schematic_files.append(
+                    {
+                        "path": rel_path,
+                        "name": os.path.basename(file),
+                        "size": os.path.getsize(file_path),
+                    }
+                )
+
+    hardware_info["schematics"] = schematic_files
 
     # Write hardware info to file
     with open(os.path.join(output_dir, "hardware", "analysis.json"), "w") as f:
@@ -676,69 +731,5 @@ def start_web_server(output_dir: str, port: int):
         console.print(f"[bold red]Error starting server: {e}[/]")
 
 
-# Add a direct command for backward compatibility with the documentation
-@click.command(name="generate-report")
-@click.argument("project_path", type=click.Path(exists=True))
-@click.option(
-    "--output-dir",
-    "-o",
-    type=click.Path(),
-    default="./reports",
-    help="Directory to store generated reports",
-)
-@click.option(
-    "--include-formats",
-    "-f",
-    default="html,pdf,svg",
-    help="Comma-separated list of output formats (svg,html,pdf,markdown,json)",
-)
-@click.option(
-    "--analyze-code",
-    is_flag=True,
-    help="Include code analysis in the report",
-)
-@click.option(
-    "--analyze-hardware",
-    is_flag=True,
-    help="Include hardware analysis in the report",
-)
-@click.option(
-    "--extract-schematics",
-    is_flag=True,
-    help="Extract and convert schematics from hardware files",
-)
-@click.option(
-    "--build-website",
-    is_flag=True,
-    help="Generate a navigable website with all reports",
-)
-@click.option(
-    "--serve",
-    is_flag=True,
-    help="Start a local web server to view the report",
-)
-@click.option(
-    "--port",
-    type=int,
-    default=8000,
-    help="Port for the web server (default: 8000)",
-)
-@click.option(
-    "--theme",
-    type=click.Choice(["light", "dark", "auto"]),
-    default="light",
-    help="Theme for the website",
-)
-@click.option(
-    "--title",
-    default="Project Analysis Report",
-    help="Custom title for the report",
-)
-@click.option(
-    "--logo",
-    type=click.Path(exists=False),
-    help="Path to custom logo for the report",
-)
-def generate_report_command(**kwargs):
-    """Direct command for backward compatibility."""
-    generate_project_report(**kwargs)
+if __name__ == "__main__":
+    generate_project_report()

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.70] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer/__init__.py
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/commands/__init__.py
+- Changes in src/twinizer/cli/commands/generate_report.py
+
 ## [0.1.69] - 2025-05-05
 
 ### Added

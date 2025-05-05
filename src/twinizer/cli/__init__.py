@@ -55,7 +55,7 @@ def register_commands():
 # Register commands
 register_commands()
 
-# Register direct commands for backward compatibility
+# Explicitly register the generate-report command for backward compatibility
 try:
     from twinizer.cli.commands.generate_report import generate_report_command
 
