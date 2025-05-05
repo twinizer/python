@@ -38,7 +38,7 @@ pip install twinizer
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/twinizer.git
+git clone https://github.com/twinizer/python.git
 cd twinizer
 pip install -e .
 ```

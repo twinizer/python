@@ -43,7 +43,7 @@ We actively welcome your pull requests:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/twinizer.git
+   git clone https://github.com/twinizer/python.git
    cd twinizer
    ```
 

@@ -17,6 +17,7 @@ src/twinizer/cli/commands/analyze.py
 src/twinizer/cli/commands/compile.py
 src/twinizer/cli/commands/convert.py
 src/twinizer/cli/commands/debug.py
+src/twinizer/cli/commands/generate_report.py
 src/twinizer/cli/commands/image.py
 src/twinizer/cli/commands/kicad.py
 src/twinizer/cli/commands/kicad_docker.py

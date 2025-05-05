@@ -28,7 +28,7 @@ graph TD
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/twinizer.git
+   git clone https://github.com/twinizer/python.git
    cd twinizer
    ```
 
@@ -64,7 +64,7 @@ flake8 src tests
 
 ### GitHub Pages
 
-Our documentation is hosted on GitHub Pages at [https://yourusername.github.io/twinizer/](https://yourusername.github.io/twinizer/).
+Our documentation is hosted on GitHub Pages at [https://twinizer.github.io/twinizer/](https://twinizer.github.io/twinizer/).
 
 The site is automatically built from the Markdown files in the `docs/` directory and the project's README.md.
 

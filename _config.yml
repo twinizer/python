@@ -1,25 +1,25 @@
 # Jekyll configuration for Twinizer documentation
 title: Twinizer
 description: Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych
-url: https://yourusername.github.io/twinizer
-repository: yourusername/twinizer
+url: https://twinizer.github.io/python
+repository: twinizer/python
 baseurl: /twinizer
 
 # Author information
 author:
-  name: Zespół Twinizer
-  email: contact@example.com
+  name: Tom Sapletta
+  email: info@softreck.dev
 
 # SEO settings
 twitter:
   username: twinizer
   card: summary_large_image
-logo: /assets/images/twinizer-logo.png
+logo: twinizer-logo.png
 social:
   name: Twinizer
   links:
-    - https://github.com/yourusername/twinizer
-    - https://twitter.com/twinizer
+    - https://github.com/tom-sapletta-com/
+    - https://x.com/softreck
 
 # Build settings
 markdown: kramdown
@@ -39,7 +39,7 @@ heading_anchors: true
 color_scheme: light
 aux_links:
   "Twinizer na GitHub":
-    - "//github.com/yourusername/twinizer"
+    - "//github.com/twinizer/python"
 
 # Collections
 collections:

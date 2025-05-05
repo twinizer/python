@@ -4,7 +4,7 @@ description: "Comprehensive toolkit for creating and manipulating digital twins 
 author: "Twinizer Team"
 keywords: "digital twin, hardware analysis, software analysis, KiCad, code analysis, documentation generation"
 lang: "en"
-image: "https://raw.githubusercontent.com/yourusername/twinizer/main/docs/assets/twinizer-logo.png"
+image: "https://raw.githubusercontent.com/twinizer/python/main/docs/assets/twinizer-logo.png"
 ---
 
 # Twinizer
@@ -46,7 +46,7 @@ pip install twinizer
 ### From Source
 
 ```bash
-git clone https://github.com/yourusername/twinizer.git
+git clone https://github.com/twinizer/python.git
 cd twinizer
 pip install -e .
 ```
@@ -183,7 +183,7 @@ This project uses GitHub Actions for continuous integration. On each push to the
 
 ### Documentation
 
-The project documentation is available on GitHub Pages at [https://yourusername.github.io/twinizer/](https://yourusername.github.io/twinizer/).
+The project documentation is available on GitHub Pages at [https://twinizer.github.io/twinizer/](https://twinizer.github.io/twinizer/).
 
 Documentation is written in Markdown with Mermaid diagram support. To contribute to the documentation:
 1. Edit the files in the `docs/` directory
