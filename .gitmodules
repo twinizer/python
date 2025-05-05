@@ -1,0 +1,3 @@
+[submodule "plotkicadsch"]
+	path = plotkicadsch
+	url = https://github.com/jnavila/plotkicadsch.git
