@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "twinizer"
-version = "0.1.61"
+version = "0.1.62"
 description = "A comprehensive environment for hardware and firmware reverse engineering, analysis and management"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -60,3 +60,21 @@ dev = [
 
 [project.scripts]
 twinizer = "twinizer.__main__:main"
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
