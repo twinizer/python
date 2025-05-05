@@ -3,7 +3,7 @@ title: Twinizer
 description: Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych
 url: https://python.twinizer.com
 repository: twinizer/python
-baseurl: /twinizer
+baseurl: /
 
 # Author information
 author:
