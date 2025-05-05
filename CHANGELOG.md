@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.67] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+
 ## [0.1.66] - 2025-05-05
 
 ### Added

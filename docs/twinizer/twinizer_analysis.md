@@ -1,3 +1,16 @@
+---
+title: "Twinizer - Analiza i Dokumentacja"
+description: "Kompleksowa analiza i dokumentacja projektu Twinizer do tworzenia cyfrowych bliźniaków"
+author: "Zespół Twinizer"
+keywords: "twinizer, analiza projektu, cyfrowy bliźniak, dokumentacja techniczna, analiza sprzętowa, analiza oprogramowania"
+lang: "pl"
+category: "dokumentacja"
+toc: true
+sidebar: true
+permalink: /docs/twinizer/analiza/
+last_modified_at: 2025-05-05
+---
+
 # Twinizer - Analiza i Dokumentacja
 
 ## Przegląd projektu

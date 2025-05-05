@@ -1,51 +1,45 @@
+# Jekyll configuration for Twinizer documentation
 title: Twinizer
-description: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
-theme: jekyll-theme-cayman
+description: Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych
+url: https://yourusername.github.io/twinizer
+repository: yourusername/twinizer
+baseurl: /twinizer
 
-# Metadata for SEO
-lang: en
+# Author information
 author:
-  name: Your Name
-  email: your.email@example.com
+  name: Zespół Twinizer
+  email: contact@example.com
 
-# Social media
+# SEO settings
+twitter:
+  username: twinizer
+  card: summary_large_image
+logo: /assets/images/twinizer-logo.png
 social:
-  github: yourusername/twinizer
+  name: Twinizer
+  links:
+    - https://github.com/yourusername/twinizer
+    - https://twitter.com/twinizer
 
-# Navigation
-show_downloads: true
-google_analytics: # Add your Google Analytics ID here if needed
-
-# Mermaid diagram support
+# Build settings
 markdown: kramdown
-kramdown:
-  syntax_highlighter: rouge
-  math_engine: mathjax
-  
-# Enable mermaid diagrams
-mermaid:
-  version: "9.4.3"
-  
-# Additional plugins
+remote_theme: pmarsceill/just-the-docs
 plugins:
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-feed
+  - jekyll-relative-links
+  - jekyll-optional-front-matter
+  - jekyll-readme-index
+  - jekyll-titles-from-headings
 
-# Exclude files from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor
-  - .github
-  - .gitignore
-  - venv
-  - .tox
-  - dist
-  - build
-  - "*.pyc"
-  - "*.pyo"
-  - "*.pyd"
+# Theme settings
+search_enabled: true
+heading_anchors: true
+color_scheme: light
+aux_links:
+  "Twinizer na GitHub":
+    - "//github.com/yourusername/twinizer"
 
 # Collections
 collections:
@@ -53,15 +47,42 @@ collections:
     output: true
     permalink: /:collection/:path/
 
-# Defaults
+# Default front matter
 defaults:
   - scope:
       path: ""
       type: "docs"
     values:
-      layout: "default"
+      layout: "page"
+      toc: true
+  - scope:
+      path: "docs/examples"
+    values:
+      layout: "example"
+      category: "examples"
+  - scope:
+      path: "docs/twinizer"
+    values:
+      layout: "doc"
+      category: "dokumentacja"
   - scope:
       path: ""
       type: "pages"
     values:
-      layout: "default"
+      layout: "page"
+  - scope:
+      path: "README.md"
+    values:
+      layout: "home"
+
+# Google Analytics
+google_analytics: UA-XXXXXXXX-X
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .git
+  - .github

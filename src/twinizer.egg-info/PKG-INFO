@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.67
+Version: 0.1.68
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -45,6 +45,15 @@ Requires-Dist: isort>=5.12.0; extra == "dev"
 Requires-Dist: flake8>=6.0.0; extra == "dev"
 Dynamic: license-file
 
+---
+title: "Twinizer - Digital Twin Generation Toolkit"
+description: "Comprehensive toolkit for creating and manipulating digital twins of hardware and software systems"
+author: "Twinizer Team"
+keywords: "digital twin, hardware analysis, software analysis, KiCad, code analysis, documentation generation"
+lang: "en"
+image: "https://raw.githubusercontent.com/yourusername/twinizer/main/docs/assets/twinizer-logo.png"
+---
+
 # Twinizer
 
 ## Overview
@@ -63,6 +72,7 @@ Twinizer is a comprehensive toolkit for creating and manipulating digital twins 
 - **Dependency Analysis**: Analyze project dependencies across various languages and build systems
 - **Decompilation**: Convert binary files to higher-level representations
 - **Disassembly**: Disassemble binary files into assembly code
+- **Code Analysis**: Perform static code analysis, linting, and documentation generation for multiple programming languages
 
 ### Converters
 - **PDF to Markdown**: Convert PDF documents to Markdown format
@@ -135,7 +145,38 @@ twinizer kicad-docker convert /path/to/schematic.kicad_sch --format svg --output
 twinizer kicad-docker convert /path/to/schematic.kicad_sch --format pdf --color-theme dark --paper-size A3 --orientation landscape
 twinizer kicad-docker analyze /path/to/kicad_project --format html --output report.html
 twinizer kicad-docker formats
+
+# Analyze code and generate documentation
+twinizer code-analyze /path/to/project --output-dir ./reports --output-format markdown --generate-docs
+twinizer code-analyze /path/to/file.py --output-format json
+
+# Generate comprehensive project report with multiple formats
+twinizer generate-report /path/to/project \
+  --output-dir ./reports \
+  --include-formats svg,html,pdf,markdown \
+  --analyze-code \
+  --analyze-hardware \
+  --extract-schematics \
+  --build-website \
+  --serve
 ```
+
+### Comprehensive Report Generation
+
+Twinizer can generate complete project reports that combine code analysis, hardware schematics, and documentation in a single command:
+
+```bash
+twinizer generate-report /path/to/project \
+  --output-dir ./reports \
+  --include-formats svg,html,pdf,markdown \
+  --analyze-code \
+  --analyze-hardware \
+  --extract-schematics \
+  --build-website \
+  --serve
+```
+
+This creates a navigable website with downloadable reports in multiple formats, providing a complete overview of your project's structure and components.
 
 ## Project Structure
 
@@ -149,6 +190,11 @@ twinizer/
 │   │   │   ├── pdf2md/        # PDF to Markdown conversion
 │   │   │   ├── image/         # Image processing
 │   │   │   └── bin2source/    # Binary to source code conversion
+│   │   ├── code_analyzer/     # Code analysis and documentation
+│   │   │   ├── documentation/ # Documentation generation
+│   │   │   ├── linters/       # Code linting tools
+│   │   │   ├── metrics/       # Code metrics analysis
+│   │   │   └── security/      # Security analysis
 │   │   ├── hardware/          # Hardware analysis
 │   │   │   ├── kicad/         # KiCad file parsing
 │   │   │   └── altium/        # Altium file parsing

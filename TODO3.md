@@ -71,3 +71,17 @@ sudo dnf --enablerepo=updates-testing install kicad
 ```
 
 Podsumowując, najprościej jest zainstalować KiCada z repozytorium Fedory przez `dnf install kicad`, a jeśli chcesz najnowszą wersję, użyć repozytorium Copr lub Flatpak[1].
+
+
+
+twinizer generate-report /home/tom/github/zlecenia/maski2/Programator_2025 \
+  --output-dir ./project_reports \
+  --include-formats svg,html,pdf,markdown,json \
+  --analyze-code \
+  --analyze-hardware \
+  --extract-schematics \
+  --build-website \
+  --serve \
+  --port 8080 \
+  --theme dark \
+  --title "Maskservice Hardware Project Analysis" 

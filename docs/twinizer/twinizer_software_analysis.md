@@ -1,3 +1,16 @@
+---
+title: "Twinizer - Analiza Oprogramowania"
+description: "Szczegółowa dokumentacja modułu analizy oprogramowania w projekcie Twinizer"
+author: "Zespół Twinizer"
+keywords: "twinizer, analiza oprogramowania, dekompilacja, deasemblacja, analiza zależności, analiza kodu, cyfrowy bliźniak"
+lang: "pl"
+category: "dokumentacja"
+toc: true
+sidebar: true
+permalink: /docs/twinizer/analiza-oprogramowania/
+last_modified_at: 2025-05-05
+---
+
 # Twinizer - Analiza Oprogramowania
 
 ## Wprowadzenie

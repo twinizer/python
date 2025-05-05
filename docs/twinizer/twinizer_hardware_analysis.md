@@ -1,3 +1,16 @@
+---
+title: "Twinizer - Analiza Sprzętowa"
+description: "Szczegółowa dokumentacja modułu analizy sprzętowej w projekcie Twinizer"
+author: "Zespół Twinizer"
+keywords: "twinizer, analiza sprzętowa, KiCad, Altium, PCB, schematy elektroniczne, BOM, cyfrowy bliźniak"
+lang: "pl"
+category: "dokumentacja"
+toc: true
+sidebar: true
+permalink: /docs/twinizer/analiza-sprzetowa/
+last_modified_at: 2025-05-05
+---
+
 # Twinizer - Analiza Sprzętowa
 
 ## Wprowadzenie
