@@ -36,7 +36,7 @@ jobs:
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
-          destination: ./_site
+          destination: ./
 
       - name: Upload artifact
         id: upload-pages-artifact  # Added an ID for clarity
