@@ -1,88 +1,12 @@
 # Jekyll configuration for Twinizer documentation
 title: Twinizer
 description: Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych
-url: https://python.twinizer.com
-repository: twinizer/python
-baseurl: /
-
-# Author information
-author:
-  name: Tom Sapletta
-  email: info@softreck.dev
-
-# SEO settings
-twitter:
-  username: twinizer
-  card: summary_large_image
-logo: twinizer-logo.png
-social:
-  name: Twinizer
-  links:
-    - https://github.com/tom-sapletta-com/
-    - https://x.com/softreck
-
-# Build settings
-markdown: kramdown
-remote_theme: pmarsceill/just-the-docs
+mermaid:
+  src: "mermaid.js"
 plugins:
-  - jekyll-seo-tag
-  - jekyll-sitemap
-  - jekyll-feed
-  - jekyll-relative-links
-  - jekyll-optional-front-matter
-  - jekyll-readme-index
-  - jekyll-titles-from-headings
-
-# Theme settings
-search_enabled: true
-heading_anchors: true
-color_scheme: light
-aux_links:
-  "Twinizer na GitHub":
-    - "//github.com/twinizer/python"
-
-# Collections
-collections:
-  docs:
-    output: true
-    permalink: /:collection/:path/
-
-# Default front matter
-defaults:
-  - scope:
-      path: ""
-      type: "docs"
-    values:
-      layout: "page"
-      toc: true
-  - scope:
-      path: "docs/examples"
-    values:
-      layout: "example"
-      category: "examples"
-  - scope:
-      path: "docs/twinizer"
-    values:
-      layout: "doc"
-      category: "dokumentacja"
-  - scope:
-      path: ""
-      type: "pages"
-    values:
-      layout: "page"
-  - scope:
-      path: "README.md"
-    values:
-      layout: "home"
-
-# Google Analytics
-google_analytics: UA-XXXXXXXX-X
-
-# Exclude from processing
-exclude:
-  - Gemfile
-  - Gemfile.lock
-  - node_modules
-  - vendor
-  - .git
-  - .github
+  - "jekyll-github-metadata"
+  - "jekyll-readme-index"
+readme_index:
+  enabled:          true
+  remove_originals: false
+  with_frontmatter: false
