@@ -3,24 +3,24 @@ Tests for the environment utilities in the utils.env module.
 """
 
 import os
-import sys
 import platform
 import subprocess
+import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 from twinizer.utils.env import (
-    is_in_virtualenv,
-    check_python_version,
+    bootstrap_environment,
     check_conda_env,
-    get_venv_path,
+    check_python_version,
     create_venv,
     get_pip_path,
     get_python_path,
-    install_dependencies,
+    get_venv_path,
     inject_system_paths,
-    bootstrap_environment,
+    install_dependencies,
+    is_in_virtualenv,
 )
 
 

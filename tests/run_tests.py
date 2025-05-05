@@ -5,10 +5,10 @@ Test runner for Twinizer.
 This script runs all the tests in the Twinizer test suite.
 """
 
+import argparse
 import os
 import sys
 import unittest
-import argparse
 
 
 def discover_and_run(pattern=None, verbose=False):

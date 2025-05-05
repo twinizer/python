@@ -5,8 +5,8 @@ Tests for the CLI components in the cli module.
 import os
 import sys
 import unittest
-from unittest.mock import patch, MagicMock
 from io import StringIO
+from unittest.mock import MagicMock, patch
 
 import click
 from click.testing import CliRunner

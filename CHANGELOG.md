@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.65] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer/__init__.py
+- Changes in tests/run_tests.py
+- Changes in tests/test_cli.py
+- Changes in tests/test_env.py
+- Changes in tests/test_pdf2md.py
+- Changes in tests/test_project.py
+
 ## [0.1.64] - 2025-05-05
 
 ### Added
