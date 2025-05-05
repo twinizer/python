@@ -1,20 +1,20 @@
 # Jekyll configuration for Twinizer documentation
-title: Twinizer
-description: "Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych"
-url: https://www.twinizer.com
-baseurl: /
+title: "Twinizer - Multi-Format Conversion and Analysis Tool"
+description: "A comprehensive tool for converting between file formats, analyzing code, hardware schematics, and generating documentation"
+url: "https://python.twinizer.com"
+baseurl: ""
 
 # SEO settings
 author:
   name: Tom Sapletta
-  url: https://github.com/twinizer
+  url: https://github.com/tom-sapletta-com
 logo: /docs/diagrams/logo.png
 lang: en_US
 locale: en_US
 
 # Social media
 social:
-  name: Spectomate
+  name: Twinizer
   links:
     - https://github.com/twinizer/python
 
@@ -24,7 +24,7 @@ github:
   is_project_page: true
   repository_url: https://github.com/twinizer/python
   owner_url: https://github.com/twinizer
-  owner_name: Spectomate
+  owner_name: Tom Sapletta
 
 # Theme settings
 theme: jekyll-theme-cayman
@@ -36,14 +36,6 @@ nav:
     url: /
   - title: Documentation
     url: /docs/
-  - title: Architecture
-    url: /docs/ARCHITECTURE.html
-  - title: Converters
-    url: /docs/CONVERTERS.html
-  - title: Schemas
-    url: /docs/SCHEMAS.html
-  - title: Testing
-    url: /docs/TESTING.html
   - title: GitHub
     url: https://github.com/twinizer/python
 
