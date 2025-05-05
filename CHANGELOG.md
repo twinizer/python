@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.89] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer/__init__.py
+
 ## [0.1.88] - 2025-05-05
 
 ### Added
