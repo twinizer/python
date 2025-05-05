@@ -5,10 +5,10 @@ author:
   url: https://github.com/tom-sapletta-com
 lang: "en"
 keywords: "python, package management, pip, conda, poetry, converter, requirements.txt, environment.yml, pyproject.toml"
-image: "https://github.com/spectomate/python/raw/main/docs/diagrams/logo.png"
+image: "https://github.com/twinizer/python/raw/main/docs/diagrams/logo.png"
 
 # Keep your existing configuration below this
-url: https://spectomate.github.io
+url: https://twinizer.github.io
 baseurl: /python/docs
 remote_theme: pages-themes/cayman@v0.2.0
 plugins:
@@ -17,11 +17,11 @@ plugins:
   - jekyll-sitemap
 
 # GitHub metadata
-repository: spectomate/python
+repository: twinizer/python
 github:
   is_project_page: true
-  repository_url: https://github.com/spectomate/python
-  owner_url: https://github.com/spectomate
+  repository_url: https://github.com/twinizer/python
+  owner_url: https://github.com/twinizer
   owner_name: Tom Sapletta
 
 # Build settings
