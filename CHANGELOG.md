@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.48] - 2025-05-05
+
+### Added
+- Changes in .github/workflows/python-package.yml
+- Changes in pyproject.toml
+
 ## [0.1.47] - 2025-05-05
 
 ### Added

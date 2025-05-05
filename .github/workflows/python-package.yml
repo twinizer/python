@@ -33,7 +33,7 @@ jobs:
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Check formatting with black
       run: |
-        black --check-only src tests
+        black --check src tests
     - name: Check imports with isort
       run: |
         isort --check-only --profile black src tests
