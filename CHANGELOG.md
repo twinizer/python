@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.15] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/hardware/kicad/converters.py
+
+### Changed
+- Changes in docs/contributing_guide.md
+
 ## [0.1.14] - 2025-05-05
 
 ### Added

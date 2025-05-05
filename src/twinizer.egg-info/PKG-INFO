@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.13
+Version: 0.1.14
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -171,7 +171,25 @@ See the `examples/` directory for example scripts demonstrating various features
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) file for detailed guidelines on how to contribute to this project.
+
+### Development Workflow
+
+This project uses GitHub Actions for continuous integration. On each push to the main branch and pull requests, the pipeline will:
+- Run tests on multiple Python versions
+- Check code formatting with Black
+- Verify import ordering with isort
+- Run linting with flake8
+- Build the package
+
+### Documentation
+
+The project documentation is available on GitHub Pages at [https://yourusername.github.io/twinizer/](https://yourusername.github.io/twinizer/).
+
+Documentation is written in Markdown with Mermaid diagram support. To contribute to the documentation:
+1. Edit the files in the `docs/` directory
+2. Submit a pull request
+3. Once merged, the documentation will be automatically updated on GitHub Pages
 
 ## License
 
