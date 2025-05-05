@@ -3,8 +3,10 @@ Tests for the Project class in the core.project module.
 """
 
 import os
+import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
