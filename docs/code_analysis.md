@@ -1,7 +1,7 @@
 ---
 title: "Code Analysis with Twinizer"
 description: "Comprehensive guide to code analysis, linting, metrics, and documentation generation with Twinizer"
-author: "Twinizer Team"
+author: "Tom Sapletta"
 keywords: "code analysis, static analysis, linting, code metrics, documentation generation, security scanning"
 lang: "en"
 category: "documentation"

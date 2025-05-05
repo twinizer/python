@@ -1,7 +1,7 @@
 ---
 title: "Twinizer - Digital Twin Generation Toolkit"
 description: "Comprehensive toolkit for creating and manipulating digital twins of hardware and software systems"
-author: "Twinizer Team"
+author: "Tom Sapletta"
 keywords: "digital twin, hardware analysis, software analysis, KiCad, code analysis, documentation generation"
 lang: "en"
 image: "https://raw.githubusercontent.com/twinizer/python/main/docs/assets/twinizer-logo.png"

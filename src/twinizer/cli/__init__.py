@@ -55,6 +55,16 @@ def register_commands():
 # Register commands
 register_commands()
 
+# Register direct commands for backward compatibility
+try:
+    from twinizer.cli.commands.generate_report import generate_report_command
+
+    cli.add_command(generate_report_command)
+except (ImportError, AttributeError) as e:
+    console.print(
+        f"[yellow]Warning: Failed to load generate-report command: {e}[/yellow]"
+    )
+
 
 # Add built-in commands
 @cli.command(name="list-commands", help="List all available commands")

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.69
+Version: 0.1.70
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -48,7 +48,7 @@ Dynamic: license-file
 ---
 title: "Twinizer - Digital Twin Generation Toolkit"
 description: "Comprehensive toolkit for creating and manipulating digital twins of hardware and software systems"
-author: "Twinizer Team"
+author: "Tom Sapletta"
 keywords: "digital twin, hardware analysis, software analysis, KiCad, code analysis, documentation generation"
 lang: "en"
 image: "https://raw.githubusercontent.com/twinizer/python/main/docs/assets/twinizer-logo.png"

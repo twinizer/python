@@ -1,7 +1,7 @@
 ---
 title: "Comprehensive Report Generation with Twinizer"
 description: "Learn how to generate complete project reports with multiple formats using Twinizer's generate-report command"
-author: "Twinizer Team"
+author: "Tom Sapletta"
 keywords: "twinizer, report generation, project analysis, hardware analysis, code analysis, documentation, SVG, HTML, PDF"
 lang: "pl"
 category: "examples"
