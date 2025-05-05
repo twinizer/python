@@ -2,6 +2,39 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.51] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+- Changes in update/env_manager.py
+- Changes in update/version.sh
+
+### Changed
+- Changes in argparse
+- Changes in math
+- Changes in os
+- Changes in sys
+- Changes in CHANGELOG.md
+- Changes in CNAME
+- Changes in CONTRIBUTING.md
+- Changes in KICAD.md
+- Changes in LICENSE
+- Changes in README.md
+- Changes in TODO.md
+- Changes in TODO2.md
+- Changes in TODO3.md
+- Changes in _config.yml
+- Changes in docs/contributing_guide.md
+- Changes in enhanced_schematic.mmd
+- Changes in light_colors.txt
+- Changes in run.bat
+- Changes in run.py
+- Changes in sch2svg.py
+- Changes in sch2svg2.py
+- Changes in update/test_code.py
+
 ## [0.1.50] - 2025-05-05
 
 ### Added
