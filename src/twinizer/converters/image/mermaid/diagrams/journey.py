@@ -9,7 +9,7 @@ This module provides functionality to generate user journey diagrams
 with tasks, sections, and scores.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..utils import escape_text
@@ -52,13 +52,13 @@ class JourneyDiagramGenerator(BaseDiagramGenerator):
             List of formatted journey lines
         """
         journey_lines = []
-        journey_title = escape_text(journey['title'])
+        journey_title = escape_text(journey["title"])
 
         # Add section header
         journey_lines.append(f"section {journey_title}")
 
         # Add tasks
-        for task in journey.get('tasks', []):
+        for task in journey.get("tasks", []):
             task_line = self._format_task(task)
             journey_lines.append(f"    {task_line}")
 
@@ -74,8 +74,8 @@ class JourneyDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted task line
         """
-        task_name = escape_text(task['name'])
-        task_score = task.get('score', 3)  # Default score is 3 (out of 5)
+        task_name = escape_text(task["name"])
+        task_score = task.get("score", 3)  # Default score is 3 (out of 5)
 
         # Ensure score is in valid range
         if task_score < 1:
@@ -84,16 +84,17 @@ class JourneyDiagramGenerator(BaseDiagramGenerator):
             task_score = 5
 
         # Format task with optional actors
-        task_actors = task.get('actors', [])
+        task_actors = task.get("actors", [])
         if task_actors:
-            actors_str = ': ' + ','.join(escape_text(actor) for actor in task_actors)
+            actors_str = ": " + ",".join(escape_text(actor) for actor in task_actors)
             return f"{task_name}: {task_score}{actors_str}"
         else:
             return f"{task_name}: {task_score}"
 
 
-def generate_journey_diagram(journeys: List[Dict], title: Optional[str] = None,
-                             theme: str = 'default') -> str:
+def generate_journey_diagram(
+    journeys: List[Dict], title: Optional[str] = None, theme: str = "default"
+) -> str:
     """
     Generate a Mermaid user journey diagram.
 

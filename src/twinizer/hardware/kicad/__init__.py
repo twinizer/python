@@ -5,14 +5,14 @@ This package provides functionality to parse and analyze KiCad schematic (.sch, 
 and PCB layout (.kicad_pcb) files.
 """
 
-from .sch_parser import KiCadSchematicParser, analyze_kicad_schematic
-from .pcb_parser import KiCadPCBParser, analyze_kicad_pcb
 from .converters import convert_kicad_to_image
+from .pcb_parser import KiCadPCBParser, analyze_kicad_pcb
+from .sch_parser import KiCadSchematicParser, analyze_kicad_schematic
 
 __all__ = [
-    'KiCadSchematicParser',
-    'KiCadPCBParser',
-    'analyze_kicad_schematic',
-    'analyze_kicad_pcb',
-    'convert_kicad_to_image',
+    "KiCadSchematicParser",
+    "KiCadPCBParser",
+    "analyze_kicad_schematic",
+    "analyze_kicad_pcb",
+    "convert_kicad_to_image",
 ]

@@ -5,12 +5,12 @@ This module provides integration with popular JavaScript linting tools such as
 ESLint, JSHint, and StandardJS to analyze JavaScript code quality and detect potential issues.
 """
 
-import os
 import json
+import os
 import subprocess
 import tempfile
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from rich.console import Console
 from rich.table import Table
@@ -23,11 +23,13 @@ class JavaScriptLinter:
     JavaScript code linter that integrates with various JavaScript linting tools.
     """
 
-    def __init__(self, 
-                 use_eslint: bool = True,
-                 use_jshint: bool = False,
-                 use_standard: bool = False,
-                 config_dir: Optional[str] = None):
+    def __init__(
+        self,
+        use_eslint: bool = True,
+        use_jshint: bool = False,
+        use_standard: bool = False,
+        config_dir: Optional[str] = None,
+    ):
         """
         Initialize the JavaScript linter.
 
@@ -54,20 +56,22 @@ class JavaScriptLinter:
         """
         try:
             subprocess.run(
-                [tool_name, "--version"], 
-                stdout=subprocess.PIPE, 
+                [tool_name, "--version"],
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                check=False
+                check=False,
             )
             return True
         except FileNotFoundError:
             console.print(f"[yellow]Warning: {tool_name} not found in PATH[/yellow]")
             return False
 
-    def run_eslint(self, 
-                  target_path: str, 
-                  config_file: Optional[str] = None,
-                  output_format: str = "json") -> Dict[str, Any]:
+    def run_eslint(
+        self,
+        target_path: str,
+        config_file: Optional[str] = None,
+        output_format: str = "json",
+    ) -> Dict[str, Any]:
         """
         Run ESLint on the target path.
 
@@ -83,33 +87,36 @@ class JavaScriptLinter:
             return {"error": "eslint not available"}
 
         cmd = ["eslint", target_path]
-        
+
         if config_file:
             cmd.extend(["--config", config_file])
         elif self.config_dir:
             config_path = os.path.join(self.config_dir, ".eslintrc.js")
             if os.path.exists(config_path):
                 cmd.extend(["--config", config_path])
-        
+
         if output_format == "json":
             cmd.extend(["--format", "json"])
         elif output_format == "html":
             cmd.extend(["--format", "html"])
         else:
             cmd.extend(["--format", "stylish"])
-        
+
         try:
             result = subprocess.run(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
-            
+
             if output_format == "json":
                 try:
-                    return {"result": json.loads(result.stdout), "errors": result.stderr}
+                    return {
+                        "result": json.loads(result.stdout),
+                        "errors": result.stderr,
+                    }
                 except json.JSONDecodeError:
                     return {"result": result.stdout, "errors": result.stderr}
             else:
@@ -117,10 +124,12 @@ class JavaScriptLinter:
         except Exception as e:
             return {"error": str(e)}
 
-    def run_jshint(self, 
-                  target_path: str, 
-                  config_file: Optional[str] = None,
-                  output_format: str = "json") -> Dict[str, Any]:
+    def run_jshint(
+        self,
+        target_path: str,
+        config_file: Optional[str] = None,
+        output_format: str = "json",
+    ) -> Dict[str, Any]:
         """
         Run JSHint on the target path.
 
@@ -136,29 +145,32 @@ class JavaScriptLinter:
             return {"error": "jshint not available"}
 
         cmd = ["jshint", target_path]
-        
+
         if config_file:
             cmd.extend(["--config", config_file])
         elif self.config_dir:
             config_path = os.path.join(self.config_dir, ".jshintrc")
             if os.path.exists(config_path):
                 cmd.extend(["--config", config_path])
-        
+
         if output_format == "json":
             cmd.append("--reporter=json")
-        
+
         try:
             result = subprocess.run(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
-            
+
             if output_format == "json":
                 try:
-                    return {"result": json.loads(result.stdout), "errors": result.stderr}
+                    return {
+                        "result": json.loads(result.stdout),
+                        "errors": result.stderr,
+                    }
                 except json.JSONDecodeError:
                     return {"result": result.stdout, "errors": result.stderr}
             else:
@@ -166,9 +178,9 @@ class JavaScriptLinter:
         except Exception as e:
             return {"error": str(e)}
 
-    def run_standard(self, 
-                    target_path: str,
-                    output_format: str = "json") -> Dict[str, Any]:
+    def run_standard(
+        self, target_path: str, output_format: str = "json"
+    ) -> Dict[str, Any]:
         """
         Run StandardJS on the target path.
 
@@ -183,22 +195,25 @@ class JavaScriptLinter:
             return {"error": "standard not available"}
 
         cmd = ["standard", target_path]
-        
+
         if output_format == "json":
             cmd.append("--reporter=json")
-        
+
         try:
             result = subprocess.run(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
-            
+
             if output_format == "json":
                 try:
-                    return {"result": json.loads(result.stdout), "errors": result.stderr}
+                    return {
+                        "result": json.loads(result.stdout),
+                        "errors": result.stderr,
+                    }
                 except json.JSONDecodeError:
                     return {"result": result.stdout, "errors": result.stderr}
             else:
@@ -206,9 +221,7 @@ class JavaScriptLinter:
         except Exception as e:
             return {"error": str(e)}
 
-    def analyze(self, 
-               target_path: str, 
-               output_format: str = "json") -> Dict[str, Any]:
+    def analyze(self, target_path: str, output_format: str = "json") -> Dict[str, Any]:
         """
         Run all enabled linters on the target path.
 
@@ -220,19 +233,27 @@ class JavaScriptLinter:
             Dictionary with analysis results from all enabled linters
         """
         results = {}
-        
+
         if self.use_eslint:
-            results["eslint"] = self.run_eslint(target_path, output_format=output_format)
-        
+            results["eslint"] = self.run_eslint(
+                target_path, output_format=output_format
+            )
+
         if self.use_jshint:
-            results["jshint"] = self.run_jshint(target_path, output_format=output_format)
-        
+            results["jshint"] = self.run_jshint(
+                target_path, output_format=output_format
+            )
+
         if self.use_standard:
-            results["standard"] = self.run_standard(target_path, output_format=output_format)
-        
+            results["standard"] = self.run_standard(
+                target_path, output_format=output_format
+            )
+
         return results
 
-    def generate_report(self, results: Dict[str, Any], output_format: str = "text") -> str:
+    def generate_report(
+        self, results: Dict[str, Any], output_format: str = "text"
+    ) -> str:
         """
         Generate a report from the analysis results.
 
@@ -245,29 +266,37 @@ class JavaScriptLinter:
         """
         if output_format == "json":
             return json.dumps(results, indent=2)
-        
+
         elif output_format == "markdown":
             md_lines = ["# JavaScript Code Analysis Report\n"]
-            
+
             for tool, tool_results in results.items():
                 md_lines.append(f"## {tool.upper()} Results\n")
-                
+
                 if "error" in tool_results:
                     md_lines.append(f"Error: {tool_results['error']}\n")
                     continue
-                
+
                 if tool == "eslint":
                     # Format ESLint results
                     if isinstance(tool_results.get("result"), list):
                         for file_result in tool_results["result"]:
                             md_lines.append(f"### {file_result.get('filePath', '')}\n")
-                            
+
                             if "messages" in file_result and file_result["messages"]:
-                                md_lines.append("| Line | Column | Severity | Message | Rule |\n")
-                                md_lines.append("|------|--------|----------|---------|------|\n")
-                                
+                                md_lines.append(
+                                    "| Line | Column | Severity | Message | Rule |\n"
+                                )
+                                md_lines.append(
+                                    "|------|--------|----------|---------|------|\n"
+                                )
+
                                 for message in file_result["messages"]:
-                                    severity = "Error" if message.get("severity") == 2 else "Warning"
+                                    severity = (
+                                        "Error"
+                                        if message.get("severity") == 2
+                                        else "Warning"
+                                    )
                                     md_lines.append(
                                         f"| {message.get('line', '')} | "
                                         f"{message.get('column', '')} | "
@@ -279,17 +308,19 @@ class JavaScriptLinter:
                                 md_lines.append("No issues found.\n")
                     else:
                         md_lines.append(f"```\n{tool_results.get('result', '')}\n```\n")
-                
+
                 elif tool == "jshint":
                     # Format JSHint results
                     if isinstance(tool_results.get("result"), list):
                         for file_result in tool_results["result"]:
                             md_lines.append(f"### {file_result.get('file', '')}\n")
-                            
-                            if "error" in file_result and file_result["error"].get("reason"):
+
+                            if "error" in file_result and file_result["error"].get(
+                                "reason"
+                            ):
                                 md_lines.append("| Line | Column | Message | Code |\n")
                                 md_lines.append("|------|--------|---------|------|\n")
-                                
+
                                 error = file_result["error"]
                                 md_lines.append(
                                     f"| {error.get('line', '')} | "
@@ -301,17 +332,17 @@ class JavaScriptLinter:
                                 md_lines.append("No issues found.\n")
                     else:
                         md_lines.append(f"```\n{tool_results.get('result', '')}\n```\n")
-                
+
                 elif tool == "standard":
                     # Format StandardJS results
                     if isinstance(tool_results.get("result"), list):
                         for file_result in tool_results["result"]:
                             md_lines.append(f"### {file_result.get('file', '')}\n")
-                            
+
                             if "messages" in file_result and file_result["messages"]:
                                 md_lines.append("| Line | Column | Message |\n")
                                 md_lines.append("|------|--------|--------|\n")
-                                
+
                                 for message in file_result["messages"]:
                                     md_lines.append(
                                         f"| {message.get('line', '')} | "
@@ -322,13 +353,13 @@ class JavaScriptLinter:
                                 md_lines.append("No issues found.\n")
                     else:
                         md_lines.append(f"```\n{tool_results.get('result', '')}\n```\n")
-                
+
                 else:
                     # Generic format for other tools
                     md_lines.append(f"```\n{tool_results.get('result', '')}\n```\n")
-            
+
             return "\n".join(md_lines)
-        
+
         elif output_format == "html":
             # Simple HTML report
             html_lines = [
@@ -351,28 +382,40 @@ class JavaScriptLinter:
                 "    </style>",
                 "</head>",
                 "<body>",
-                "    <h1>JavaScript Code Analysis Report</h1>"
+                "    <h1>JavaScript Code Analysis Report</h1>",
             ]
-            
+
             for tool, tool_results in results.items():
                 html_lines.append(f"    <h2>{tool.upper()} Results</h2>")
-                
+
                 if "error" in tool_results:
-                    html_lines.append(f"    <p class='error'>Error: {tool_results['error']}</p>")
+                    html_lines.append(
+                        f"    <p class='error'>Error: {tool_results['error']}</p>"
+                    )
                     continue
-                
+
                 if tool == "eslint" and isinstance(tool_results.get("result"), list):
                     for file_result in tool_results["result"]:
-                        html_lines.append(f"    <h3>{file_result.get('filePath', '')}</h3>")
-                        
+                        html_lines.append(
+                            f"    <h3>{file_result.get('filePath', '')}</h3>"
+                        )
+
                         if "messages" in file_result and file_result["messages"]:
                             html_lines.append("    <table>")
-                            html_lines.append("        <tr><th>Line</th><th>Column</th><th>Severity</th><th>Message</th><th>Rule</th></tr>")
-                            
+                            html_lines.append(
+                                "        <tr><th>Line</th><th>Column</th><th>Severity</th><th>Message</th><th>Rule</th></tr>"
+                            )
+
                             for message in file_result["messages"]:
-                                severity = "Error" if message.get("severity") == 2 else "Warning"
-                                severity_class = "error" if severity == "Error" else "warning"
-                                
+                                severity = (
+                                    "Error"
+                                    if message.get("severity") == 2
+                                    else "Warning"
+                                )
+                                severity_class = (
+                                    "error" if severity == "Error" else "warning"
+                                )
+
                                 html_lines.append(
                                     f"        <tr>"
                                     f"<td>{message.get('line', '')}</td>"
@@ -382,18 +425,22 @@ class JavaScriptLinter:
                                     f"<td>{message.get('ruleId', '')}</td>"
                                     f"</tr>"
                                 )
-                            
+
                             html_lines.append("    </table>")
                         else:
                             html_lines.append("    <p>No issues found.</p>")
                 elif tool == "jshint" and isinstance(tool_results.get("result"), list):
                     for file_result in tool_results["result"]:
                         html_lines.append(f"    <h3>{file_result.get('file', '')}</h3>")
-                        
-                        if "error" in file_result and file_result["error"].get("reason"):
+
+                        if "error" in file_result and file_result["error"].get(
+                            "reason"
+                        ):
                             html_lines.append("    <table>")
-                            html_lines.append("        <tr><th>Line</th><th>Column</th><th>Message</th><th>Code</th></tr>")
-                            
+                            html_lines.append(
+                                "        <tr><th>Line</th><th>Column</th><th>Message</th><th>Code</th></tr>"
+                            )
+
                             error = file_result["error"]
                             html_lines.append(
                                 f"        <tr>"
@@ -403,18 +450,22 @@ class JavaScriptLinter:
                                 f"<td>{error.get('code', '')}</td>"
                                 f"</tr>"
                             )
-                            
+
                             html_lines.append("    </table>")
                         else:
                             html_lines.append("    <p>No issues found.</p>")
-                elif tool == "standard" and isinstance(tool_results.get("result"), list):
+                elif tool == "standard" and isinstance(
+                    tool_results.get("result"), list
+                ):
                     for file_result in tool_results["result"]:
                         html_lines.append(f"    <h3>{file_result.get('file', '')}</h3>")
-                        
+
                         if "messages" in file_result and file_result["messages"]:
                             html_lines.append("    <table>")
-                            html_lines.append("        <tr><th>Line</th><th>Column</th><th>Message</th></tr>")
-                            
+                            html_lines.append(
+                                "        <tr><th>Line</th><th>Column</th><th>Message</th></tr>"
+                            )
+
                             for message in file_result["messages"]:
                                 html_lines.append(
                                     f"        <tr>"
@@ -423,44 +474,48 @@ class JavaScriptLinter:
                                     f"<td>{message.get('message', '')}</td>"
                                     f"</tr>"
                                 )
-                            
+
                             html_lines.append("    </table>")
                         else:
                             html_lines.append("    <p>No issues found.</p>")
                 else:
-                    html_lines.append(f"    <pre>{tool_results.get('result', '')}</pre>")
-            
-            html_lines.extend([
-                "</body>",
-                "</html>"
-            ])
-            
+                    html_lines.append(
+                        f"    <pre>{tool_results.get('result', '')}</pre>"
+                    )
+
+            html_lines.extend(["</body>", "</html>"])
+
             return "\n".join(html_lines)
-        
+
         else:  # text format
-            text_lines = ["JavaScript Code Analysis Report", "===============================\n"]
-            
+            text_lines = [
+                "JavaScript Code Analysis Report",
+                "===============================\n",
+            ]
+
             for tool, tool_results in results.items():
                 text_lines.append(f"{tool.upper()} Results:")
                 text_lines.append("-" * (len(tool) + 9) + "\n")
-                
+
                 if "error" in tool_results:
                     text_lines.append(f"Error: {tool_results['error']}\n")
                     continue
-                
+
                 text_lines.append(str(tool_results.get("result", "")))
                 text_lines.append("\n")
-            
+
             return "\n".join(text_lines)
 
 
-def analyze_javascript_code(target_path: str, 
-                           output_path: Optional[str] = None,
-                           output_format: str = "markdown",
-                           use_eslint: bool = True,
-                           use_jshint: bool = False,
-                           use_standard: bool = False,
-                           config_dir: Optional[str] = None) -> str:
+def analyze_javascript_code(
+    target_path: str,
+    output_path: Optional[str] = None,
+    output_format: str = "markdown",
+    use_eslint: bool = True,
+    use_jshint: bool = False,
+    use_standard: bool = False,
+    config_dir: Optional[str] = None,
+) -> str:
     """
     Analyze JavaScript code using various linting tools.
 
@@ -477,21 +532,21 @@ def analyze_javascript_code(target_path: str,
         Path to the output report file or the report as a string if output_path is None
     """
     console.print(f"Analyzing JavaScript code in [cyan]{target_path}[/cyan]...")
-    
+
     linter = JavaScriptLinter(
         use_eslint=use_eslint,
         use_jshint=use_jshint,
         use_standard=use_standard,
-        config_dir=config_dir
+        config_dir=config_dir,
     )
-    
+
     results = linter.analyze(target_path, output_format="json")
     report = linter.generate_report(results, output_format=output_format)
-    
+
     if output_path:
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             f.write(report)
         console.print(f"Analysis report saved to [green]{output_path}[/green]")
         return output_path
-    
+
     return report

@@ -6,10 +6,10 @@ including analyze, compile, debug, convert, and test commands.
 """
 
 from .analyze import analyze
-from .kicad import kicad_group
-from .kicad_with_deps import kicad_deps_group
 from .image import image_group
+from .kicad import kicad_group
 from .kicad_docker import kicad_docker_group
+from .kicad_with_deps import kicad_deps_group
 
 __all__ = [
     "analyze",

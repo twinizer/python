@@ -2,6 +2,567 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.47] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/test_code.py
+- Changes in update/version.sh
+
+## [0.1.46] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.45] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.44] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.43] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.42] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.41] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.40] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/requires.txt
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.39] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.38] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.37] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.36] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.35] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.34] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.33] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.32] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.31] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.30] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.29] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.28] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.27] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.26] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.25] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.24] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.23] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+## [0.1.22] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer.egg-info/SOURCES.txt
+- Changes in src/twinizer/__init__.py
+- Changes in src/twinizer/__main__.py
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/commands/__init__.py
+- Changes in src/twinizer/cli/commands/analyze.py
+- Changes in src/twinizer/cli/commands/compile.py
+- Changes in src/twinizer/cli/commands/convert.py
+- Changes in src/twinizer/cli/commands/debug.py
+- Changes in src/twinizer/cli/commands/image.py
+- Changes in src/twinizer/cli/commands/kicad.py
+- Changes in src/twinizer/cli/commands/kicad_docker.py
+- Changes in src/twinizer/cli/commands/kicad_with_deps.py
+- Changes in src/twinizer/cli/commands/software.py
+- Changes in src/twinizer/cli/commands/test.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/code_analyzer/analyzer.py
+- Changes in src/twinizer/code_analyzer/documentation/generator.py
+- Changes in src/twinizer/code_analyzer/linters/cpp.py
+- Changes in src/twinizer/code_analyzer/linters/javascript.py
+- Changes in src/twinizer/code_analyzer/linters/python.py
+- Changes in src/twinizer/converters/bin2source.py
+- Changes in src/twinizer/converters/bin2source/converters.py
+- Changes in src/twinizer/converters/image/ascii.py
+- Changes in src/twinizer/converters/image/image_to_3d.py
+- Changes in src/twinizer/converters/image/mermaid/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/base.py
+- Changes in src/twinizer/converters/image/mermaid/constants.py
+- Changes in src/twinizer/converters/image/mermaid/converters/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/converters/html.py
+- Changes in src/twinizer/converters/image/mermaid/converters/json.py
+- Changes in src/twinizer/converters/image/mermaid/converters/png.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/class_diagram.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/er.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/flowchart.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/gantt.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/journey.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/pie.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/sequence.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/state.py
+- Changes in src/twinizer/converters/image/mermaid/utils.py
+- Changes in src/twinizer/converters/image2ascii.py
+- Changes in src/twinizer/converters/kicad2image.py
+- Changes in src/twinizer/converters/pdf2md.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/converters/pdf2md/extractor.py
+- Changes in src/twinizer/converters/pdf2md/formatter.py
+- Changes in src/twinizer/converters/pdf2md/ocr.py
+- Changes in src/twinizer/core/config.py
+- Changes in src/twinizer/core/project.py
+- Changes in src/twinizer/hardware/altium.py
+- Changes in src/twinizer/hardware/gerber.py
+- Changes in src/twinizer/hardware/kicad.py
+- Changes in src/twinizer/hardware/kicad/__init__.py
+- Changes in src/twinizer/hardware/kicad/batch_processing.py
+- Changes in src/twinizer/hardware/kicad/converters.py
+- Changes in src/twinizer/hardware/kicad/pcb_parser.py
+- Changes in src/twinizer/hardware/kicad/sch_parser.py
+- Changes in src/twinizer/software/analyze.py
+- Changes in src/twinizer/software/analyze/dependency.py
+- Changes in src/twinizer/software/decompile.py
+- Changes in src/twinizer/software/decompile/elf.py
+- Changes in src/twinizer/software/disassemble.py
+- Changes in src/twinizer/software/disassemble/binary.py
+- Changes in src/twinizer/utils/env.py
+- Changes in src/twinizer/utils/logging.py
+- Changes in tests/test_project.py
+- Changes in update/version.sh
+
+### Changed
+- Changes in src/twinizer/software/analyze/binary.py
+
+## [0.1.21] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+- Changes in src/twinizer/__main__.py
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/commands/__init__.py
+- Changes in src/twinizer/cli/commands/analyze.py
+- Changes in src/twinizer/cli/commands/compile.py
+- Changes in src/twinizer/cli/commands/convert.py
+- Changes in src/twinizer/cli/commands/debug.py
+- Changes in src/twinizer/cli/commands/image.py
+- Changes in src/twinizer/cli/commands/kicad.py
+- Changes in src/twinizer/cli/commands/kicad_docker.py
+- Changes in src/twinizer/cli/commands/kicad_with_deps.py
+- Changes in src/twinizer/cli/commands/software.py
+- Changes in src/twinizer/cli/commands/test.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/code_analyzer/analyzer.py
+- Changes in src/twinizer/code_analyzer/documentation/generator.py
+- Changes in src/twinizer/code_analyzer/linters/cpp.py
+- Changes in src/twinizer/code_analyzer/linters/javascript.py
+- Changes in src/twinizer/code_analyzer/linters/python.py
+- Changes in src/twinizer/converters/bin2source.py
+- Changes in src/twinizer/converters/bin2source/converters.py
+- Changes in src/twinizer/converters/image/ascii.py
+- Changes in src/twinizer/converters/image/image_to_3d.py
+- Changes in src/twinizer/converters/image/mermaid/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/base.py
+- Changes in src/twinizer/converters/image/mermaid/constants.py
+- Changes in src/twinizer/converters/image/mermaid/converters/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/converters/html.py
+- Changes in src/twinizer/converters/image/mermaid/converters/json.py
+- Changes in src/twinizer/converters/image/mermaid/converters/png.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/class_diagram.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/er.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/flowchart.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/gantt.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/journey.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/pie.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/sequence.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/state.py
+- Changes in src/twinizer/converters/image/mermaid/utils.py
+- Changes in src/twinizer/converters/image2ascii.py
+- Changes in src/twinizer/converters/kicad2image.py
+- Changes in src/twinizer/converters/pdf2md.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/converters/pdf2md/extractor.py
+- Changes in src/twinizer/converters/pdf2md/formatter.py
+- Changes in src/twinizer/converters/pdf2md/ocr.py
+- Changes in src/twinizer/core/config.py
+- Changes in src/twinizer/core/project.py
+- Changes in src/twinizer/hardware/altium.py
+- Changes in src/twinizer/hardware/gerber.py
+- Changes in src/twinizer/hardware/kicad.py
+- Changes in src/twinizer/hardware/kicad/__init__.py
+- Changes in src/twinizer/hardware/kicad/batch_processing.py
+- Changes in src/twinizer/hardware/kicad/converters.py
+- Changes in src/twinizer/hardware/kicad/pcb_parser.py
+- Changes in src/twinizer/hardware/kicad/sch_parser.py
+- Changes in src/twinizer/software/analyze.py
+- Changes in src/twinizer/software/analyze/dependency.py
+- Changes in src/twinizer/software/decompile.py
+- Changes in src/twinizer/software/decompile/elf.py
+- Changes in src/twinizer/software/disassemble.py
+- Changes in src/twinizer/software/disassemble/binary.py
+- Changes in src/twinizer/utils/env.py
+- Changes in src/twinizer/utils/logging.py
+- Changes in update/version.sh
+
+## [0.1.20] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+- Changes in src/twinizer/__main__.py
+- Changes in src/twinizer/cli/__init__.py
+- Changes in src/twinizer/cli/commands/__init__.py
+- Changes in src/twinizer/cli/commands/analyze.py
+- Changes in src/twinizer/cli/commands/compile.py
+- Changes in src/twinizer/cli/commands/convert.py
+- Changes in src/twinizer/cli/commands/debug.py
+- Changes in src/twinizer/cli/commands/image.py
+- Changes in src/twinizer/cli/commands/kicad.py
+- Changes in src/twinizer/cli/commands/kicad_docker.py
+- Changes in src/twinizer/cli/commands/kicad_with_deps.py
+- Changes in src/twinizer/cli/commands/software.py
+- Changes in src/twinizer/cli/commands/test.py
+- Changes in src/twinizer/cli/main.py
+- Changes in src/twinizer/cli/shell.py
+- Changes in src/twinizer/code_analyzer/analyzer.py
+- Changes in src/twinizer/code_analyzer/documentation/generator.py
+- Changes in src/twinizer/code_analyzer/linters/cpp.py
+- Changes in src/twinizer/code_analyzer/linters/javascript.py
+- Changes in src/twinizer/code_analyzer/linters/python.py
+- Changes in src/twinizer/converters/bin2source.py
+- Changes in src/twinizer/converters/bin2source/converters.py
+- Changes in src/twinizer/converters/image/ascii.py
+- Changes in src/twinizer/converters/image/image_to_3d.py
+- Changes in src/twinizer/converters/image/mermaid/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/base.py
+- Changes in src/twinizer/converters/image/mermaid/constants.py
+- Changes in src/twinizer/converters/image/mermaid/converters/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/converters/html.py
+- Changes in src/twinizer/converters/image/mermaid/converters/json.py
+- Changes in src/twinizer/converters/image/mermaid/converters/png.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/__init__.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/class_diagram.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/er.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/flowchart.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/gantt.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/journey.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/pie.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/sequence.py
+- Changes in src/twinizer/converters/image/mermaid/diagrams/state.py
+- Changes in src/twinizer/converters/image/mermaid/utils.py
+- Changes in src/twinizer/converters/image2ascii.py
+- Changes in src/twinizer/converters/kicad2image.py
+- Changes in src/twinizer/converters/pdf2md.py
+- Changes in src/twinizer/converters/pdf2md/__init__.py
+- Changes in src/twinizer/converters/pdf2md/extractor.py
+- Changes in src/twinizer/converters/pdf2md/formatter.py
+- Changes in src/twinizer/converters/pdf2md/ocr.py
+- Changes in src/twinizer/core/config.py
+- Changes in src/twinizer/core/project.py
+- Changes in src/twinizer/hardware/altium.py
+- Changes in src/twinizer/hardware/gerber.py
+- Changes in src/twinizer/hardware/kicad.py
+- Changes in src/twinizer/hardware/kicad/__init__.py
+- Changes in src/twinizer/hardware/kicad/batch_processing.py
+- Changes in src/twinizer/hardware/kicad/converters.py
+- Changes in src/twinizer/hardware/kicad/pcb_parser.py
+- Changes in src/twinizer/hardware/kicad/sch_parser.py
+- Changes in src/twinizer/software/analyze.py
+- Changes in src/twinizer/software/analyze/dependency.py
+- Changes in src/twinizer/software/decompile.py
+- Changes in src/twinizer/software/decompile/elf.py
+- Changes in src/twinizer/software/disassemble.py
+- Changes in src/twinizer/software/disassemble/binary.py
+- Changes in src/twinizer/utils/env.py
+- Changes in src/twinizer/utils/logging.py
+- Changes in update/version.sh
+
+## [0.1.19] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in update/version.sh
+
 ## [0.1.18] - 2025-05-05
 
 ### Added

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "twinizer"
-version = "0.1.18"
+version = "0.1.47"
 description = "A comprehensive environment for hardware and firmware reverse engineering, analysis and management"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -22,8 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "prompt-toolkit>=3.0.0",
-    "click>=8.0.0",
-    "rich>=10.0.0",
+    "click>=8.1.8",
+    "rich>=12.5.1,<13.0.0",
     "pyelftools>=0.27",
     "capstone>=4.0.2",
     "pefile>=2022.5.30",

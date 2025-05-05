@@ -5,6 +5,7 @@ This module provides functions to extract text, images, and metadata from PDF do
 """
 
 import os
+
 import fitz  # PyMuPDF
 from rich.console import Console
 
@@ -44,7 +45,11 @@ def extract_metadata(pdf_path):
         doc = fitz.open(pdf_path)
         metadata = doc.metadata
         # Filter out empty metadata
-        return {k: v for k, v in metadata.items() if v and k.lower() not in ['format', 'encryption']}
+        return {
+            k: v
+            for k, v in metadata.items()
+            if v and k.lower() not in ["format", "encryption"]
+        }
     except Exception as e:
         console.print(f"[yellow]Warning: Failed to extract metadata: {e}[/yellow]")
         return {}
@@ -96,16 +101,20 @@ def extract_images(doc, page, base_filename, image_dir, image_format, page_num):
                 width, height = pix.width, pix.height
 
                 # Add image information to the list
-                images.append({
-                    'filename': image_filename,
-                    'path': image_path,
-                    'width': width,
-                    'height': height,
-                    'index': image_count
-                })
+                images.append(
+                    {
+                        "filename": image_filename,
+                        "path": image_path,
+                        "width": width,
+                        "height": height,
+                        "index": image_count,
+                    }
+                )
 
             except Exception as e:
-                console.print(f"[yellow]Warning: Failed to extract image {img_index}: {e}[/yellow]")
+                console.print(
+                    f"[yellow]Warning: Failed to extract image {img_index}: {e}[/yellow]"
+                )
 
     except Exception as e:
         console.print(f"[yellow]Warning: Failed to process images: {e}[/yellow]")
@@ -137,9 +146,9 @@ def detect_tables(page):
     v_lines = []
 
     for path in paths:
-        if 'items' in path:
-            for item in path['items']:
-                if item[0] == 'l':  # Line
+        if "items" in path:
+            for item in path["items"]:
+                if item[0] == "l":  # Line
                     x0, y0, x1, y1 = item[1]
                     # Check if horizontal or vertical
                     if abs(y1 - y0) < 1:  # Horizontal
@@ -167,10 +176,10 @@ def extract_structured_content(page):
     # structured content like headings, paragraphs, lists, etc.
 
     structured_content = {
-        'headings': [],
-        'paragraphs': [],
-        'lists': [],
-        'tables': detect_tables(page)
+        "headings": [],
+        "paragraphs": [],
+        "lists": [],
+        "tables": detect_tables(page),
     }
 
     # Get text blocks
@@ -182,15 +191,13 @@ def extract_structured_content(page):
 
         # Simple heuristic: heading if text is short and large font
         if len(text) < 100 and (x1 - x0) > 100 and (y1 - y0) < 30:
-            structured_content['headings'].append({
-                'text': text,
-                'position': (x0, y0, x1, y1)
-            })
+            structured_content["headings"].append(
+                {"text": text, "position": (x0, y0, x1, y1)}
+            )
         # Paragraph otherwise
         else:
-            structured_content['paragraphs'].append({
-                'text': text,
-                'position': (x0, y0, x1, y1)
-            })
+            structured_content["paragraphs"].append(
+                {"text": text, "position": (x0, y0, x1, y1)}
+            )
 
     return structured_content

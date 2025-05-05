@@ -5,11 +5,11 @@ This module provides functionality to generate comprehensive documentation
 from source code using various documentation tools and formats.
 """
 
-import os
 import json
+import os
 import subprocess
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from rich.console import Console
 from rich.table import Table
@@ -22,10 +22,12 @@ class DocumentationGenerator:
     Documentation generator that integrates with various documentation tools.
     """
 
-    def __init__(self, 
-                 output_dir: Optional[str] = None,
-                 template_dir: Optional[str] = None,
-                 config_dir: Optional[str] = None):
+    def __init__(
+        self,
+        output_dir: Optional[str] = None,
+        template_dir: Optional[str] = None,
+        config_dir: Optional[str] = None,
+    ):
         """
         Initialize the documentation generator.
 
@@ -50,20 +52,22 @@ class DocumentationGenerator:
         """
         try:
             subprocess.run(
-                [tool_name, "--version"], 
-                stdout=subprocess.PIPE, 
+                [tool_name, "--version"],
+                stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                check=False
+                check=False,
             )
             return True
         except FileNotFoundError:
             console.print(f"[yellow]Warning: {tool_name} not found in PATH[/yellow]")
             return False
 
-    def generate_sphinx_docs(self, 
-                           target_path: str, 
-                           output_dir: Optional[str] = None,
-                           config_file: Optional[str] = None) -> Dict[str, Any]:
+    def generate_sphinx_docs(
+        self,
+        target_path: str,
+        output_dir: Optional[str] = None,
+        config_file: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Generate documentation using Sphinx.
 
@@ -81,72 +85,69 @@ class DocumentationGenerator:
         output_dir = output_dir or self.output_dir
         if not output_dir:
             output_dir = os.path.join(target_path, "docs", "build", "html")
-        
+
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Create Sphinx configuration if not provided
         if not config_file and self.config_dir:
             config_file = os.path.join(self.config_dir, "conf.py")
-        
+
         if not config_file or not os.path.exists(config_file):
             # Create a temporary conf.py
             config_file = self._create_sphinx_config(target_path)
-        
+
         # Create Sphinx source directory
         source_dir = os.path.join(output_dir, "_source")
         os.makedirs(source_dir, exist_ok=True)
-        
+
         # Generate API documentation using sphinx-apidoc
         apidoc_cmd = [
-            "sphinx-apidoc", 
-            "-o", source_dir, 
+            "sphinx-apidoc",
+            "-o",
+            source_dir,
             target_path,
             "--force",
-            "--separate"
+            "--separate",
         ]
-        
+
         try:
             subprocess.run(
                 apidoc_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
         except Exception as e:
             return {"error": f"Error running sphinx-apidoc: {str(e)}"}
-        
+
         # Copy config file to source directory
         import shutil
+
         shutil.copy(config_file, os.path.join(source_dir, "conf.py"))
-        
+
         # Create index.rst if it doesn't exist
         index_path = os.path.join(source_dir, "index.rst")
         if not os.path.exists(index_path):
             self._create_sphinx_index(source_dir, target_path)
-        
+
         # Build documentation
-        build_cmd = [
-            "sphinx-build",
-            "-b", "html",
-            source_dir,
-            output_dir
-        ]
-        
+        build_cmd = ["sphinx-build", "-b", "html", source_dir, output_dir]
+
         try:
             result = subprocess.run(
                 build_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
-            
+
             return {
                 "result": "Documentation generated successfully",
                 "output_dir": output_dir,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
         except Exception as e:
             return {"error": f"Error building documentation: {str(e)}"}
@@ -163,15 +164,16 @@ class DocumentationGenerator:
         """
         # Get project name from directory
         project_name = os.path.basename(os.path.abspath(target_path))
-        
+
         # Create a temporary directory for the configuration
         temp_dir = os.path.join(target_path, "docs", "temp")
         os.makedirs(temp_dir, exist_ok=True)
-        
+
         config_path = os.path.join(temp_dir, "conf.py")
-        
+
         with open(config_path, "w") as f:
-            f.write(f"""
+            f.write(
+                f"""
 # Configuration file for Sphinx documentation builder.
 
 # -- Project information -----------------------------------------------------
@@ -203,8 +205,9 @@ napoleon_numpy_docstring = False
 napoleon_include_init_with_doc = True
 napoleon_include_private_with_doc = True
 napoleon_include_special_with_doc = True
-""")
-        
+"""
+            )
+
         return config_path
 
     def _create_sphinx_index(self, source_dir: str, target_path: str) -> None:
@@ -217,11 +220,12 @@ napoleon_include_special_with_doc = True
         """
         # Get project name from directory
         project_name = os.path.basename(os.path.abspath(target_path))
-        
+
         index_path = os.path.join(source_dir, "index.rst")
-        
+
         with open(index_path, "w") as f:
-            f.write(f"""
+            f.write(
+                f"""
 Welcome to {project_name}'s documentation!
 {'=' * (len(project_name) + 23)}
 
@@ -237,12 +241,15 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-""")
+"""
+            )
 
-    def generate_mkdocs(self, 
-                      target_path: str, 
-                      output_dir: Optional[str] = None,
-                      config_file: Optional[str] = None) -> Dict[str, Any]:
+    def generate_mkdocs(
+        self,
+        target_path: str,
+        output_dir: Optional[str] = None,
+        config_file: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Generate documentation using MkDocs.
 
@@ -260,46 +267,41 @@ Indices and tables
         output_dir = output_dir or self.output_dir
         if not output_dir:
             output_dir = os.path.join(target_path, "site")
-        
+
         # Create MkDocs configuration if not provided
         if not config_file and self.config_dir:
             config_file = os.path.join(self.config_dir, "mkdocs.yml")
-        
+
         if not config_file or not os.path.exists(config_file):
             # Create a temporary mkdocs.yml
             config_file = self._create_mkdocs_config(target_path)
-        
+
         # Create docs directory
         docs_dir = os.path.join(target_path, "docs")
         os.makedirs(docs_dir, exist_ok=True)
-        
+
         # Create index.md if it doesn't exist
         index_path = os.path.join(docs_dir, "index.md")
         if not os.path.exists(index_path):
             self._create_mkdocs_index(docs_dir, target_path)
-        
+
         # Build documentation
-        build_cmd = [
-            "mkdocs",
-            "build",
-            "-f", config_file,
-            "-d", output_dir
-        ]
-        
+        build_cmd = ["mkdocs", "build", "-f", config_file, "-d", output_dir]
+
         try:
             result = subprocess.run(
                 build_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
-            
+
             return {
                 "result": "Documentation generated successfully",
                 "output_dir": output_dir,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
         except Exception as e:
             return {"error": f"Error building documentation: {str(e)}"}
@@ -316,11 +318,12 @@ Indices and tables
         """
         # Get project name from directory
         project_name = os.path.basename(os.path.abspath(target_path))
-        
+
         config_path = os.path.join(target_path, "mkdocs.yml")
-        
+
         with open(config_path, "w") as f:
-            f.write(f"""
+            f.write(
+                f"""
 site_name: {project_name} Documentation
 site_description: Documentation for {project_name}
 site_author: Twinizer
@@ -363,8 +366,9 @@ plugins:
 nav:
   - Home: index.md
   - API Reference: reference/
-""")
-        
+"""
+            )
+
         return config_path
 
     def _create_mkdocs_index(self, docs_dir: str, target_path: str) -> None:
@@ -377,11 +381,12 @@ nav:
         """
         # Get project name from directory
         project_name = os.path.basename(os.path.abspath(target_path))
-        
+
         index_path = os.path.join(docs_dir, "index.md")
-        
+
         with open(index_path, "w") as f:
-            f.write(f"""
+            f.write(
+                f"""
 # {project_name} Documentation
 
 Welcome to the {project_name} documentation.
@@ -408,11 +413,12 @@ import {project_name.lower()}
 ## API Reference
 
 For detailed API documentation, see the [API Reference](reference/).
-""")
+"""
+            )
 
-    def generate_pdoc(self, 
-                    target_path: str, 
-                    output_dir: Optional[str] = None) -> Dict[str, Any]:
+    def generate_pdoc(
+        self, target_path: str, output_dir: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         Generate documentation using pdoc.
 
@@ -429,39 +435,36 @@ For detailed API documentation, see the [API Reference](reference/).
         output_dir = output_dir or self.output_dir
         if not output_dir:
             output_dir = os.path.join(os.path.dirname(target_path), "docs", "html")
-        
+
         os.makedirs(output_dir, exist_ok=True)
-        
+
         # Build documentation
-        build_cmd = [
-            "pdoc",
-            "--html",
-            "--output-dir", output_dir,
-            target_path
-        ]
-        
+        build_cmd = ["pdoc", "--html", "--output-dir", output_dir, target_path]
+
         try:
             result = subprocess.run(
                 build_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                check=False
+                check=False,
             )
-            
+
             return {
                 "result": "Documentation generated successfully",
                 "output_dir": output_dir,
                 "stdout": result.stdout,
-                "stderr": result.stderr
+                "stderr": result.stderr,
             }
         except Exception as e:
             return {"error": f"Error building documentation: {str(e)}"}
 
-    def generate_mermaid_diagrams(self, 
-                                target_path: str, 
-                                output_dir: Optional[str] = None,
-                                diagram_types: List[str] = ["class", "package"]) -> Dict[str, Any]:
+    def generate_mermaid_diagrams(
+        self,
+        target_path: str,
+        output_dir: Optional[str] = None,
+        diagram_types: List[str] = ["class", "package"],
+    ) -> Dict[str, Any]:
         """
         Generate Mermaid diagrams from Python code.
 
@@ -475,6 +478,7 @@ For detailed API documentation, see the [API Reference](reference/).
         """
         try:
             import importlib.util
+
             pyreverse_spec = importlib.util.find_spec("pylint")
             if pyreverse_spec is None:
                 return {"error": "pylint (with pyreverse) not available"}
@@ -484,11 +488,11 @@ For detailed API documentation, see the [API Reference](reference/).
         output_dir = output_dir or self.output_dir
         if not output_dir:
             output_dir = os.path.join(target_path, "docs", "diagrams")
-        
+
         os.makedirs(output_dir, exist_ok=True)
-        
+
         results = {}
-        
+
         # Generate diagrams using pyreverse
         for diagram_type in diagram_types:
             if diagram_type == "class":
@@ -497,24 +501,26 @@ For detailed API documentation, see the [API Reference](reference/).
                     # First generate dot files with pyreverse
                     pyreverse_cmd = [
                         "pyreverse",
-                        "-o", "dot",
-                        "-p", os.path.basename(target_path),
-                        target_path
+                        "-o",
+                        "dot",
+                        "-p",
+                        os.path.basename(target_path),
+                        target_path,
                     ]
-                    
+
                     subprocess.run(
                         pyreverse_cmd,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True,
-                        check=False
+                        check=False,
                     )
-                    
+
                     # Convert dot to Mermaid
                     dot_file = f"classes_{os.path.basename(target_path)}.dot"
                     if os.path.exists(dot_file):
                         mermaid_content = self._dot_to_mermaid(dot_file, "class")
-                        
+
                         # Save Mermaid diagram
                         mermaid_file = os.path.join(output_dir, f"class_diagram.md")
                         with open(mermaid_file, "w") as f:
@@ -522,12 +528,12 @@ For detailed API documentation, see the [API Reference](reference/).
                             f.write("```mermaid\n")
                             f.write(mermaid_content)
                             f.write("\n```\n")
-                        
+
                         results["class_diagram"] = {
                             "result": "Class diagram generated successfully",
-                            "output_file": mermaid_file
+                            "output_file": mermaid_file,
                         }
-                        
+
                         # Clean up dot file
                         os.remove(dot_file)
                     else:
@@ -538,32 +544,34 @@ For detailed API documentation, see the [API Reference](reference/).
                     results["class_diagram"] = {
                         "error": f"Error generating class diagram: {str(e)}"
                     }
-            
+
             elif diagram_type == "package":
                 # Generate package diagram
                 try:
                     # First generate dot files with pyreverse
                     pyreverse_cmd = [
                         "pyreverse",
-                        "-o", "dot",
-                        "-p", os.path.basename(target_path),
+                        "-o",
+                        "dot",
+                        "-p",
+                        os.path.basename(target_path),
                         "-k",
-                        target_path
+                        target_path,
                     ]
-                    
+
                     subprocess.run(
                         pyreverse_cmd,
                         stdout=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         text=True,
-                        check=False
+                        check=False,
                     )
-                    
+
                     # Convert dot to Mermaid
                     dot_file = f"packages_{os.path.basename(target_path)}.dot"
                     if os.path.exists(dot_file):
                         mermaid_content = self._dot_to_mermaid(dot_file, "package")
-                        
+
                         # Save Mermaid diagram
                         mermaid_file = os.path.join(output_dir, f"package_diagram.md")
                         with open(mermaid_file, "w") as f:
@@ -571,12 +579,12 @@ For detailed API documentation, see the [API Reference](reference/).
                             f.write("```mermaid\n")
                             f.write(mermaid_content)
                             f.write("\n```\n")
-                        
+
                         results["package_diagram"] = {
                             "result": "Package diagram generated successfully",
-                            "output_file": mermaid_file
+                            "output_file": mermaid_file,
                         }
-                        
+
                         # Clean up dot file
                         os.remove(dot_file)
                     else:
@@ -587,7 +595,7 @@ For detailed API documentation, see the [API Reference](reference/).
                     results["package_diagram"] = {
                         "error": f"Error generating package diagram: {str(e)}"
                     }
-        
+
         return results
 
     def _dot_to_mermaid(self, dot_file: str, diagram_type: str) -> str:
@@ -604,52 +612,56 @@ For detailed API documentation, see the [API Reference](reference/).
         # Simple conversion from DOT to Mermaid
         with open(dot_file, "r") as f:
             dot_content = f.read()
-        
+
         if diagram_type == "class":
             # Convert to class diagram
             mermaid_lines = ["classDiagram"]
-            
+
             # Parse DOT file
             import re
-            
+
             # Extract nodes
             nodes = {}
-            for node_match in re.finditer(r'"([^"]+)" \[label="{([^}]+)}"\]', dot_content):
+            for node_match in re.finditer(
+                r'"([^"]+)" \[label="{([^}]+)}"\]', dot_content
+            ):
                 node_id = node_match.group(1)
                 node_label = node_match.group(2)
-                
+
                 # Process label
                 parts = node_label.split("|")
                 class_name = parts[0].strip()
-                
+
                 nodes[node_id] = class_name
-                
+
                 # Add class to diagram
                 mermaid_lines.append(f"    class {class_name}")
-                
+
                 # Add attributes and methods if available
                 if len(parts) > 1 and parts[1].strip():
                     attributes = parts[1].strip().split("\\l")
                     for attr in attributes:
                         if attr.strip():
                             mermaid_lines.append(f"    {class_name} : {attr.strip()}")
-                
+
                 if len(parts) > 2 and parts[2].strip():
                     methods = parts[2].strip().split("\\l")
                     for method in methods:
                         if method.strip():
                             mermaid_lines.append(f"    {class_name} : {method.strip()}")
-            
+
             # Extract relationships
-            for edge_match in re.finditer(r'"([^"]+)" -> "([^"]+)" \[arrowhead=([^,]+),.*\]', dot_content):
+            for edge_match in re.finditer(
+                r'"([^"]+)" -> "([^"]+)" \[arrowhead=([^,]+),.*\]', dot_content
+            ):
                 source = edge_match.group(1)
                 target = edge_match.group(2)
                 arrow_type = edge_match.group(3)
-                
+
                 if source in nodes and target in nodes:
                     source_class = nodes[source]
                     target_class = nodes[target]
-                    
+
                     # Map arrow type to relationship
                     if arrow_type == "empty":
                         # Inheritance
@@ -663,46 +675,50 @@ For detailed API documentation, see the [API Reference](reference/).
                     else:
                         # Association
                         mermaid_lines.append(f"    {source_class} --> {target_class}")
-            
+
             return "\n".join(mermaid_lines)
-        
+
         elif diagram_type == "package":
             # Convert to package diagram
             mermaid_lines = ["flowchart LR"]
-            
+
             # Parse DOT file
             import re
-            
+
             # Extract nodes
             nodes = {}
-            for node_match in re.finditer(r'"([^"]+)" \[label="([^"]+)".*\]', dot_content):
+            for node_match in re.finditer(
+                r'"([^"]+)" \[label="([^"]+)".*\]', dot_content
+            ):
                 node_id = node_match.group(1)
                 node_label = node_match.group(2)
-                
+
                 nodes[node_id] = node_label
-                
+
                 # Add package to diagram
                 mermaid_lines.append(f"    {node_id}[{node_label}]")
-            
+
             # Extract relationships
             for edge_match in re.finditer(r'"([^"]+)" -> "([^"]+)"', dot_content):
                 source = edge_match.group(1)
                 target = edge_match.group(2)
-                
+
                 if source in nodes and target in nodes:
                     mermaid_lines.append(f"    {source} --> {target}")
-            
+
             return "\n".join(mermaid_lines)
-        
+
         return ""
 
 
-def generate_documentation(target_path: str, 
-                          output_dir: Optional[str] = None,
-                          doc_type: str = "sphinx",
-                          generate_diagrams: bool = True,
-                          template_dir: Optional[str] = None,
-                          config_dir: Optional[str] = None) -> Dict[str, Any]:
+def generate_documentation(
+    target_path: str,
+    output_dir: Optional[str] = None,
+    doc_type: str = "sphinx",
+    generate_diagrams: bool = True,
+    template_dir: Optional[str] = None,
+    config_dir: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Generate documentation for a project.
 
@@ -718,15 +734,13 @@ def generate_documentation(target_path: str,
         Dictionary with documentation generation results
     """
     console.print(f"Generating documentation for [cyan]{target_path}[/cyan]...")
-    
+
     generator = DocumentationGenerator(
-        output_dir=output_dir,
-        template_dir=template_dir,
-        config_dir=config_dir
+        output_dir=output_dir, template_dir=template_dir, config_dir=config_dir
     )
-    
+
     results = {}
-    
+
     # Generate documentation based on doc_type
     if doc_type == "sphinx":
         results["sphinx"] = generator.generate_sphinx_docs(target_path, output_dir)
@@ -736,16 +750,15 @@ def generate_documentation(target_path: str,
         results["pdoc"] = generator.generate_pdoc(target_path, output_dir)
     else:
         results["error"] = f"Unsupported documentation type: {doc_type}"
-    
+
     # Generate diagrams if requested
     if generate_diagrams:
         diagram_output_dir = output_dir
         if output_dir:
             diagram_output_dir = os.path.join(output_dir, "diagrams")
-        
+
         results["diagrams"] = generator.generate_mermaid_diagrams(
-            target_path,
-            output_dir=diagram_output_dir
+            target_path, output_dir=diagram_output_dir
         )
-    
+
     return results

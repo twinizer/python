@@ -6,9 +6,10 @@ This module provides OCR functionality to extract text from PDF images.
 
 import os
 import tempfile
-from PIL import Image
+
 import pytesseract
 from pdf2image import convert_from_path
+from PIL import Image
 from rich.console import Console
 
 console = Console()
@@ -32,13 +33,13 @@ def perform_ocr(pdf_path, page_num):
 
             # Convert the page to an image
             images = convert_from_path(
-                pdf_path,
-                first_page=page_num + 1,
-                last_page=page_num + 1
+                pdf_path, first_page=page_num + 1, last_page=page_num + 1
             )
 
             if not images:
-                console.print("[yellow]Warning: Could not convert PDF page to image[/yellow]")
+                console.print(
+                    "[yellow]Warning: Could not convert PDF page to image[/yellow]"
+                )
                 return ""
 
             # Save the image to a temporary file
@@ -96,8 +97,8 @@ def preprocess_image(image):
         Processed PIL Image object
     """
     # Convert to grayscale
-    if image.mode != 'L':
-        image = image.convert('L')
+    if image.mode != "L":
+        image = image.convert("L")
 
     # In a real implementation, we would apply more sophisticated preprocessing:
     # - Binarization (Otsu's method)
@@ -122,13 +123,13 @@ def post_process_ocr_text(text):
         return text
 
     # Remove excessive newlines
-    text = '\n'.join([line for line in text.splitlines() if line.strip()])
+    text = "\n".join([line for line in text.splitlines() if line.strip()])
 
     # Fix common OCR errors
     replacements = {
-        'l': '1',  # Common OCR confusion between lowercase l and number 1
-        '0': 'O',  # Number 0 and letter O confusion
-        '|': 'I',  # Vertical bar and capital I confusion
+        "l": "1",  # Common OCR confusion between lowercase l and number 1
+        "0": "O",  # Number 0 and letter O confusion
+        "|": "I",  # Vertical bar and capital I confusion
         # Add more common substitutions as needed
     }
 
@@ -140,7 +141,7 @@ def post_process_ocr_text(text):
     for line in text.splitlines():
         processed_lines.append(line)
 
-    return '\n'.join(processed_lines)
+    return "\n".join(processed_lines)
 
 
 def tesseract_available():
@@ -152,13 +153,14 @@ def tesseract_available():
     """
     try:
         import subprocess
+
         # Try to run tesseract with version flag
         result = subprocess.run(
-            ['tesseract', '--version'],
+            ["tesseract", "--version"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
-            timeout=3
+            timeout=3,
         )
         return result.returncode == 0
     except Exception:

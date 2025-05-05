@@ -9,7 +9,7 @@ This module provides the base generator class for Mermaid diagrams
 with common functionality shared across different diagram types.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from .constants import THEMES
 from .utils import add_theme_directive
@@ -23,7 +23,7 @@ class BaseDiagramGenerator:
     such as theme management and basic diagram structure.
     """
 
-    def __init__(self, theme: str = 'default'):
+    def __init__(self, theme: str = "default"):
         """
         Initialize the base diagram generator.
 
@@ -31,7 +31,9 @@ class BaseDiagramGenerator:
             theme: Theme name for the diagrams ('default', 'dark', 'forest', 'neutral', etc.)
         """
         if theme not in THEMES:
-            raise ValueError(f"Unsupported theme: {theme}. Available themes: {', '.join(THEMES)}")
+            raise ValueError(
+                f"Unsupported theme: {theme}. Available themes: {', '.join(THEMES)}"
+            )
 
         self.theme = theme
 
@@ -44,7 +46,9 @@ class BaseDiagramGenerator:
         """
         return add_theme_directive(self.theme)
 
-    def _add_title(self, mermaid_lines: List[str], title: Optional[str] = None, indent: int = 4) -> None:
+    def _add_title(
+        self, mermaid_lines: List[str], title: Optional[str] = None, indent: int = 4
+    ) -> None:
         """
         Add a title to the diagram if provided.
 
@@ -56,9 +60,13 @@ class BaseDiagramGenerator:
         if title:
             mermaid_lines.append(f"{' ' * indent}title {title}")
 
-    def _format_diagram(self, diagram_type: str, content_lines: List[str],
-                        title: Optional[str] = None,
-                        additional_directives: Optional[List[str]] = None) -> str:
+    def _format_diagram(
+        self,
+        diagram_type: str,
+        content_lines: List[str],
+        title: Optional[str] = None,
+        additional_directives: Optional[List[str]] = None,
+    ) -> str:
         """
         Format a complete diagram with theme, type, and content.
 
@@ -91,7 +99,7 @@ class BaseDiagramGenerator:
         # Add content
         mermaid_lines.extend(content_lines)
 
-        return '\n'.join(mermaid_lines)
+        return "\n".join(mermaid_lines)
 
     def validate_data(self, data: Dict[str, Any], required_fields: List[str]) -> None:
         """

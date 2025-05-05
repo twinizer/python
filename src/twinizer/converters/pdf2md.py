@@ -33,12 +33,14 @@ class PDF2MarkdownConverter:
     and Tesseract OCR for text in images.
     """
 
-    def __init__(self,
-                 ocr_enabled: bool = False,
-                 extract_images: bool = True,
-                 image_format: str = "png",
-                 detect_tables: bool = True,
-                 image_dir: Optional[str] = None):
+    def __init__(
+        self,
+        ocr_enabled: bool = False,
+        extract_images: bool = True,
+        image_format: str = "png",
+        detect_tables: bool = True,
+        image_dir: Optional[str] = None,
+    ):
         """
         Initialize the converter with the given options.
 
@@ -79,23 +81,31 @@ class PDF2MarkdownConverter:
         # Get base filename for image references
         base_filename = os.path.splitext(os.path.basename(output_path))[0]
 
-        console.print(f"Converting [cyan]{pdf_path}[/cyan] to [green]{output_path}[/green]")
+        console.print(
+            f"Converting [cyan]{pdf_path}[/cyan] to [green]{output_path}[/green]"
+        )
 
         with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
         ) as progress:
             # Open the PDF file
             task = progress.add_task("[green]Opening PDF document...", total=None)
             doc = fitz.open(pdf_path)
             num_pages = len(doc)
-            progress.update(task, completed=True, description=f"[green]PDF opened: {num_pages} pages")
+            progress.update(
+                task,
+                completed=True,
+                description=f"[green]PDF opened: {num_pages} pages",
+            )
 
             # Extract metadata
             task = progress.add_task("[green]Extracting metadata...", total=None)
             metadata = doc.metadata
-            progress.update(task, completed=True, description="[green]Metadata extracted")
+            progress.update(
+                task, completed=True, description="[green]Metadata extracted"
+            )
 
             # Process each page
             task = progress.add_task("[green]Processing pages...", total=num_pages)
@@ -105,7 +115,7 @@ class PDF2MarkdownConverter:
             if metadata:
                 markdown_content.append("---")
                 for key, value in metadata.items():
-                    if value and key.lower() not in ['format', 'encryption']:
+                    if value and key.lower() not in ["format", "encryption"]:
                         markdown_content.append(f"{key}: {value}")
                 markdown_content.append("---\n")
 
@@ -126,7 +136,9 @@ class PDF2MarkdownConverter:
                     for img_index, img in enumerate(images):
                         xref = img[0]
                         image_count += 1
-                        image_filename = f"{base_filename}_image_{image_count}.{self.image_format}"
+                        image_filename = (
+                            f"{base_filename}_image_{image_count}.{self.image_format}"
+                        )
                         image_path = os.path.join(self.image_dir, image_filename)
 
                         # Extract and save the image
@@ -137,9 +149,13 @@ class PDF2MarkdownConverter:
                             pix.save(image_path)
 
                             # Add image reference to markdown
-                            page_content.append(f"\n![Image {image_count}]({image_filename})\n")
+                            page_content.append(
+                                f"\n![Image {image_count}]({image_filename})\n"
+                            )
                         except Exception as e:
-                            console.print(f"[yellow]Warning: Failed to extract image: {e}[/yellow]")
+                            console.print(
+                                f"[yellow]Warning: Failed to extract image: {e}[/yellow]"
+                            )
 
                 # OCR if enabled and text is minimal
                 if self.ocr_enabled and not text.strip():
@@ -153,15 +169,23 @@ class PDF2MarkdownConverter:
                     markdown_content.append(f"\n## Page {page_num + 1}\n")
                     markdown_content.extend(page_content)
 
-                progress.update(task, advance=1, description=f"[green]Processing page {page_num + 1}/{num_pages}")
+                progress.update(
+                    task,
+                    advance=1,
+                    description=f"[green]Processing page {page_num + 1}/{num_pages}",
+                )
 
             # Write output
             markdown_text = "\n".join(markdown_content)
 
             task = progress.add_task("[green]Writing Markdown output...", total=None)
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(markdown_text)
-            progress.update(task, completed=True, description=f"[green]Markdown saved to {output_path}")
+            progress.update(
+                task,
+                completed=True,
+                description=f"[green]Markdown saved to {output_path}",
+            )
 
         return output_path
 
@@ -176,22 +200,26 @@ class PDF2MarkdownConverter:
             Processed text with Markdown formatting
         """
         # Replace multiple spaces with single space
-        text = re.sub(r' +', ' ', text)
+        text = re.sub(r" +", " ", text)
 
         # Identify and format headings
-        lines = text.split('\n')
+        lines = text.split("\n")
         processed_lines = []
 
         for i, line in enumerate(lines):
             line = line.strip()
             if not line:
-                processed_lines.append('')
+                processed_lines.append("")
                 continue
 
             # Check if this line looks like a heading
             if len(line) < 100 and line.isupper():
                 processed_lines.append(f"### {line}")
-            elif len(line) < 100 and line[0].isupper() and line[-1] in ['.', ':', '?', '!']:
+            elif (
+                len(line) < 100
+                and line[0].isupper()
+                and line[-1] in [".", ":", "?", "!"]
+            ):
                 # Check if the next line is blank or very short
                 is_heading = False
                 if i + 1 < len(lines):
@@ -206,7 +234,7 @@ class PDF2MarkdownConverter:
             else:
                 processed_lines.append(line)
 
-        return '\n'.join(processed_lines)
+        return "\n".join(processed_lines)
 
     def _ocr_page(self, page_num: int, pdf_path: str) -> str:
         """
@@ -221,7 +249,9 @@ class PDF2MarkdownConverter:
         """
         with tempfile.TemporaryDirectory() as temp_dir:
             # Convert PDF page to image
-            images = convert_from_path(pdf_path, first_page=page_num + 1, last_page=page_num + 1)
+            images = convert_from_path(
+                pdf_path, first_page=page_num + 1, last_page=page_num + 1
+            )
             if not images:
                 return ""
 
@@ -237,7 +267,9 @@ class PDF2MarkdownConverter:
                 return ""
 
 
-def convert_pdf_to_markdown(pdf_path: str, output_path: Optional[str] = None, **kwargs) -> str:
+def convert_pdf_to_markdown(
+    pdf_path: str, output_path: Optional[str] = None, **kwargs
+) -> str:
     """
     Convert a PDF file to Markdown format.
 

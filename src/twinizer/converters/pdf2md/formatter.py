@@ -5,6 +5,7 @@ This module provides functions to format extracted PDF text into Markdown.
 """
 
 import re
+
 from rich.console import Console
 
 console = Console()
@@ -21,16 +22,16 @@ def process_text(text):
         Processed text with Markdown formatting
     """
     # Replace multiple spaces with single space
-    text = re.sub(r' +', ' ', text)
+    text = re.sub(r" +", " ", text)
 
     # Identify and format headings
-    lines = text.split('\n')
+    lines = text.split("\n")
     processed_lines = []
 
     for i, line in enumerate(lines):
         line = line.strip()
         if not line:
-            processed_lines.append('')
+            processed_lines.append("")
             continue
 
         # Check if line looks like a heading
@@ -42,7 +43,7 @@ def process_text(text):
             processed_lines.append(line)
 
     # Format lists
-    processed_text = '\n'.join(processed_lines)
+    processed_text = "\n".join(processed_lines)
     processed_text = _format_lists(processed_text)
 
     # Format code blocks
@@ -71,10 +72,13 @@ def _detect_heading(line, line_index, all_lines):
         return True, 2  # Level 2 heading (##)
 
     # Check if line starts with a capital letter, ends with punctuation, and is not too long
-    if (len(line) < 100 and line[0].isupper() and
-            line[-1] in ['.', ':', '?', '!'] and
-            not line.endswith('etc.') and
-            not ':' in line[:-1]):
+    if (
+        len(line) < 100
+        and line[0].isupper()
+        and line[-1] in [".", ":", "?", "!"]
+        and not line.endswith("etc.")
+        and not ":" in line[:-1]
+    ):
 
         # Check if the next line is blank or very short
         is_heading = False
@@ -97,9 +101,9 @@ def _detect_heading(line, line_index, all_lines):
                 return True, 4  # Level 4 heading (####)
 
     # Check for numbered headings like "1. Introduction"
-    if re.match(r'^\d+\.(\d+\.)*\s+[A-Z]', line) and len(line) < 100:
+    if re.match(r"^\d+\.(\d+\.)*\s+[A-Z]", line) and len(line) < 100:
         # Level depends on the number of dots
-        dots = line.split(' ')[0].count('.')
+        dots = line.split(" ")[0].count(".")
         return True, dots + 2
 
     return False, 0
@@ -115,38 +119,40 @@ def _format_lists(text):
     Returns:
         Text with formatted lists
     """
-    lines = text.split('\n')
+    lines = text.split("\n")
     processed_lines = []
     in_list = False
 
     for line in lines:
         # Check for bullet lists (lines starting with - or • or *)
-        if re.match(r'^\s*[\-\•\*]\s+', line):
+        if re.match(r"^\s*[\-\•\*]\s+", line):
             # Ensure there's a blank line before the list starts
             if not in_list and processed_lines and processed_lines[-1].strip():
-                processed_lines.append('')
+                processed_lines.append("")
 
             # Format the list item
-            line = re.sub(r'^\s*[\-\•\*]\s+', '- ', line)
+            line = re.sub(r"^\s*[\-\•\*]\s+", "- ", line)
             in_list = True
 
         # Check for numbered lists (lines starting with 1., 2., etc.)
-        elif re.match(r'^\s*\d+\.\s+', line) and not re.match(r'^\s*\d+\.\d+\.\s+', line):
+        elif re.match(r"^\s*\d+\.\s+", line) and not re.match(
+            r"^\s*\d+\.\d+\.\s+", line
+        ):
             # Ensure there's a blank line before the list starts
             if not in_list and processed_lines and processed_lines[-1].strip():
-                processed_lines.append('')
+                processed_lines.append("")
 
             in_list = True
 
         # End of list
-        elif in_list and (not line.strip() or line.startswith('#')):
+        elif in_list and (not line.strip() or line.startswith("#")):
             if processed_lines and processed_lines[-1].strip():
-                processed_lines.append('')
+                processed_lines.append("")
             in_list = False
 
         processed_lines.append(line)
 
-    return '\n'.join(processed_lines)
+    return "\n".join(processed_lines)
 
 
 def _format_code_blocks(text):
@@ -159,20 +165,41 @@ def _format_code_blocks(text):
     Returns:
         Text with formatted code blocks
     """
-    lines = text.split('\n')
+    lines = text.split("\n")
     processed_lines = []
     in_code_block = False
     potential_code_lines = 0
 
     for i, line in enumerate(lines):
         # Detect code blocks based on indentation and special characters
-        is_code_line = line.startswith('    ') and not line.strip().startswith('-') and not line.strip().startswith('*')
+        is_code_line = (
+            line.startswith("    ")
+            and not line.strip().startswith("-")
+            and not line.strip().startswith("*")
+        )
 
         # Check if line contains code-like characters
-        code_chars = ['(', ')', '{', '}', '[', ']', ';', '=', '+', '-', '*', '//', '/*', '*/']
+        code_chars = [
+            "(",
+            ")",
+            "{",
+            "}",
+            "[",
+            "]",
+            ";",
+            "=",
+            "+",
+            "-",
+            "*",
+            "//",
+            "/*",
+            "*/",
+        ]
         has_code_chars = any(char in line for char in code_chars)
 
-        if is_code_line or (has_code_chars and not line.startswith('#') and len(line.strip()) > 0):
+        if is_code_line or (
+            has_code_chars and not line.startswith("#") and len(line.strip()) > 0
+        ):
             if not in_code_block:
                 potential_code_lines += 1
 
@@ -180,10 +207,12 @@ def _format_code_blocks(text):
                 if potential_code_lines >= 2:
                     in_code_block = True
                     # Insert code block marker before the first code line
-                    processed_lines.insert(len(processed_lines) - potential_code_lines + 1, '```')
+                    processed_lines.insert(
+                        len(processed_lines) - potential_code_lines + 1, "```"
+                    )
         else:
             if in_code_block:
-                processed_lines.append('```')
+                processed_lines.append("```")
                 in_code_block = False
             potential_code_lines = 0
 
@@ -191,9 +220,9 @@ def _format_code_blocks(text):
 
     # Close any open code block
     if in_code_block:
-        processed_lines.append('```')
+        processed_lines.append("```")
 
-    return '\n'.join(processed_lines)
+    return "\n".join(processed_lines)
 
 
 def _format_tables(text):
@@ -206,14 +235,14 @@ def _format_tables(text):
     Returns:
         Text with formatted tables
     """
-    lines = text.split('\n')
+    lines = text.split("\n")
     processed_lines = []
     in_table = False
     table_lines = []
 
     for line in lines:
         # Check if line has multiple column-like separations
-        columns = re.split(r'\s{3,}', line.strip())
+        columns = re.split(r"\s{3,}", line.strip())
 
         # If line has multiple columns and they are balanced
         if len(columns) >= 3 and all(len(col.strip()) > 0 for col in columns):
@@ -239,7 +268,7 @@ def _format_tables(text):
         markdown_table = _convert_to_markdown_table(table_lines)
         processed_lines.append(markdown_table)
 
-    return '\n'.join(processed_lines)
+    return "\n".join(processed_lines)
 
 
 def _convert_to_markdown_table(table_lines):
@@ -261,7 +290,7 @@ def _convert_to_markdown_table(table_lines):
 
     for line in table_lines:
         # Split by multiple spaces
-        columns = [col.strip() for col in re.split(r'\s{3,}', line.strip())]
+        columns = [col.strip() for col in re.split(r"\s{3,}", line.strip())]
         rows.append(columns)
         max_cols = max(max_cols, len(columns))
 
@@ -303,10 +332,10 @@ def create_markdown(metadata, pages_content):
 
     # Process each page
     for page in pages_content:
-        page_num = page['page_num']
-        text = page['text']
-        images = page['images']
-        ocr_text = page['ocr_text']
+        page_num = page["page_num"]
+        text = page["text"]
+        images = page["images"]
+        ocr_text = page["ocr_text"]
 
         # Add page header if there's more than one page
         if len(pages_content) > 1:

@@ -9,7 +9,7 @@ This module provides functionality to generate pie charts
 with data points and optional styling.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..constants import COLOR_SCHEMES
@@ -21,8 +21,13 @@ class PieChartGenerator(BaseDiagramGenerator):
     Generator for Mermaid pie charts.
     """
 
-    def generate(self, data: List[Dict], title: Optional[str] = None,
-                 show_percentages: bool = True, color_scheme: str = 'default') -> str:
+    def generate(
+        self,
+        data: List[Dict],
+        title: Optional[str] = None,
+        show_percentages: bool = True,
+        color_scheme: str = "default",
+    ) -> str:
         """
         Generate a Mermaid pie chart.
 
@@ -42,10 +47,10 @@ class PieChartGenerator(BaseDiagramGenerator):
             content_lines.append("    showData")
 
         # Add color scheme if not default
-        if color_scheme != 'default' and color_scheme in COLOR_SCHEMES:
+        if color_scheme != "default" and color_scheme in COLOR_SCHEMES:
             colors = COLOR_SCHEMES[color_scheme]
             if colors:
-                color_str = ', '.join([f'"{color}"' for color in colors])
+                color_str = ", ".join([f'"{color}"' for color in colors])
                 content_lines.append(f"    colorset [{color_str}]")
 
         # Add data entries
@@ -66,15 +71,19 @@ class PieChartGenerator(BaseDiagramGenerator):
         Returns:
             Formatted data line
         """
-        label = escape_text(item['label'])
-        value = item['value']
+        label = escape_text(item["label"])
+        value = item["value"]
 
         return f'"{label}" : {value}'
 
 
-def generate_pie_chart(data: List[Dict], title: Optional[str] = None,
-                       show_percentages: bool = True, color_scheme: str = 'default',
-                       theme: str = 'default') -> str:
+def generate_pie_chart(
+    data: List[Dict],
+    title: Optional[str] = None,
+    show_percentages: bool = True,
+    color_scheme: str = "default",
+    theme: str = "default",
+) -> str:
     """
     Generate a Mermaid pie chart.
 

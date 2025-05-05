@@ -174,11 +174,28 @@ class TestProject(unittest.TestCase):
         # First scan the project
         self.project.scan()
         
-        # Then analyze binary
-        self.project.analyze_binary()
+        # Create a mock binary file for testing
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix='.bin', delete=False) as temp_file:
+            temp_file.write(b'\x7FELF\x01\x01\x01\x00')  # Mock ELF header
+            binary_file = temp_file.name
         
-        # Verify console.print was called
-        mock_print.assert_called()
+        try:
+            # Then analyze binary with the file path
+            with patch('twinizer.software.analyze.binary.BinaryAnalyzer.analyze', return_value={"format": "ELF", "size": 8}):
+                result = self.project.analyze_binary(binary_file)
+                
+                # Verify result contains expected data
+                self.assertIsInstance(result, dict)
+                self.assertIn("format", result)
+                
+                # Verify console.print was called
+                mock_print.assert_called()
+        finally:
+            # Clean up the temporary file
+            import os
+            if os.path.exists(binary_file):
+                os.unlink(binary_file)
 
     def test_backup(self):
         """Test project backup functionality."""

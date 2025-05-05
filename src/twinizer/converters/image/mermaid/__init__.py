@@ -12,41 +12,49 @@ from .base import BaseDiagramGenerator
 
 # Import constants
 from .constants import (
-    NODE_SHAPES,
-    EDGE_STYLES,
-    SEQUENCE_ARROWS,
     COLOR_SCHEMES,
-    THEMES,
+    EDGE_STYLES,
     ER_CARDINALITIES,
-    STATE_STYLES
-)
-
-# Import utility functions
-from .utils import (
-    sanitize_id,
-    format_style_string,
-    escape_text,
-    add_theme_directive
-)
-
-# Import diagram generators
-from .diagrams import (
-    FlowchartGenerator, generate_flowchart,
-    ClassDiagramGenerator, generate_class_diagram,
-    SequenceDiagramGenerator, generate_sequence_diagram,
-    ERDiagramGenerator, generate_er_diagram,
-    GanttChartGenerator, generate_gantt_chart,
-    PieChartGenerator, generate_pie_chart,
-    StateDiagramGenerator, generate_state_diagram,
-    JourneyDiagramGenerator, generate_journey_diagram
+    NODE_SHAPES,
+    SEQUENCE_ARROWS,
+    STATE_STYLES,
+    THEMES,
 )
 
 # Import converters
 from .converters import (
-    from_json, to_json,
-    to_html, save_html, create_html_page,
-    to_png, batch_convert_to_png, install_mmdc
+    batch_convert_to_png,
+    create_html_page,
+    from_json,
+    install_mmdc,
+    save_html,
+    to_html,
+    to_json,
+    to_png,
 )
+
+# Import diagram generators
+from .diagrams import (
+    ClassDiagramGenerator,
+    ERDiagramGenerator,
+    FlowchartGenerator,
+    GanttChartGenerator,
+    JourneyDiagramGenerator,
+    PieChartGenerator,
+    SequenceDiagramGenerator,
+    StateDiagramGenerator,
+    generate_class_diagram,
+    generate_er_diagram,
+    generate_flowchart,
+    generate_gantt_chart,
+    generate_journey_diagram,
+    generate_pie_chart,
+    generate_sequence_diagram,
+    generate_state_diagram,
+)
+
+# Import utility functions
+from .utils import add_theme_directive, escape_text, format_style_string, sanitize_id
 
 
 # Create a class that provides access to all diagram types
@@ -57,7 +65,7 @@ class MermaidDiagramGenerator:
     This class provides access to all diagram generators through a unified interface.
     """
 
-    def __init__(self, theme: str = 'default'):
+    def __init__(self, theme: str = "default"):
         """
         Initialize the Mermaid diagram generator.
 
@@ -76,7 +84,7 @@ class MermaidDiagramGenerator:
         self.state = StateDiagramGenerator(theme)
         self.journey = JourneyDiagramGenerator(theme)
 
-    def from_json(self, json_data, diagram_type='auto'):
+    def from_json(self, json_data, diagram_type="auto"):
         """Generate a diagram from JSON data."""
         return from_json(json_data, diagram_type, self.theme)
 
@@ -84,59 +92,63 @@ class MermaidDiagramGenerator:
         """Convert a diagram to HTML."""
         return to_html(mermaid_code, inline_style)
 
-    def to_png(self, mermaid_code, output_path, width=800, height=None, background_color='#ffffff'):
+    def to_png(
+        self,
+        mermaid_code,
+        output_path,
+        width=800,
+        height=None,
+        background_color="#ffffff",
+    ):
         """Convert a diagram to PNG."""
-        return to_png(mermaid_code, output_path, width, height, background_color, self.theme)
+        return to_png(
+            mermaid_code, output_path, width, height, background_color, self.theme
+        )
 
 
 # Define the public API
 __all__ = [
     # Main classes
-    'MermaidDiagramGenerator',
-    'BaseDiagramGenerator',
-
+    "MermaidDiagramGenerator",
+    "BaseDiagramGenerator",
     # Generator classes
-    'FlowchartGenerator',
-    'ClassDiagramGenerator',
-    'SequenceDiagramGenerator',
-    'ERDiagramGenerator',
-    'GanttChartGenerator',
-    'PieChartGenerator',
-    'StateDiagramGenerator',
-    'JourneyDiagramGenerator',
-
+    "FlowchartGenerator",
+    "ClassDiagramGenerator",
+    "SequenceDiagramGenerator",
+    "ERDiagramGenerator",
+    "GanttChartGenerator",
+    "PieChartGenerator",
+    "StateDiagramGenerator",
+    "JourneyDiagramGenerator",
     # Generator functions
-    'generate_flowchart',
-    'generate_class_diagram',
-    'generate_sequence_diagram',
-    'generate_er_diagram',
-    'generate_gantt_chart',
-    'generate_pie_chart',
-    'generate_state_diagram',
-    'generate_journey_diagram',
-
+    "generate_flowchart",
+    "generate_class_diagram",
+    "generate_sequence_diagram",
+    "generate_er_diagram",
+    "generate_gantt_chart",
+    "generate_pie_chart",
+    "generate_state_diagram",
+    "generate_journey_diagram",
     # Converter functions
-    'from_json',
-    'to_json',
-    'to_html',
-    'save_html',
-    'create_html_page',
-    'to_png',
-    'batch_convert_to_png',
-
+    "from_json",
+    "to_json",
+    "to_html",
+    "save_html",
+    "create_html_page",
+    "to_png",
+    "batch_convert_to_png",
     # Utility functions
-    'sanitize_id',
-    'format_style_string',
-    'escape_text',
-    'add_theme_directive',
-    'install_mmdc',
-
+    "sanitize_id",
+    "format_style_string",
+    "escape_text",
+    "add_theme_directive",
+    "install_mmdc",
     # Constants
-    'NODE_SHAPES',
-    'EDGE_STYLES',
-    'SEQUENCE_ARROWS',
-    'COLOR_SCHEMES',
-    'THEMES',
-    'ER_CARDINALITIES',
-    'STATE_STYLES',
+    "NODE_SHAPES",
+    "EDGE_STYLES",
+    "SEQUENCE_ARROWS",
+    "COLOR_SCHEMES",
+    "THEMES",
+    "ER_CARDINALITIES",
+    "STATE_STYLES",
 ]

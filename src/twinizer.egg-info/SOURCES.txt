@@ -81,6 +81,7 @@ src/twinizer/software/analyze.py
 src/twinizer/software/decompile.py
 src/twinizer/software/disassemble.py
 src/twinizer/software/analyze/__init__.py
+src/twinizer/software/analyze/binary.py
 src/twinizer/software/analyze/dependency.py
 src/twinizer/software/decompile/__init__.py
 src/twinizer/software/decompile/elf.py

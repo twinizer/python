@@ -5,9 +5,9 @@ This module provides functionality to convert binary files to various source cod
 representations, including C arrays, Python byte arrays, and other formats.
 """
 
-import os
 import binascii
-from typing import Dict, List, Optional, Union, BinaryIO
+import os
+from typing import BinaryIO, Dict, List, Optional, Union
 
 
 class BinaryConverter:
@@ -36,7 +36,7 @@ class BinaryConverter:
 
     def _read_binary_data(self) -> bytes:
         """Read binary data from the input file."""
-        with open(self.input_file, 'rb') as f:
+        with open(self.input_file, "rb") as f:
             return f.read()
 
     def convert(self, output_file: Optional[str] = None, **kwargs) -> str:
@@ -58,12 +58,15 @@ class CArrayConverter(BinaryConverter):
     Converter for binary files to C arrays.
     """
 
-    def convert(self, output_file: Optional[str] = None, 
-                variable_name: str = "binary_data",
-                bytes_per_line: int = 16,
-                const: bool = True,
-                include_size: bool = True,
-                include_header: bool = True) -> str:
+    def convert(
+        self,
+        output_file: Optional[str] = None,
+        variable_name: str = "binary_data",
+        bytes_per_line: int = 16,
+        const: bool = True,
+        include_size: bool = True,
+        include_header: bool = True,
+    ) -> str:
         """
         Convert binary file to C array.
 
@@ -87,7 +90,9 @@ class CArrayConverter(BinaryConverter):
         # Add header comment
         if include_header:
             lines.append("/**")
-            lines.append(f" * Binary data from file: {os.path.basename(self.input_file)}")
+            lines.append(
+                f" * Binary data from file: {os.path.basename(self.input_file)}"
+            )
             lines.append(f" * Size: {size} bytes")
             lines.append(" */")
             lines.append("")
@@ -98,7 +103,7 @@ class CArrayConverter(BinaryConverter):
 
         # Add array data
         for i in range(0, size, bytes_per_line):
-            chunk = data[i:i + bytes_per_line]
+            chunk = data[i : i + bytes_per_line]
             hex_values = [f"0x{byte:02x}" for byte in chunk]
             if i + bytes_per_line < size:
                 lines.append("    " + ", ".join(hex_values) + ",")
@@ -117,7 +122,7 @@ class CArrayConverter(BinaryConverter):
 
         # Write to file or return as string
         if output_file:
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 f.write(c_code)
             return output_file
         else:
@@ -129,12 +134,15 @@ class PythonBytesConverter(BinaryConverter):
     Converter for binary files to Python bytes or bytearray.
     """
 
-    def convert(self, output_file: Optional[str] = None,
-                variable_name: str = "binary_data",
-                use_bytearray: bool = False,
-                bytes_per_line: int = 16,
-                include_size: bool = True,
-                include_header: bool = True) -> str:
+    def convert(
+        self,
+        output_file: Optional[str] = None,
+        variable_name: str = "binary_data",
+        use_bytearray: bool = False,
+        bytes_per_line: int = 16,
+        include_size: bool = True,
+        include_header: bool = True,
+    ) -> str:
         """
         Convert binary file to Python bytes or bytearray.
 
@@ -169,7 +177,7 @@ class PythonBytesConverter(BinaryConverter):
 
         # Add array data
         for i in range(0, size, bytes_per_line):
-            chunk = data[i:i + bytes_per_line]
+            chunk = data[i : i + bytes_per_line]
             hex_values = [f"0x{byte:02x}" for byte in chunk]
             if i + bytes_per_line < size:
                 lines.append("    " + ", ".join(hex_values) + ",")
@@ -188,7 +196,7 @@ class PythonBytesConverter(BinaryConverter):
 
         # Write to file or return as string
         if output_file:
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 f.write(python_code)
             return output_file
         else:
@@ -200,11 +208,14 @@ class HexDumpConverter(BinaryConverter):
     Converter for binary files to hex dump format.
     """
 
-    def convert(self, output_file: Optional[str] = None,
-                bytes_per_line: int = 16,
-                show_ascii: bool = True,
-                show_offset: bool = True,
-                offset_format: str = "hex") -> str:
+    def convert(
+        self,
+        output_file: Optional[str] = None,
+        bytes_per_line: int = 16,
+        show_ascii: bool = True,
+        show_offset: bool = True,
+        offset_format: str = "hex",
+    ) -> str:
         """
         Convert binary file to hex dump format.
 
@@ -225,31 +236,33 @@ class HexDumpConverter(BinaryConverter):
         lines = []
 
         for i in range(0, size, bytes_per_line):
-            chunk = data[i:i + bytes_per_line]
-            
+            chunk = data[i : i + bytes_per_line]
+
             # Add offset
             if show_offset:
-                if offset_format == 'hex':
+                if offset_format == "hex":
                     offset = f"{i:08x}"
                 else:
                     offset = f"{i:10d}"
                 line = f"{offset}: "
             else:
                 line = ""
-            
+
             # Add hex values
             hex_values = [f"{byte:02x}" for byte in chunk]
             line += " ".join(hex_values)
-            
+
             # Pad for alignment if the last line is shorter
             if len(chunk) < bytes_per_line:
                 line += "   " * (bytes_per_line - len(chunk))
-            
+
             # Add ASCII representation
             if show_ascii:
-                ascii_repr = "".join([chr(byte) if 32 <= byte <= 126 else "." for byte in chunk])
+                ascii_repr = "".join(
+                    [chr(byte) if 32 <= byte <= 126 else "." for byte in chunk]
+                )
                 line += "  |" + ascii_repr + "|"
-            
+
             lines.append(line)
 
         # Join lines
@@ -257,15 +270,19 @@ class HexDumpConverter(BinaryConverter):
 
         # Write to file or return as string
         if output_file:
-            with open(output_file, 'w') as f:
+            with open(output_file, "w") as f:
                 f.write(hex_dump)
             return output_file
         else:
             return hex_dump
 
 
-def convert_binary_to_source(input_file: str, output_file: Optional[str] = None,
-                            format_type: str = "c_array", **kwargs) -> str:
+def convert_binary_to_source(
+    input_file: str,
+    output_file: Optional[str] = None,
+    format_type: str = "c_array",
+    **kwargs,
+) -> str:
     """
     Convert a binary file to source code.
 
@@ -302,5 +319,5 @@ def available_formats() -> Dict[str, str]:
     return {
         "c_array": "C/C++ array of unsigned char",
         "python_bytes": "Python bytes or bytearray",
-        "hex_dump": "Hexadecimal dump with optional ASCII representation"
+        "hex_dump": "Hexadecimal dump with optional ASCII representation",
     }

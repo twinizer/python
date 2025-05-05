@@ -12,14 +12,19 @@ It requires the Mermaid CLI (mmdc) to be installed.
 import os
 import subprocess
 import tempfile
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..utils import add_theme_directive
 
 
-def to_png(mermaid_code: str, output_path: str, width: int = 800,
-           height: Optional[int] = None, background_color: str = '#ffffff',
-           theme: str = 'default') -> str:
+def to_png(
+    mermaid_code: str,
+    output_path: str,
+    width: int = 800,
+    height: Optional[int] = None,
+    background_color: str = "#ffffff",
+    theme: str = "default",
+) -> str:
     """
     Convert a Mermaid diagram to PNG image (requires Node.js and the Mermaid CLI).
 
@@ -50,43 +55,45 @@ def to_png(mermaid_code: str, output_path: str, width: int = 800,
         os.makedirs(output_dir, exist_ok=True)
 
     # Add theme directive if not default
-    if theme != 'default':
+    if theme != "default":
         # Check if theme directive already exists
-        if not mermaid_code.strip().startswith('%%{'):
+        if not mermaid_code.strip().startswith("%%{"):
             theme_directive = add_theme_directive(theme)
             if theme_directive:
                 mermaid_code = f"{theme_directive}\n{mermaid_code}"
 
     # Create a temporary file to store the Mermaid code
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.mmd', delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(
+        mode="w", suffix=".mmd", delete=False
+    ) as temp_file:
         temp_path = temp_file.name
         temp_file.write(mermaid_code)
 
     try:
         # Build command to generate PNG
         cmd = [
-            'mmdc',
-            '-i', temp_path,
-            '-o', output_path,
-            '-w', str(width),
-            '-b', background_color
+            "mmdc",
+            "-i",
+            temp_path,
+            "-o",
+            output_path,
+            "-w",
+            str(width),
+            "-b",
+            background_color,
         ]
 
         # Add height if specified
         if height:
-            cmd.extend(['-H', str(height)])
+            cmd.extend(["-H", str(height)])
 
         # Add theme if not default and wasn't added as directive
-        if theme != 'default' and not mermaid_code.strip().startswith('%%{'):
-            cmd.extend(['-t', theme])
+        if theme != "default" and not mermaid_code.strip().startswith("%%{"):
+            cmd.extend(["-t", theme])
 
         # Execute command
         process = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=False
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=False
         )
 
         # Check for errors
@@ -104,9 +111,14 @@ def to_png(mermaid_code: str, output_path: str, width: int = 800,
             os.unlink(temp_path)
 
 
-def batch_convert_to_png(diagrams: Dict[str, str], output_dir: str,
-                         width: int = 800, height: Optional[int] = None,
-                         background_color: str = '#ffffff', theme: str = 'default') -> Dict[str, str]:
+def batch_convert_to_png(
+    diagrams: Dict[str, str],
+    output_dir: str,
+    width: int = 800,
+    height: Optional[int] = None,
+    background_color: str = "#ffffff",
+    theme: str = "default",
+) -> Dict[str, str]:
     """
     Convert multiple Mermaid diagrams to PNG images.
 
@@ -129,17 +141,12 @@ def batch_convert_to_png(diagrams: Dict[str, str], output_dir: str,
     output_paths = {}
     for diagram_id, mermaid_code in diagrams.items():
         # Create a safe filename from the diagram ID
-        safe_id = ''.join(c if c.isalnum() else '_' for c in diagram_id)
+        safe_id = "".join(c if c.isalnum() else "_" for c in diagram_id)
         output_path = os.path.join(output_dir, f"{safe_id}.png")
 
         try:
             output_paths[diagram_id] = to_png(
-                mermaid_code,
-                output_path,
-                width,
-                height,
-                background_color,
-                theme
+                mermaid_code, output_path, width, height, background_color, theme
             )
         except Exception as e:
             print(f"Failed to convert diagram '{diagram_id}': {e}")
@@ -156,10 +163,10 @@ def _is_mmdc_installed() -> bool:
     """
     try:
         process = subprocess.run(
-            ['mmdc', '--version'],
+            ["mmdc", "--version"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
         )
         return process.returncode == 0
     except (subprocess.SubprocessError, FileNotFoundError):
@@ -175,10 +182,10 @@ def install_mmdc() -> bool:
     """
     try:
         process = subprocess.run(
-            ['npm', 'install', '-g', '@mermaid-js/mermaid-cli'],
+            ["npm", "install", "-g", "@mermaid-js/mermaid-cli"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            text=True
+            text=True,
         )
         return process.returncode == 0
     except (subprocess.SubprocessError, FileNotFoundError):

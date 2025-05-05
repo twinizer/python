@@ -9,7 +9,7 @@ This module provides functionality to generate Gantt charts
 with sections, tasks, and dependencies.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..utils import escape_text
@@ -21,11 +21,16 @@ class GanttChartGenerator(BaseDiagramGenerator):
     """
 
     # Task status options
-    TASK_STATUSES = ['done', 'active', 'crit', 'milestone']
+    TASK_STATUSES = ["done", "active", "crit", "milestone"]
 
-    def generate(self, sections: List[Dict], title: Optional[str] = None,
-                 date_format: str = 'YYYY-MM-DD', excludes: Optional[List[str]] = None,
-                 includes: Optional[List[str]] = None) -> str:
+    def generate(
+        self,
+        sections: List[Dict],
+        title: Optional[str] = None,
+        date_format: str = "YYYY-MM-DD",
+        excludes: Optional[List[str]] = None,
+        includes: Optional[List[str]] = None,
+    ) -> str:
         """
         Generate a Mermaid Gantt chart.
 
@@ -73,13 +78,13 @@ class GanttChartGenerator(BaseDiagramGenerator):
             List of formatted section lines
         """
         section_lines = []
-        section_name = escape_text(section['name'])
+        section_name = escape_text(section["name"])
 
         # Add section header
         section_lines.append(f"section {section_name}")
 
         # Add tasks
-        for task in section.get('tasks', []):
+        for task in section.get("tasks", []):
             task_line = self._format_task(task)
             section_lines.append(f"    {task_line}")
 
@@ -96,18 +101,18 @@ class GanttChartGenerator(BaseDiagramGenerator):
         Returns:
             Formatted task line
         """
-        task_name = escape_text(task['name'])
-        task_start = task.get('start', '')
-        task_end = task.get('end', '')
-        task_duration = task.get('duration', '')
-        task_dependencies = task.get('dependencies', [])
+        task_name = escape_text(task["name"])
+        task_start = task.get("start", "")
+        task_end = task.get("end", "")
+        task_duration = task.get("duration", "")
+        task_dependencies = task.get("dependencies", [])
 
         # Build task definition
         task_def = f"{task_name} : "
 
         # Add task status if provided
-        if 'status' in task:
-            status = task['status']
+        if "status" in task:
+            status = task["status"]
             if status in self.TASK_STATUSES:
                 task_def += f"{status}, "
             else:
@@ -124,14 +129,21 @@ class GanttChartGenerator(BaseDiagramGenerator):
 
         # Add dependencies if any
         if task_dependencies:
-            task_def += f", after {', '.join(escape_text(dep) for dep in task_dependencies)}"
+            task_def += (
+                f", after {', '.join(escape_text(dep) for dep in task_dependencies)}"
+            )
 
         return task_def
 
 
-def generate_gantt_chart(sections: List[Dict], title: Optional[str] = None,
-                         date_format: str = 'YYYY-MM-DD', excludes: Optional[List[str]] = None,
-                         includes: Optional[List[str]] = None, theme: str = 'default') -> str:
+def generate_gantt_chart(
+    sections: List[Dict],
+    title: Optional[str] = None,
+    date_format: str = "YYYY-MM-DD",
+    excludes: Optional[List[str]] = None,
+    includes: Optional[List[str]] = None,
+    theme: str = "default",
+) -> str:
     """
     Generate a Mermaid Gantt chart.
 

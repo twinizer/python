@@ -5,13 +5,13 @@ This module provides functionality to convert KiCad files to various formats
 using the docker-kicad.sh script from the docker/ready-image project.
 """
 
-import os
-import sys
-import subprocess
-import tempfile
 import json
+import os
+import subprocess
+import sys
+import tempfile
 from pathlib import Path
-from typing import Optional, List, Dict, Any, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from rich.console import Console
 
@@ -19,9 +19,14 @@ console = Console()
 
 # Path to the docker-kicad.sh script
 DOCKER_KICAD_SCRIPT = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))),
-    "docker", "ready-image", "docker-kicad.sh"
+    os.path.dirname(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+    ),
+    "docker",
+    "ready-image",
+    "docker-kicad.sh",
 )
+
 
 def convert_kicad_file(
     input_file: str,
@@ -31,7 +36,7 @@ def convert_kicad_file(
     paper_size: str = "A4",
     orientation: str = "portrait",
     debug: bool = False,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> str:
     """
     Convert a KiCad file to the specified format using the docker-kicad.sh script.
@@ -54,7 +59,9 @@ def convert_kicad_file(
 
     # Check if docker-kicad.sh script exists
     if not os.path.exists(DOCKER_KICAD_SCRIPT):
-        raise FileNotFoundError(f"docker-kicad.sh script not found at {DOCKER_KICAD_SCRIPT}")
+        raise FileNotFoundError(
+            f"docker-kicad.sh script not found at {DOCKER_KICAD_SCRIPT}"
+        )
 
     # Determine output path if not provided
     if output_path is None:
@@ -62,64 +69,65 @@ def convert_kicad_file(
 
     # Build command arguments
     cmd = [DOCKER_KICAD_SCRIPT]
-    
+
     # Add input file
     cmd.extend(["-i", input_file])
-    
+
     # Add output format
     cmd.extend(["-f", output_format])
-    
+
     # Add output path
     cmd.extend(["-o", output_path])
-    
+
     # Add color theme for PDF
     if output_format.lower() == "pdf":
         cmd.extend(["-c", color_theme])
         cmd.extend(["-p", paper_size])
         cmd.extend(["-r", orientation])
-    
+
     # Add debug flag if requested
     if debug:
         cmd.append("-d")
-    
+
     # Add verbose flag if requested
     if verbose:
         cmd.append("-v")
-    
-    console.print(f"Converting [cyan]{input_file}[/cyan] to [green]{output_format}[/green] format")
-    
+
+    console.print(
+        f"Converting [cyan]{input_file}[/cyan] to [green]{output_format}[/green] format"
+    )
+
     try:
         # Run the command
         result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
-        
+
         if verbose:
             console.print(result.stdout)
-        
+
         # Check if output file was created
         if not os.path.exists(output_path):
-            console.print(f"[yellow]Warning: Output file not found at {output_path}[/yellow]")
+            console.print(
+                f"[yellow]Warning: Output file not found at {output_path}[/yellow]"
+            )
             console.print(f"[yellow]Command output: {result.stdout}[/yellow]")
             console.print(f"[red]Command error: {result.stderr}[/red]")
             return None
-        
+
         return output_path
-    
+
     except subprocess.CalledProcessError as e:
         console.print(f"[red]Error running docker-kicad.sh: {e}[/red]")
         console.print(f"[red]Command error: {e.stderr}[/red]")
         return None
 
+
 def analyze_kicad_project(
     project_dir: str,
     output_format: str = "json",
     output_path: Optional[str] = None,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> Union[str, Dict[str, Any]]:
     """
     Analyze a KiCad project for missing dependencies using the docker-kicad.sh script.
@@ -139,7 +147,9 @@ def analyze_kicad_project(
 
     # Check if docker-kicad.sh script exists
     if not os.path.exists(DOCKER_KICAD_SCRIPT):
-        raise FileNotFoundError(f"docker-kicad.sh script not found at {DOCKER_KICAD_SCRIPT}")
+        raise FileNotFoundError(
+            f"docker-kicad.sh script not found at {DOCKER_KICAD_SCRIPT}"
+        )
 
     # Determine output path if not provided
     if output_path is None:
@@ -154,55 +164,54 @@ def analyze_kicad_project(
 
     # Build command arguments
     cmd = [DOCKER_KICAD_SCRIPT, "-d"]
-    
+
     # Add project directory
     cmd.extend(["-i", project_dir])
-    
+
     # Add output format
     cmd.extend(["-f", output_format])
-    
+
     # Add output path
     cmd.extend(["-o", output_path])
-    
+
     # Add verbose flag if requested
     if verbose:
         cmd.append("-v")
-    
+
     console.print(f"Analyzing KiCad project in [cyan]{project_dir}[/cyan]")
-    
+
     try:
         # Run the command
         result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            check=True
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True
         )
-        
+
         if verbose:
             console.print(result.stdout)
-        
+
         # Check if output file was created
         if not os.path.exists(output_path):
-            console.print(f"[yellow]Warning: Output file not found at {output_path}[/yellow]")
+            console.print(
+                f"[yellow]Warning: Output file not found at {output_path}[/yellow]"
+            )
             console.print(f"[yellow]Command output: {result.stdout}[/yellow]")
             console.print(f"[red]Command error: {result.stderr}[/red]")
             return None
-        
+
         # If JSON output, parse and return the data
         if output_format.lower() == "json":
-            with open(output_path, 'r') as f:
+            with open(output_path, "r") as f:
                 data = json.load(f)
             return data
-        
+
         # If HTML output, return the path to the file
         return output_path
-    
+
     except subprocess.CalledProcessError as e:
         console.print(f"[red]Error running docker-kicad.sh: {e}[/red]")
         console.print(f"[red]Command error: {e.stderr}[/red]")
         return None
+
 
 def list_supported_formats() -> List[Dict[str, str]]:
     """
@@ -214,12 +223,17 @@ def list_supported_formats() -> List[Dict[str, str]]:
     return [
         {"format": "svg", "description": "Scalable Vector Graphics", "default": True},
         {"format": "png", "description": "Portable Network Graphics"},
-        {"format": "pdf", "description": "Portable Document Format", "options": ["color_theme", "paper_size", "orientation"]},
+        {
+            "format": "pdf",
+            "description": "Portable Document Format",
+            "options": ["color_theme", "paper_size", "orientation"],
+        },
         {"format": "dxf", "description": "Drawing Exchange Format"},
         {"format": "hpgl", "description": "HP Graphics Language"},
         {"format": "ps", "description": "PostScript"},
-        {"format": "eps", "description": "Encapsulated PostScript"}
+        {"format": "eps", "description": "Encapsulated PostScript"},
     ]
+
 
 def is_kicad_file(file_path: str) -> bool:
     """
@@ -233,7 +247,7 @@ def is_kicad_file(file_path: str) -> bool:
     """
     if not os.path.exists(file_path):
         return False
-    
+
     # Check file extension
     ext = os.path.splitext(file_path)[1].lower()
-    return ext in ['.sch', '.kicad_sch', '.kicad_pcb', '.kicad_pro']
+    return ext in [".sch", ".kicad_sch", ".kicad_pcb", ".kicad_pro"]

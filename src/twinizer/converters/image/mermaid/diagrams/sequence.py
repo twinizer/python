@@ -9,7 +9,7 @@ This module provides functionality to generate sequence diagrams
 with actors, messages, notes, and activation/deactivation.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..constants import SEQUENCE_ARROWS
@@ -21,8 +21,13 @@ class SequenceDiagramGenerator(BaseDiagramGenerator):
     Generator for Mermaid sequence diagrams.
     """
 
-    def generate(self, actors: List[Dict], messages: List[Dict],
-                 title: Optional[str] = None, autonumber: bool = False) -> str:
+    def generate(
+        self,
+        actors: List[Dict],
+        messages: List[Dict],
+        title: Optional[str] = None,
+        autonumber: bool = False,
+    ) -> str:
         """
         Generate a Mermaid sequence diagram.
 
@@ -64,12 +69,19 @@ class SequenceDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted actor line
         """
-        name = escape_text(actor['name'])
-        actor_type = actor.get('type', 'participant')
+        name = escape_text(actor["name"])
+        actor_type = actor.get("type", "participant")
 
-        valid_types = ['participant', 'actor', 'boundary', 'control', 'entity', 'database']
+        valid_types = [
+            "participant",
+            "actor",
+            "boundary",
+            "control",
+            "entity",
+            "database",
+        ]
         if actor_type not in valid_types:
-            actor_type = 'participant'  # Default to participant if type is invalid
+            actor_type = "participant"  # Default to participant if type is invalid
 
         return f"{actor_type} {name}"
 
@@ -85,28 +97,28 @@ class SequenceDiagramGenerator(BaseDiagramGenerator):
             List of formatted message lines
         """
         message_lines = []
-        from_actor = escape_text(msg['from'])
-        to_actor = escape_text(msg['to'])
-        text = escape_text(msg['text'])
-        msg_type = msg.get('type', 'solid')
+        from_actor = escape_text(msg["from"])
+        to_actor = escape_text(msg["to"])
+        text = escape_text(msg["text"])
+        msg_type = msg.get("type", "solid")
 
         # Get arrow style
-        arrow = SEQUENCE_ARROWS.get(msg_type, SEQUENCE_ARROWS['solid'])
+        arrow = SEQUENCE_ARROWS.get(msg_type, SEQUENCE_ARROWS["solid"])
 
         # Add activation if specified
-        if 'activate' in msg and msg['activate']:
+        if "activate" in msg and msg["activate"]:
             message_lines.append(f"activate {to_actor}")
 
         # Add message
         message_lines.append(f"{from_actor}{arrow}{to_actor}: {text}")
 
         # Add note if specified
-        if 'note' in msg:
+        if "note" in msg:
             note_lines = self._format_note(msg, from_actor, to_actor)
             message_lines.extend(note_lines)
 
         # Add deactivation if specified
-        if 'deactivate' in msg and msg['deactivate']:
+        if "deactivate" in msg and msg["deactivate"]:
             message_lines.append(f"deactivate {to_actor}")
 
         return message_lines
@@ -123,20 +135,20 @@ class SequenceDiagramGenerator(BaseDiagramGenerator):
         Returns:
             List of formatted note lines
         """
-        note_text = escape_text(msg['note'])
-        note_pos = msg.get('note_position', 'over')
+        note_text = escape_text(msg["note"])
+        note_pos = msg.get("note_position", "over")
 
         # Determine note target based on position
-        if note_pos == 'over' and from_actor != to_actor:
+        if note_pos == "over" and from_actor != to_actor:
             note_target = f"{from_actor},{to_actor}"
         else:
-            note_target = to_actor if note_pos == 'right of' else from_actor
+            note_target = to_actor if note_pos == "right of" else from_actor
 
         # Split note into multiple lines if it contains newlines
-        if '\n' in note_text:
+        if "\n" in note_text:
             note_lines = []
             note_lines.append(f"Note {note_pos} {note_target}")
-            for line in note_text.split('\n'):
+            for line in note_text.split("\n"):
                 note_lines.append(f"    {line}")
             note_lines.append("end note")
             return note_lines
@@ -144,9 +156,13 @@ class SequenceDiagramGenerator(BaseDiagramGenerator):
             return [f"Note {note_pos} {note_target}: {note_text}"]
 
 
-def generate_sequence_diagram(actors: List[Dict], messages: List[Dict],
-                              title: Optional[str] = None, autonumber: bool = False,
-                              theme: str = 'default') -> str:
+def generate_sequence_diagram(
+    actors: List[Dict],
+    messages: List[Dict],
+    title: Optional[str] = None,
+    autonumber: bool = False,
+    theme: str = "default",
+) -> str:
     """
     Generate a Mermaid sequence diagram.
 

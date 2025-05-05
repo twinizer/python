@@ -10,7 +10,7 @@ such as ID sanitization and string formatting.
 """
 
 import re
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 
 def sanitize_id(id_str: str) -> str:
@@ -24,11 +24,11 @@ def sanitize_id(id_str: str) -> str:
         Sanitized ID string
     """
     # Replace spaces and special characters with underscores
-    sanitized = re.sub(r'[^a-zA-Z0-9]', '_', str(id_str))
+    sanitized = re.sub(r"[^a-zA-Z0-9]", "_", str(id_str))
 
     # Ensure the ID starts with a letter
     if sanitized and not sanitized[0].isalpha():
-        sanitized = 'id_' + sanitized
+        sanitized = "id_" + sanitized
 
     return sanitized
 
@@ -46,7 +46,7 @@ def format_style_string(styles: Dict[str, str]) -> str:
     style_parts = []
     for prop, value in styles.items():
         # Convert camelCase to kebab-case for CSS properties
-        prop = re.sub(r'([a-z0-9])([A-Z])', r'\1-\2', prop).lower()
+        prop = re.sub(r"([a-z0-9])([A-Z])", r"\1-\2", prop).lower()
         style_parts.append(f"{prop}:{value}")
 
     return ",".join(style_parts)
@@ -64,14 +64,14 @@ def escape_text(text: str) -> str:
     """
     # Replace characters that might interfere with Mermaid syntax
     replacements = {
-        ':': '&#58;',
-        ';': '&#59;',
-        '#': '&#35;',
-        '{': '&#123;',
-        '}': '&#125;',
-        '(': '&#40;',
-        ')': '&#41;',
-        '|': '&#124;',
+        ":": "&#58;",
+        ";": "&#59;",
+        "#": "&#35;",
+        "{": "&#123;",
+        "}": "&#125;",
+        "(": "&#40;",
+        ")": "&#41;",
+        "|": "&#124;",
     }
 
     for char, code in replacements.items():
@@ -90,7 +90,7 @@ def add_theme_directive(theme: str) -> str:
     Returns:
         Theme initialization directive or empty string for default theme
     """
-    if theme != 'default':
+    if theme != "default":
         return f"%%{{ init: {{'theme': '{theme}'}} }}%%"
     return ""
 
@@ -106,5 +106,5 @@ def indent_lines(text: str, indent: int = 4) -> str:
     Returns:
         Indented text
     """
-    indent_str = ' ' * indent
-    return indent_str + text.replace('\n', f'\n{indent_str}')
+    indent_str = " " * indent
+    return indent_str + text.replace("\n", f"\n{indent_str}")

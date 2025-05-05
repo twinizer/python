@@ -1,6 +1,6 @@
 prompt-toolkit>=3.0.0
-click>=8.0.0
-rich>=10.0.0
+click>=8.1.8
+rich<13.0.0,>=12.5.1
 pyelftools>=0.27
 capstone>=4.0.2
 pefile>=2022.5.30

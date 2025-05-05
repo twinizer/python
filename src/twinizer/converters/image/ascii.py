@@ -5,10 +5,11 @@ This module provides comprehensive functionality to convert images to ASCII art
 with support for various output formats, styles, and customization options.
 """
 
-from PIL import Image
 import os
-import numpy as np
 from typing import Dict, List, Optional, Tuple, Union
+
+import numpy as np
+from PIL import Image
 
 
 class AsciiArtConverter:
@@ -18,16 +19,16 @@ class AsciiArtConverter:
 
     # Predefined character sets from darkest to lightest
     CHAR_SETS = {
-        'standard': '@%#*+=-:. ',
-        'complex': '$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,"^`\'. ',
-        'simple': '#. ',
-        'blocks': '█▓▒░ ',
-        'binary': '10 ',
-        'ascii_only': '@%#*+=-:. ',
-        'high_contrast': '@% ',
+        "standard": "@%#*+=-:. ",
+        "complex": "$@B%8&WM#*oahkbdpqwmZO0QLCJUYXzcvunxrjft/\\|()1{}[]?-_+~<>i!lI;:,\"^`'. ",
+        "simple": "#. ",
+        "blocks": "█▓▒░ ",
+        "binary": "10 ",
+        "ascii_only": "@%#*+=-:. ",
+        "high_contrast": "@% ",
     }
 
-    def __init__(self, char_set: str = 'standard', invert: bool = False):
+    def __init__(self, char_set: str = "standard", invert: bool = False):
         """
         Initialize the ASCII art converter.
 
@@ -43,8 +44,14 @@ class AsciiArtConverter:
         if invert:
             self.chars = self.chars[::-1]
 
-    def convert(self, image_path: str, width: int = 80, height: Optional[int] = None,
-                output_format: str = 'text', output_path: Optional[str] = None) -> str:
+    def convert(
+        self,
+        image_path: str,
+        width: int = 80,
+        height: Optional[int] = None,
+        output_format: str = "text",
+        output_path: Optional[str] = None,
+    ) -> str:
         """
         Convert an image to ASCII art.
 
@@ -65,26 +72,28 @@ class AsciiArtConverter:
         img = Image.open(image_path)
 
         # Generate ASCII art based on the output format
-        if output_format == 'text':
+        if output_format == "text":
             ascii_art = self._generate_text_ascii(img, width, height)
-        elif output_format == 'html':
+        elif output_format == "html":
             ascii_art = self._generate_html_ascii(img, width, height, use_color=False)
-        elif output_format == 'colored_html':
+        elif output_format == "colored_html":
             ascii_art = self._generate_html_ascii(img, width, height, use_color=True)
-        elif output_format == 'ansi':
+        elif output_format == "ansi":
             ascii_art = self._generate_ansi_ascii(img, width, height)
         else:
             raise ValueError(f"Unsupported output format: {output_format}")
 
         # Save to file if output path is provided
         if output_path:
-            with open(output_path, 'w', encoding='utf-8') as f:
+            with open(output_path, "w", encoding="utf-8") as f:
                 f.write(ascii_art)
             return output_path
 
         return ascii_art
 
-    def _generate_text_ascii(self, img: Image.Image, width: int, height: Optional[int] = None) -> str:
+    def _generate_text_ascii(
+        self, img: Image.Image, width: int, height: Optional[int] = None
+    ) -> str:
         """
         Generate plain text ASCII art.
 
@@ -107,11 +116,16 @@ class AsciiArtConverter:
         char_array = np.array(list(self.chars))[indices]
 
         # Convert to string
-        lines = [''.join(row) for row in char_array]
-        return '\n'.join(lines)
+        lines = ["".join(row) for row in char_array]
+        return "\n".join(lines)
 
-    def _generate_html_ascii(self, img: Image.Image, width: int, height: Optional[int] = None,
-                            use_color: bool = False) -> str:
+    def _generate_html_ascii(
+        self,
+        img: Image.Image,
+        width: int,
+        height: Optional[int] = None,
+        use_color: bool = False,
+    ) -> str:
         """
         Generate HTML-formatted ASCII art with optional color.
 
@@ -126,22 +140,24 @@ class AsciiArtConverter:
         """
         # Process image
         if use_color:
-            rgb_img, width, height = self._prepare_image(img, width, height, mode='RGB')
+            rgb_img, width, height = self._prepare_image(img, width, height, mode="RGB")
             pixels = np.array(rgb_img)
         else:
             gray_img, width, height = self._prepare_image(img, width, height)
             pixels = np.array(gray_img)
 
         # Generate HTML
-        html = ['<!DOCTYPE html>',
-                '<html>',
-                '<head>',
-                '<style>',
-                'pre { font-family: monospace; line-height: 1; background-color: #000; }',
-                '</style>',
-                '</head>',
-                '<body>',
-                '<pre>']
+        html = [
+            "<!DOCTYPE html>",
+            "<html>",
+            "<head>",
+            "<style>",
+            "pre { font-family: monospace; line-height: 1; background-color: #000; }",
+            "</style>",
+            "</head>",
+            "<body>",
+            "<pre>",
+        ]
 
         if use_color:
             for row in pixels:
@@ -152,22 +168,24 @@ class AsciiArtConverter:
                     char_index = int((brightness / 255) * (len(self.chars) - 1))
                     char = self.chars[char_index]
                     line.append(f'<span style="color: rgb({r},{g},{b});">{char}</span>')
-                html.append(''.join(line))
+                html.append("".join(line))
         else:
             # For grayscale, we can use vectorized operations
             indices = np.floor((pixels / 255) * (len(self.chars) - 1)).astype(int)
             char_array = np.array(list(self.chars))[indices]
 
             for row in char_array:
-                html.append(''.join(row))
+                html.append("".join(row))
 
-        html.append('</pre>')
-        html.append('</body>')
-        html.append('</html>')
+        html.append("</pre>")
+        html.append("</body>")
+        html.append("</html>")
 
-        return '\n'.join(html)
+        return "\n".join(html)
 
-    def _generate_ansi_ascii(self, img: Image.Image, width: int, height: Optional[int] = None) -> str:
+    def _generate_ansi_ascii(
+        self, img: Image.Image, width: int, height: Optional[int] = None
+    ) -> str:
         """
         Generate ASCII art with ANSI color codes for terminal display.
 
@@ -180,7 +198,7 @@ class AsciiArtConverter:
             ASCII art with ANSI color codes
         """
         # Process image to RGB
-        rgb_img, width, height = self._prepare_image(img, width, height, mode='RGB')
+        rgb_img, width, height = self._prepare_image(img, width, height, mode="RGB")
         pixels = np.array(rgb_img)
 
         # Generate ANSI colored text
@@ -200,12 +218,17 @@ class AsciiArtConverter:
                 ansi_code = 16 + (36 * ansi_r) + (6 * ansi_g) + ansi_b
 
                 line.append(f"\033[38;5;{ansi_code}m{char}\033[0m")
-            lines.append(''.join(line))
+            lines.append("".join(line))
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
-    def _prepare_image(self, img: Image.Image, width: int, height: Optional[int] = None,
-                      mode: str = 'L') -> Tuple[Image.Image, int, int]:
+    def _prepare_image(
+        self,
+        img: Image.Image,
+        width: int,
+        height: Optional[int] = None,
+        mode: str = "L",
+    ) -> Tuple[Image.Image, int, int]:
         """
         Prepare an image for ASCII conversion by resizing and converting to appropriate mode.
 
@@ -225,7 +248,9 @@ class AsciiArtConverter:
         # Calculate height to maintain aspect ratio if not specified
         if height is None:
             aspect_ratio = img.height / img.width
-            height = int(width * aspect_ratio * 0.5)  # * 0.5 to account for character aspect ratio
+            height = int(
+                width * aspect_ratio * 0.5
+            )  # * 0.5 to account for character aspect ratio
 
         # Resize the image using high-quality method
         img = img.resize((width, height), Image.LANCZOS)
@@ -233,9 +258,15 @@ class AsciiArtConverter:
         return img, width, height
 
 
-def convert_image_to_ascii(image_path: str, output_path: Optional[str] = None, width: int = 80,
-                          height: Optional[int] = None, char_set: str = 'standard',
-                          invert: bool = False, output_format: str = 'text') -> str:
+def convert_image_to_ascii(
+    image_path: str,
+    output_path: Optional[str] = None,
+    width: int = 80,
+    height: Optional[int] = None,
+    char_set: str = "standard",
+    invert: bool = False,
+    output_format: str = "text",
+) -> str:
     """
     Convenience function to convert an image to ASCII art.
 
@@ -257,7 +288,7 @@ def convert_image_to_ascii(image_path: str, output_path: Optional[str] = None, w
         width=width,
         height=height,
         output_format=output_format,
-        output_path=output_path
+        output_path=output_path,
     )
 
 
@@ -271,7 +302,9 @@ def available_char_sets() -> Dict[str, str]:
     return AsciiArtConverter.CHAR_SETS
 
 
-def image_to_ascii_art_preview(image_path: str, width: int = 40, char_set: str = 'standard') -> str:
+def image_to_ascii_art_preview(
+    image_path: str, width: int = 40, char_set: str = "standard"
+) -> str:
     """
     Generate a quick ASCII art preview of an image.
 
@@ -284,4 +317,4 @@ def image_to_ascii_art_preview(image_path: str, width: int = 40, char_set: str =
         ASCII art preview as a string
     """
     converter = AsciiArtConverter(char_set=char_set)
-    return converter.convert(image_path, width=width, output_format='text')
+    return converter.convert(image_path, width=width, output_format="text")

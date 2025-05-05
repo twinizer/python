@@ -9,7 +9,7 @@ This module provides functionality to generate state diagrams
 with states, transitions, and nested states.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..constants import STATE_STYLES
@@ -21,9 +21,15 @@ class StateDiagramGenerator(BaseDiagramGenerator):
     Generator for Mermaid state diagrams.
     """
 
-    def generate(self, states: List[Dict], transitions: List[Dict],
-                 title: Optional[str] = None, direction: str = 'LR',
-                 start_state: Optional[str] = None, end_states: Optional[List[str]] = None) -> str:
+    def generate(
+        self,
+        states: List[Dict],
+        transitions: List[Dict],
+        title: Optional[str] = None,
+        direction: str = "LR",
+        start_state: Optional[str] = None,
+        end_states: Optional[List[str]] = None,
+    ) -> str:
         """
         Generate a Mermaid state diagram.
 
@@ -39,9 +45,9 @@ class StateDiagramGenerator(BaseDiagramGenerator):
             Mermaid state diagram as a string
         """
         # Validate direction
-        valid_directions = ['TB', 'BT', 'RL', 'LR']
+        valid_directions = ["TB", "BT", "RL", "LR"]
         if direction not in valid_directions:
-            direction = 'LR'  # Default to left-to-right
+            direction = "LR"  # Default to left-to-right
 
         # Add additional directives
         additional_directives = [f"    direction {direction}"]
@@ -68,7 +74,9 @@ class StateDiagramGenerator(BaseDiagramGenerator):
                 content_lines.append(f"    {escape_text(end_state)} --> [*]")
 
         # Format the diagram
-        return self._format_diagram("stateDiagram-v2", content_lines, title, additional_directives)
+        return self._format_diagram(
+            "stateDiagram-v2", content_lines, title, additional_directives
+        )
 
     def _format_state(self, state: Dict) -> List[str]:
         """
@@ -81,26 +89,26 @@ class StateDiagramGenerator(BaseDiagramGenerator):
             List of formatted state lines
         """
         state_lines = []
-        state_id = escape_text(state['id'])
+        state_id = escape_text(state["id"])
 
         # Get state label
-        if 'label' in state:
-            state_label = escape_text(state['label'])
+        if "label" in state:
+            state_label = escape_text(state["label"])
             state_lines.append(f"{state_id}: {state_label}")
 
         # Add state style based on type
-        if 'type' in state:
-            state_type = state['type'].lower()
+        if "type" in state:
+            state_type = state["type"].lower()
 
-            if state_type == 'choice':
+            if state_type == "choice":
                 state_lines.append(f"state {state_id} {{")
                 state_lines.append(f"    {state_id}")
                 state_lines.append("}")
-            elif state_type == 'composite' or state_type == 'nested':
+            elif state_type == "composite" or state_type == "nested":
                 state_lines.extend(self._format_composite_state(state))
-            elif state_type == 'note':
+            elif state_type == "note":
                 state_lines.append(f"note right of {state_id}")
-                note_text = state.get('note', state_id)
+                note_text = state.get("note", state_id)
                 state_lines.append(f"    {escape_text(note_text)}")
                 state_lines.append("end note")
             elif state_type in STATE_STYLES:
@@ -122,32 +130,32 @@ class StateDiagramGenerator(BaseDiagramGenerator):
             List of formatted composite state lines
         """
         state_lines = []
-        state_id = escape_text(state['id'])
+        state_id = escape_text(state["id"])
 
         # Start composite state
         state_lines.append(f"state {state_id} {{")
 
         # Add substates
-        for substate in state.get('substates', []):
-            substate_id = escape_text(substate['id'])
+        for substate in state.get("substates", []):
+            substate_id = escape_text(substate["id"])
 
-            if 'label' in substate:
-                substate_label = escape_text(substate['label'])
+            if "label" in substate:
+                substate_label = escape_text(substate["label"])
                 state_lines.append(f"    {substate_id}: {substate_label}")
             else:
                 state_lines.append(f"    {substate_id}")
 
             # Add substate type if provided
-            if 'type' in substate and substate['type'] in STATE_STYLES:
-                substate_style = STATE_STYLES[substate['type']]
+            if "type" in substate and substate["type"] in STATE_STYLES:
+                substate_style = STATE_STYLES[substate["type"]]
                 if substate_style:
                     state_lines.append(f"    state {substate_id} {substate_style}")
 
         # Add subtransitions
-        for subtrans in state.get('subtransitions', []):
-            from_id = escape_text(subtrans['from'])
-            to_id = escape_text(subtrans['to'])
-            label = escape_text(subtrans.get('label', ''))
+        for subtrans in state.get("subtransitions", []):
+            from_id = escape_text(subtrans["from"])
+            to_id = escape_text(subtrans["to"])
+            label = escape_text(subtrans.get("label", ""))
 
             if label:
                 state_lines.append(f"    {from_id} --> {to_id}: {label}")
@@ -169,9 +177,9 @@ class StateDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted transition line
         """
-        from_id = escape_text(transition['from'])
-        to_id = escape_text(transition['to'])
-        label = escape_text(transition.get('label', ''))
+        from_id = escape_text(transition["from"])
+        to_id = escape_text(transition["to"])
+        label = escape_text(transition.get("label", ""))
 
         if label:
             return f"{from_id} --> {to_id}: {label}"
@@ -179,10 +187,15 @@ class StateDiagramGenerator(BaseDiagramGenerator):
             return f"{from_id} --> {to_id}"
 
 
-def generate_state_diagram(states: List[Dict], transitions: List[Dict],
-                           title: Optional[str] = None, direction: str = 'LR',
-                           start_state: Optional[str] = None, end_states: Optional[List[str]] = None,
-                           theme: str = 'default') -> str:
+def generate_state_diagram(
+    states: List[Dict],
+    transitions: List[Dict],
+    title: Optional[str] = None,
+    direction: str = "LR",
+    start_state: Optional[str] = None,
+    end_states: Optional[List[str]] = None,
+    theme: str = "default",
+) -> str:
     """
     Generate a Mermaid state diagram.
 
@@ -199,4 +212,6 @@ def generate_state_diagram(states: List[Dict], transitions: List[Dict],
         Mermaid state diagram as a string
     """
     generator = StateDiagramGenerator(theme)
-    return generator.generate(states, transitions, title, direction, start_state, end_states)
+    return generator.generate(
+        states, transitions, title, direction, start_state, end_states
+    )

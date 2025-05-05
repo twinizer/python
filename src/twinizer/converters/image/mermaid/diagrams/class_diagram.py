@@ -9,8 +9,8 @@ This module provides functionality to generate class diagrams
 with classes, attributes, methods, and relationships.
 """
 
-from typing import Dict, List, Optional, Union, Any
 import re
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..utils import escape_text
@@ -23,17 +23,21 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
 
     # Relationship symbols
     RELATIONSHIP_TYPES = {
-        'inheritance': '<|--',
-        'composition': '*--',
-        'aggregation': 'o--',
-        'association': '-->',
-        'dependency': '..>',
-        'realization': '<|..',
-        'link': '--',
+        "inheritance": "<|--",
+        "composition": "*--",
+        "aggregation": "o--",
+        "association": "-->",
+        "dependency": "..>",
+        "realization": "<|..",
+        "link": "--",
     }
 
-    def generate(self, classes: List[Dict], title: Optional[str] = None,
-                 namespace: Optional[str] = None) -> str:
+    def generate(
+        self,
+        classes: List[Dict],
+        title: Optional[str] = None,
+        namespace: Optional[str] = None,
+    ) -> str:
         """
         Generate a Mermaid class diagram.
 
@@ -62,8 +66,8 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
 
         # Add relationships
         for cls in classes:
-            class_name = cls['name']
-            for rel in cls.get('relationships', []):
+            class_name = cls["name"]
+            for rel in cls.get("relationships", []):
                 rel_line = self._format_relationship(class_name, rel, base_indent)
                 content_lines.append(rel_line)
 
@@ -86,11 +90,13 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
             List of formatted class lines
         """
         class_lines = []
-        class_name = escape_text(cls['name'])
+        class_name = escape_text(cls["name"])
 
         # Add class definition
-        if 'annotation' in cls:
-            class_lines.append(f"{base_indent}    class {class_name} {cls['annotation']}")
+        if "annotation" in cls:
+            class_lines.append(
+                f"{base_indent}    class {class_name} {cls['annotation']}"
+            )
         else:
             class_lines.append(f"{base_indent}    class {class_name}")
 
@@ -98,12 +104,12 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
         class_lines.append(f"{base_indent}    {class_name} {{")
 
         # Add attributes
-        for attr in cls.get('attributes', []):
+        for attr in cls.get("attributes", []):
             attr_line = self._format_attribute(attr)
             class_lines.append(f"{base_indent}        {attr_line}")
 
         # Add methods
-        for method in cls.get('methods', []):
+        for method in cls.get("methods", []):
             method_line = self._format_method(method)
             class_lines.append(f"{base_indent}        {method_line}")
 
@@ -122,9 +128,9 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted attribute line
         """
-        visibility = attr.get('visibility', '+')
-        name = escape_text(attr['name'])
-        type_hint = attr.get('type', '')
+        visibility = attr.get("visibility", "+")
+        name = escape_text(attr["name"])
+        type_hint = attr.get("type", "")
 
         if type_hint:
             return f"{visibility}{name}: {type_hint}"
@@ -141,17 +147,19 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted method line
         """
-        visibility = method.get('visibility', '+')
-        name = escape_text(method['name'])
-        params = method.get('params', '')
-        return_type = method.get('return', '')
+        visibility = method.get("visibility", "+")
+        name = escape_text(method["name"])
+        params = method.get("params", "")
+        return_type = method.get("return", "")
 
         if return_type:
             return f"{visibility}{name}({params}): {return_type}"
         else:
             return f"{visibility}{name}({params})"
 
-    def _format_relationship(self, class_name: str, rel: Dict, base_indent: str = "") -> str:
+    def _format_relationship(
+        self, class_name: str, rel: Dict, base_indent: str = ""
+    ) -> str:
         """
         Format a relationship for a class diagram.
 
@@ -163,17 +171,17 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted relationship line
         """
-        rel_type = rel['type']
-        target = escape_text(rel['target'])
-        label = escape_text(rel.get('label', ''))
+        rel_type = rel["type"]
+        target = escape_text(rel["target"])
+        label = escape_text(rel.get("label", ""))
 
         # Get relationship symbol
-        rel_symbol = self.RELATIONSHIP_TYPES.get(rel_type, '--')
+        rel_symbol = self.RELATIONSHIP_TYPES.get(rel_type, "--")
 
         # Determine relationship direction
-        if rel_type in ['inheritance', 'realization']:
+        if rel_type in ["inheritance", "realization"]:
             relationship = f"{base_indent}    {target} {rel_symbol} {class_name}"
-        elif rel_type in ['composition', 'aggregation']:
+        elif rel_type in ["composition", "aggregation"]:
             relationship = f"{base_indent}    {target} {rel_symbol} {class_name}"
         else:
             relationship = f"{base_indent}    {class_name} {rel_symbol} {target}"
@@ -185,8 +193,12 @@ class ClassDiagramGenerator(BaseDiagramGenerator):
         return relationship
 
 
-def generate_class_diagram(classes: List[Dict], title: Optional[str] = None,
-                           namespace: Optional[str] = None, theme: str = 'default') -> str:
+def generate_class_diagram(
+    classes: List[Dict],
+    title: Optional[str] = None,
+    namespace: Optional[str] = None,
+    theme: str = "default",
+) -> str:
     """
     Generate a Mermaid class diagram.
 

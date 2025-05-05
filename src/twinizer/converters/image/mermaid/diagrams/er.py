@@ -9,7 +9,7 @@ This module provides functionality to generate ER diagrams
 with entities, attributes, and relationships.
 """
 
-from typing import Dict, List, Optional, Union, Any
+from typing import Any, Dict, List, Optional, Union
 
 from ..base import BaseDiagramGenerator
 from ..constants import ER_CARDINALITIES
@@ -21,8 +21,12 @@ class ERDiagramGenerator(BaseDiagramGenerator):
     Generator for Mermaid Entity-Relationship diagrams.
     """
 
-    def generate(self, entities: List[Dict], relationships: List[Dict],
-                 title: Optional[str] = None) -> str:
+    def generate(
+        self,
+        entities: List[Dict],
+        relationships: List[Dict],
+        title: Optional[str] = None,
+    ) -> str:
         """
         Generate a Mermaid ER diagram.
 
@@ -61,13 +65,13 @@ class ERDiagramGenerator(BaseDiagramGenerator):
             List of formatted entity lines
         """
         entity_lines = []
-        entity_name = escape_text(entity['name'])
+        entity_name = escape_text(entity["name"])
 
         # Start entity definition
         entity_lines.append(f"{entity_name} {{")
 
         # Add attributes
-        for attr in entity.get('attributes', []):
+        for attr in entity.get("attributes", []):
             attr_line = self._format_attribute(attr)
             entity_lines.append(f"    {attr_line}")
 
@@ -87,10 +91,10 @@ class ERDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted attribute line
         """
-        name = escape_text(attr['name'])
-        type_hint = attr.get('type', 'string')
-        pk = attr.get('primary_key', False)
-        fk = attr.get('foreign_key', False)
+        name = escape_text(attr["name"])
+        type_hint = attr.get("type", "string")
+        pk = attr.get("primary_key", False)
+        fk = attr.get("foreign_key", False)
 
         # Add appropriate markers for primary and foreign keys
         if pk:
@@ -111,20 +115,24 @@ class ERDiagramGenerator(BaseDiagramGenerator):
         Returns:
             Formatted relationship line
         """
-        entity1 = escape_text(relationship['entity1'])
-        entity2 = escape_text(relationship['entity2'])
-        rel_label = escape_text(relationship['relationship'])
+        entity1 = escape_text(relationship["entity1"])
+        entity2 = escape_text(relationship["entity2"])
+        rel_label = escape_text(relationship["relationship"])
 
         # Validate and default the cardinality
-        cardinality = relationship.get('cardinality', '1--1')
+        cardinality = relationship.get("cardinality", "1--1")
         if cardinality not in ER_CARDINALITIES:
-            cardinality = '1--1'  # Default to one-to-one if invalid
+            cardinality = "1--1"  # Default to one-to-one if invalid
 
         return f"{entity1} {cardinality} {entity2} : {rel_label}"
 
 
-def generate_er_diagram(entities: List[Dict], relationships: List[Dict],
-                        title: Optional[str] = None, theme: str = 'default') -> str:
+def generate_er_diagram(
+    entities: List[Dict],
+    relationships: List[Dict],
+    title: Optional[str] = None,
+    theme: str = "default",
+) -> str:
     """
     Generate a Mermaid ER diagram.
 

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.17
+Version: 0.1.47
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -16,8 +16,8 @@ Requires-Python: >=3.9
 Description-Content-Type: text/markdown
 License-File: LICENSE
 Requires-Dist: prompt-toolkit>=3.0.0
-Requires-Dist: click>=8.0.0
-Requires-Dist: rich>=10.0.0
+Requires-Dist: click>=8.1.8
+Requires-Dist: rich<13.0.0,>=12.5.1
 Requires-Dist: pyelftools>=0.27
 Requires-Dist: capstone>=4.0.2
 Requires-Dist: pefile>=2022.5.30

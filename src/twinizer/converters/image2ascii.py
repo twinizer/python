@@ -1,4 +1,3 @@
 """
 image2ascii.py
 """
-

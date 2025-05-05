@@ -103,6 +103,17 @@ else
     python update/changelog.py || echo "Failed to generate entry in CHANGELOG.md"
 fi
 
+# Run code quality checks and tests
+echo "Running code quality checks and tests..."
+echo "This step ensures your code meets quality standards and all tests pass."
+bash update/test.sh --fix
+if [ $? -ne 0 ]; then
+    echo "Code quality checks or tests failed. Please fix the issues before publishing."
+    echo "You can run './update/test.sh --fix' to automatically fix some issues."
+    exit 1
+fi
+echo "All code quality checks and tests passed!"
+
 # Publish to GitHub
 echo "Push changes..."
 bash update/git.sh
