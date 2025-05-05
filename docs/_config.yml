@@ -1,5 +1,5 @@
-title: "Spectomate - Python Package Management Format Converter"
-description: "A tool for converting projects between different Python package management formats (pip, conda, poetry)"
+title: "Twinizer - Multi-Format Conversion and Analysis Tool"
+description: "A comprehensive tool for converting between file formats, analyzing code, hardware schematics, and generating documentation"
 author:
   name: "Tom Sapletta"
   url: https://github.com/tom-sapletta-com

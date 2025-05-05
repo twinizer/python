@@ -1,6 +1,6 @@
 # Jekyll configuration for Twinizer documentation
 title: Twinizer
-description: Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych
+description: "Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych"
 url: https://twinizer.github.io
 baseurl: /python/docs
 author:
