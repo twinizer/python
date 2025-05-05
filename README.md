@@ -194,17 +194,3 @@ Documentation is written in Markdown with Mermaid diagram support. To contribute
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-
-<script type="module">    
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  //import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js';
-  mermaid.initialize({
-    startOnReady:true,
-    theme: 'forest',
-    flowchart:{
-            useMaxWidth:false,
-            htmlLabels:true
-        }
-  });
-  mermaid.init(undefined, '.language-mermaid');
-</script>

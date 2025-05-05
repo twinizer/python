@@ -1,0 +1,29 @@
+title: "Spectomate - Python Package Management Format Converter"
+description: "A tool for converting projects between different Python package management formats (pip, conda, poetry)"
+author:
+  name: "Tom Sapletta"
+  url: https://github.com/tom-sapletta-com
+lang: "en"
+keywords: "python, package management, pip, conda, poetry, converter, requirements.txt, environment.yml, pyproject.toml"
+image: "https://github.com/spectomate/python/raw/main/docs/diagrams/logo.png"
+
+# Keep your existing configuration below this
+url: https://spectomate.github.io
+baseurl: /python/docs
+remote_theme: pages-themes/cayman@v0.2.0
+plugins:
+  - jekyll-remote-theme
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# GitHub metadata
+repository: spectomate/python
+github:
+  is_project_page: true
+  repository_url: https://github.com/spectomate/python
+  owner_url: https://github.com/spectomate
+  owner_name: Tom Sapletta
+
+# Build settings
+markdown: kramdown
+highlighter: rouge

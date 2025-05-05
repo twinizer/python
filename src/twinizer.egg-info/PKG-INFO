@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.90
+Version: 0.1.91
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -241,17 +241,3 @@ Documentation is written in Markdown with Mermaid diagram support. To contribute
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-
-<script type="module">    
-  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
-  //import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js';
-  mermaid.initialize({
-    startOnReady:true,
-    theme: 'forest',
-    flowchart:{
-            useMaxWidth:false,
-            htmlLabels:true
-        }
-  });
-  mermaid.init(undefined, '.language-mermaid');
-</script>
