@@ -38,12 +38,13 @@ jobs:
           source: ./
           destination: ./
 
+      # Fix for the upload-artifact action
       - name: Upload artifact
         id: upload-pages-artifact
-        uses: actions/upload-artifact@v3.1.2
+        uses: actions/upload-artifact@v4  # Update from v3 to v4
         with:
-          name: jekyll-site
-          path: ./  # Adjust this path to point to your build artifacts
+          name: github-pages
+          path: ./  # Make sure this points to your built site files
 
   deploy:
     environment:

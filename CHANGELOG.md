@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.81] - 2025-05-05
+
+### Added
+- Changes in .github/workflows/jekyll-gh-pages.yml
+- Changes in pyproject.toml
+- Changes in src/twinizer/__init__.py
+
 ## [0.1.80] - 2025-05-05
 
 ### Added
