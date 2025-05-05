@@ -79,7 +79,6 @@ def _detect_heading(line, line_index, all_lines):
         and not line.endswith("etc.")
         and not ":" in line[:-1]
     ):
-
         # Check if the next line is blank or very short
         is_heading = False
         if line_index + 1 < len(all_lines):

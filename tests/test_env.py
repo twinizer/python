@@ -20,7 +20,7 @@ from twinizer.utils.env import (
     get_python_path,
     install_dependencies,
     inject_system_paths,
-    bootstrap_environment
+    bootstrap_environment,
 )
 
 
@@ -30,17 +30,23 @@ class TestEnvironmentUtils(unittest.TestCase):
     def test_is_in_virtualenv(self):
         """Test detection of virtual environment."""
         # Test when in a virtualenv (sys.base_prefix != sys.prefix)
-        with patch('sys.base_prefix', 'base_prefix'), patch('sys.prefix', 'different_prefix'):
+        with patch("sys.base_prefix", "base_prefix"), patch(
+            "sys.prefix", "different_prefix"
+        ):
             self.assertTrue(is_in_virtualenv())
-            
+
         # Test when in a virtualenv (has real_prefix)
-        with patch('sys.real_prefix', 'real_prefix', create=True), patch('sys.prefix', 'prefix'):
+        with patch("sys.real_prefix", "real_prefix", create=True), patch(
+            "sys.prefix", "prefix"
+        ):
             self.assertTrue(is_in_virtualenv())
-            
+
         # Test when not in a virtualenv
-        with patch('sys.base_prefix', 'same_prefix'), patch('sys.prefix', 'same_prefix'):
-            if hasattr(sys, 'real_prefix'):
-                with patch.object(sys, 'real_prefix', None, create=False):
+        with patch("sys.base_prefix", "same_prefix"), patch(
+            "sys.prefix", "same_prefix"
+        ):
+            if hasattr(sys, "real_prefix"):
+                with patch.object(sys, "real_prefix", None, create=False):
                     self.assertFalse(is_in_virtualenv())
             else:
                 self.assertFalse(is_in_virtualenv())
@@ -48,27 +54,31 @@ class TestEnvironmentUtils(unittest.TestCase):
     def test_check_python_version(self):
         """Test Python version check."""
         # Test with Python 3.9 (should pass)
-        with patch('sys.version_info', (3, 9, 0, 'final', 0)):
+        with patch("sys.version_info", (3, 9, 0, "final", 0)):
             self.assertTrue(check_python_version())
-            
+
         # Test with Python 3.10 (should pass)
-        with patch('sys.version_info', (3, 10, 0, 'final', 0)):
+        with patch("sys.version_info", (3, 10, 0, "final", 0)):
             self.assertTrue(check_python_version())
-            
+
         # Test with Python 3.8 (should fail)
-        with patch('sys.version_info', (3, 8, 0, 'final', 0)), patch('rich.console.Console.print'):
+        with patch("sys.version_info", (3, 8, 0, "final", 0)), patch(
+            "rich.console.Console.print"
+        ):
             self.assertFalse(check_python_version())
-            
+
         # Test with Python 2.7 (should fail)
-        with patch('sys.version_info', (2, 7, 0, 'final', 0)), patch('rich.console.Console.print'):
+        with patch("sys.version_info", (2, 7, 0, "final", 0)), patch(
+            "rich.console.Console.print"
+        ):
             self.assertFalse(check_python_version())
 
     def test_check_conda_env(self):
         """Test conda environment detection."""
         # Test when in a conda environment
-        with patch.dict(os.environ, {'CONDA_PREFIX': '/path/to/conda/env'}):
+        with patch.dict(os.environ, {"CONDA_PREFIX": "/path/to/conda/env"}):
             self.assertTrue(check_conda_env())
-            
+
         # Test when not in a conda environment
         with patch.dict(os.environ, {}, clear=True):
             self.assertFalse(check_conda_env())
@@ -76,53 +86,52 @@ class TestEnvironmentUtils(unittest.TestCase):
     def test_get_venv_path(self):
         """Test getting the virtual environment path."""
         # Mock home directory
-        with patch('pathlib.Path.home', return_value=Path('/home/user')):
+        with patch("pathlib.Path.home", return_value=Path("/home/user")):
             venv_path = get_venv_path()
-            self.assertEqual(venv_path, Path('/home/user/.twinizer_env'))
+            self.assertEqual(venv_path, Path("/home/user/.twinizer_env"))
 
-    @patch('subprocess.run')
-    @patch('rich.console.Console.print')
+    @patch("subprocess.run")
+    @patch("rich.console.Console.print")
     def test_create_venv(self, mock_print, mock_run):
         """Test virtual environment creation."""
-        venv_path = Path('/path/to/venv')
+        venv_path = Path("/path/to/venv")
         create_venv(venv_path)
-        
+
         # Verify subprocess.run was called correctly
         mock_run.assert_called_with(
-            [sys.executable, '-m', 'venv', venv_path],
-            check=True
+            [sys.executable, "-m", "venv", venv_path], check=True
         )
 
     def test_get_pip_path(self):
         """Test getting the pip path in the virtual environment."""
-        venv_path = Path('/path/to/venv')
-        
+        venv_path = Path("/path/to/venv")
+
         # Test on Windows
-        with patch('platform.system', return_value='Windows'):
+        with patch("platform.system", return_value="Windows"):
             pip_path = get_pip_path(venv_path)
-            self.assertEqual(pip_path, Path('/path/to/venv/Scripts/pip.exe'))
-            
+            self.assertEqual(pip_path, Path("/path/to/venv/Scripts/pip.exe"))
+
         # Test on Linux
-        with patch('platform.system', return_value='Linux'):
+        with patch("platform.system", return_value="Linux"):
             pip_path = get_pip_path(venv_path)
-            self.assertEqual(pip_path, Path('/path/to/venv/bin/pip'))
+            self.assertEqual(pip_path, Path("/path/to/venv/bin/pip"))
 
     def test_get_python_path(self):
         """Test getting the Python path in the virtual environment."""
-        venv_path = Path('/path/to/venv')
-        
-        # Test on Windows
-        with patch('platform.system', return_value='Windows'):
-            python_path = get_python_path(venv_path)
-            self.assertEqual(python_path, Path('/path/to/venv/Scripts/python.exe'))
-            
-        # Test on Linux
-        with patch('platform.system', return_value='Linux'):
-            python_path = get_python_path(venv_path)
-            self.assertEqual(python_path, Path('/path/to/venv/bin/python'))
+        venv_path = Path("/path/to/venv")
 
-    @patch('subprocess.run')
-    @patch('rich.progress.Progress')
+        # Test on Windows
+        with patch("platform.system", return_value="Windows"):
+            python_path = get_python_path(venv_path)
+            self.assertEqual(python_path, Path("/path/to/venv/Scripts/python.exe"))
+
+        # Test on Linux
+        with patch("platform.system", return_value="Linux"):
+            python_path = get_python_path(venv_path)
+            self.assertEqual(python_path, Path("/path/to/venv/bin/python"))
+
+    @patch("subprocess.run")
+    @patch("rich.progress.Progress")
     def test_install_dependencies(self, mock_progress, mock_run):
         """Test dependency installation."""
         # Mock progress bar
@@ -130,110 +139,115 @@ class TestEnvironmentUtils(unittest.TestCase):
         mock_progress_instance = MagicMock()
         mock_progress_instance.add_task.return_value = mock_task
         mock_progress.return_value.__enter__.return_value = mock_progress_instance
-        
+
         # Call install_dependencies
-        pip_path = Path('/path/to/venv/bin/pip')
+        pip_path = Path("/path/to/venv/bin/pip")
         install_dependencies(pip_path)
-        
+
         # Verify subprocess.run was called correctly
-        mock_run.assert_called_with(
-            [str(pip_path), 'install', '-e', '.'],
-            check=True
-        )
-        
+        mock_run.assert_called_with([str(pip_path), "install", "-e", "."], check=True)
+
         # Verify progress was updated
         mock_progress_instance.update.assert_called()
 
     def test_inject_system_paths(self):
         """Test system path injection."""
         # Save original PATH
-        original_path = os.environ.get('PATH', '')
-        
+        original_path = os.environ.get("PATH", "")
+
         try:
             # Set up a test PATH
-            os.environ['PATH'] = '/usr/bin:/bin'
-            
+            os.environ["PATH"] = "/usr/bin:/bin"
+
             # Mock platform and path existence
-            with patch('platform.system', return_value='Linux'), \
-                 patch('os.path.exists', return_value=True):
+            with patch("platform.system", return_value="Linux"), patch(
+                "os.path.exists", return_value=True
+            ):
                 inject_system_paths()
-                
+
                 # Verify paths were added
-                self.assertIn('/usr/local/bin', os.environ['PATH'])
-                self.assertIn('/opt/gcc/bin', os.environ['PATH'])
-                self.assertIn('/opt/avr/bin', os.environ['PATH'])
+                self.assertIn("/usr/local/bin", os.environ["PATH"])
+                self.assertIn("/opt/gcc/bin", os.environ["PATH"])
+                self.assertIn("/opt/avr/bin", os.environ["PATH"])
         finally:
             # Restore original PATH
-            os.environ['PATH'] = original_path
+            os.environ["PATH"] = original_path
 
-    @patch('twinizer.utils.env.check_python_version', return_value=True)
-    @patch('twinizer.utils.env.is_in_virtualenv', return_value=False)
-    @patch('twinizer.utils.env.check_conda_env', return_value=False)
-    @patch('twinizer.utils.env.get_venv_path')
-    @patch('pathlib.Path.exists')
-    @patch('twinizer.utils.env.create_venv')
-    @patch('twinizer.utils.env.get_pip_path')
-    @patch('twinizer.utils.env.install_dependencies')
-    @patch('twinizer.utils.env.get_python_path')
-    @patch('os.execv')
+    @patch("twinizer.utils.env.check_python_version", return_value=True)
+    @patch("twinizer.utils.env.is_in_virtualenv", return_value=False)
+    @patch("twinizer.utils.env.check_conda_env", return_value=False)
+    @patch("twinizer.utils.env.get_venv_path")
+    @patch("pathlib.Path.exists")
+    @patch("twinizer.utils.env.create_venv")
+    @patch("twinizer.utils.env.get_pip_path")
+    @patch("twinizer.utils.env.install_dependencies")
+    @patch("twinizer.utils.env.get_python_path")
+    @patch("os.execv")
     def test_bootstrap_environment_new_venv(
-        self, mock_execv, mock_get_python_path, mock_install_dependencies,
-        mock_get_pip_path, mock_create_venv, mock_exists, mock_get_venv_path,
-        mock_check_conda_env, mock_is_in_virtualenv, mock_check_python_version
+        self,
+        mock_execv,
+        mock_get_python_path,
+        mock_install_dependencies,
+        mock_get_pip_path,
+        mock_create_venv,
+        mock_exists,
+        mock_get_venv_path,
+        mock_check_conda_env,
+        mock_is_in_virtualenv,
+        mock_check_python_version,
     ):
         """Test bootstrapping a new virtual environment."""
         # Mock venv path
-        venv_path = Path('/path/to/venv')
+        venv_path = Path("/path/to/venv")
         mock_get_venv_path.return_value = venv_path
-        
+
         # Mock venv does not exist
         mock_exists.return_value = False
-        
+
         # Mock pip and python paths
-        pip_path = Path('/path/to/venv/bin/pip')
-        python_path = Path('/path/to/venv/bin/python')
+        pip_path = Path("/path/to/venv/bin/pip")
+        python_path = Path("/path/to/venv/bin/python")
         mock_get_pip_path.return_value = pip_path
         mock_get_python_path.return_value = python_path
-        
+
         # Save original argv
         original_argv = sys.argv
-        sys.argv = ['twinizer', 'run']
-        
+        sys.argv = ["twinizer", "run"]
+
         try:
             # Call bootstrap_environment
             bootstrap_environment()
-            
+
             # Verify venv was created
             mock_create_venv.assert_called_with(venv_path)
-            
+
             # Verify dependencies were installed
             mock_install_dependencies.assert_called_with(pip_path)
-            
+
             # Verify python path was retrieved
             mock_get_python_path.assert_called_with(venv_path)
-            
+
             # Verify execv was called to restart in the venv
             mock_execv.assert_called_with(
-                str(python_path),
-                [str(python_path), '-m', 'twinizer', 'run']
+                str(python_path), [str(python_path), "-m", "twinizer", "run"]
             )
         finally:
             # Restore original argv
             sys.argv = original_argv
 
-    @patch('twinizer.utils.env.check_python_version', return_value=True)
-    @patch('twinizer.utils.env.is_in_virtualenv', return_value=True)
-    @patch('twinizer.utils.env.inject_system_paths')
+    @patch("twinizer.utils.env.check_python_version", return_value=True)
+    @patch("twinizer.utils.env.is_in_virtualenv", return_value=True)
+    @patch("twinizer.utils.env.inject_system_paths")
     def test_bootstrap_environment_in_venv(
         self, mock_inject_system_paths, mock_is_in_virtualenv, mock_check_python_version
     ):
         """Test bootstrapping when already in a virtual environment."""
         # Call bootstrap_environment
         bootstrap_environment()
-        
+
         # Verify system paths were injected
         mock_inject_system_paths.assert_called_once()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
