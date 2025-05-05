@@ -192,5 +192,5 @@ Documentation is written in Markdown with Mermaid diagram support. To contribute
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the [Apache 2 License](LICENSE) 
 

@@ -1,6 +1,6 @@
 Metadata-Version: 2.4
 Name: twinizer
-Version: 0.1.91
+Version: 0.1.92
 Summary: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
 Author-email: Your Name <your.email@example.com>
 License: MIT
@@ -239,5 +239,5 @@ Documentation is written in Markdown with Mermaid diagram support. To contribute
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the [Apache 2 License](LICENSE) 
 
