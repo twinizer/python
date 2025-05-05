@@ -5,4 +5,4 @@ Twinizer integrates tools for reverse engineering, compilation, debugging,
 documentation conversion, and workflow automation for embedded projects.
 """
 
-__version__ = "0.1.94"
+__version__ = "0.1.95"

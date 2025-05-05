@@ -1,16 +1,22 @@
 # Jekyll configuration for Twinizer documentation
 title: Twinizer
 description: "Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych"
-url: https://twinizer.github.io
-baseurl: /python/docs
+url: https://www.twinizer.com
+baseurl: /
+
+# SEO settings
 author:
   name: Tom Sapletta
   url: https://github.com/twinizer
-remote_theme: pages-themes/cayman@v0.2.0
-plugins:
-  - jekyll-remote-theme
-  - jekyll-seo-tag
-  - jekyll-sitemap
+logo: /docs/diagrams/logo.png
+lang: en_US
+locale: en_US
+
+# Social media
+social:
+  name: Spectomate
+  links:
+    - https://github.com/twinizer/python
 
 # GitHub metadata
 repository: twinizer/python
@@ -18,8 +24,51 @@ github:
   is_project_page: true
   repository_url: https://github.com/twinizer/python
   owner_url: https://github.com/twinizer
-  owner_name: Tom Sapletta
+  owner_name: Spectomate
+
+# Theme settings
+theme: jekyll-theme-cayman
+show_downloads: true
+
+# Navigation
+nav:
+  - title: Home
+    url: /
+  - title: Documentation
+    url: /docs/
+  - title: Architecture
+    url: /docs/ARCHITECTURE.html
+  - title: Converters
+    url: /docs/CONVERTERS.html
+  - title: Schemas
+    url: /docs/SCHEMAS.html
+  - title: Testing
+    url: /docs/TESTING.html
+  - title: GitHub
+    url: https://github.com/twinizer/python
 
 # Build settings
 markdown: kramdown
 highlighter: rouge
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-github-metadata
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+
+# Default front matter
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default
+  - scope:
+      path: "docs"
+    values:
+      layout: page
+      sidebar: docs
