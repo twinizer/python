@@ -1397,6 +1397,32 @@ class SchematicToSVG:
             base_path = os.path.splitext(self.schematic_path)[0]
             output_path = f"{base_path}.svg"
         
+        # Define component mapping for schemdraw elements
+        component_map = {
+            # Basic components
+            "R": elm.Resistor,
+            "C": elm.Capacitor,
+            "L": elm.Inductor,
+            "D": elm.Diode,
+            "LED": elm.LED,
+            "Q": elm.Transistor,
+            "M": elm.MOSFET,
+            "U": elm.Opamp,
+            "SW": elm.Switch,
+            "CONN": elm.Connector,
+            # Reference prefixes
+            "R": elm.Resistor,
+            "C": elm.Capacitor,
+            "L": elm.Inductor,
+            "D": elm.Diode,
+            "Q": elm.Transistor,
+            "U": elm.Block,
+            "J": elm.Connector,
+            "SW": elm.Switch,
+            "IC": elm.Block,
+            "X": elm.Block,
+        }
+        
         # Sprawdź, czy lista komponentów nie jest pusta
         components_with_x = [c for c in self.parser.components if 'x' in c]
         components_with_y = [c for c in self.parser.components if 'y' in c]
