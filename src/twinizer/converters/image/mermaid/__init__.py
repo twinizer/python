@@ -5,7 +5,7 @@ This package provides comprehensive functionality for generating Mermaid diagram
 and converting them to various formats (HTML, PNG, etc.).
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.51"
 
 # Import from base module
 from .base import BaseDiagramGenerator

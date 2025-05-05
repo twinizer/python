@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e  # Stop script on first error
 
-# Clear screen and show start information
-clear
+# Skip clear screen which requires TERM to be set
+# clear
 echo "Starting publication process..."
 
 # Get project configuration
@@ -12,7 +12,7 @@ import sys
 import os
 sys.path.append(os.path.join(os.getcwd(), 'update'))
 try:
-    from env_manager import get_project_name, get_package_path, get_project_root
+    from env_manager import get_project_name, get_package_path, get_project_root, get_version_files
     
     # Ask user for project name if not defined
     project_name = get_project_name(True)
@@ -26,6 +26,17 @@ try:
     pyproject_path = os.path.join(project_root, 'pyproject.toml')
     if os.path.exists(pyproject_path) and os.access(pyproject_path, os.W_OK):
         version_files.append(pyproject_path)
+    
+    # Check main package __init__.py
+    init_path = os.path.join(project_root, 'src', project_name, '__init__.py')
+    if os.path.exists(init_path) and os.access(init_path, os.W_OK):
+        version_files.append(init_path)
+    
+    # Check other modules that might have version info
+    for module in ['code_analyzer', 'converters/image/mermaid']:
+        module_init = os.path.join(project_root, 'src', project_name, module, '__init__.py')
+        if os.path.exists(module_init) and os.access(module_init, os.W_OK):
+            version_files.append(module_init)
     
     print(f\"PROJECT_NAME={project_name}\")
     print(f\"PACKAGE_PATH={package_path}\")
@@ -106,20 +117,25 @@ fi
 # Run code quality checks and tests
 echo "Running code quality checks and tests..."
 echo "This step ensures your code meets quality standards and all tests pass."
-bash update/test.sh --fix
-if [ $? -ne 0 ]; then
+bash update/test.sh --fix || {
     echo "Code quality checks or tests failed. Please fix the issues before publishing."
     echo "You can run './update/test.sh --fix' to automatically fix some issues."
     exit 1
-fi
+}
 echo "All code quality checks and tests passed!"
 
 # Publish to GitHub
 echo "Push changes..."
-bash update/git.sh
+bash update/git.sh || {
+    echo "Failed to push changes to GitHub."
+    exit 1
+}
 
 # Publish to PyPI
 echo "Publishing to PyPI..."
-bash update/pypi.sh
+bash update/pypi.sh || {
+    echo "Failed to publish to PyPI."
+    exit 1
+}
 
 echo "Publication process completed successfully!"
