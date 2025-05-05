@@ -84,4 +84,4 @@ twinizer generate-report /home/tom/github/zlecenia/maski2/Programator_2025 \
   --serve \
   --port 8080 \
   --theme dark \
-  --title "Maskservice Hardware Project Analysis" 
+  --title "Hardware Project Analysis" 
