@@ -1,3 +1,7 @@
 [submodule "plotkicadsch"]
 	path = plotkicadsch
 	url = https://github.com/jnavila/plotkicadsch.git
+
+[submodule "reverse-engineering"]
+	path = reverse-engineering
+	url = https://github.com/mnigmann/reverse-engineering.git

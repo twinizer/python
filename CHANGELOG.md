@@ -2,6 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.58] - 2025-05-05
+
+### Added
+- Changes in .gitmodules
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+- Changes in src/twinizer/core/project.py
+- Changes in src/twinizer/utils/env.py
+- Changes in tests/test_env.py
+- Changes in tests/test_project.py
+
+## [0.1.57] - 2025-05-05
+
+### Added
+- Changes in .gitmodules
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+- Changes in tests/test_env.py
+- Changes in tests/test_project.py
+
+## [0.1.56] - 2025-05-05
+
+### Added
+- Changes in CHANGELOG.md
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+- Changes in src/twinizer/__init__.py
+- Changes in tests/test_env.py
+- Changes in tests/test_project.py
+
+## [0.1.55] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer/__init__.py
+
 ## [0.1.54] - 2025-05-05
 
 ### Added

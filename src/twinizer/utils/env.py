@@ -137,34 +137,47 @@ def bootstrap_environment():
     2. Creates a virtual environment if not already in one
     3. Installs required dependencies
     4. Injects paths to system tools
+
+    Returns:
+        bool: True if environment is ready or was successfully bootstrapped, False otherwise
     """
     if not check_python_version():
-        sys.exit(1)
+        return False
 
-    # If not in a virtual environment, create one
-    if not is_in_virtualenv() and not check_conda_env():
-        venv_path = get_venv_path()
+    # If already in a virtual environment or conda, we're good to go
+    if is_in_virtualenv() or check_conda_env():
+        inject_system_paths()
+        return True
 
-        if not venv_path.exists():
-            try:
-                create_venv(venv_path)
-                pip_path = get_pip_path(venv_path)
-                install_dependencies(pip_path)
+    # Not in a virtual environment, create one
+    venv_path = get_venv_path()
 
-                # Re-execute the command in the virtual environment
-                python_path = get_python_path(venv_path)
-                args = [str(python_path), "-m", "twinizer"] + sys.argv[1:]
-                os.execv(str(python_path), args)
-            except Exception as e:
-                console.print(
-                    f"[bold red]Error creating virtual environment:[/bold red] {e}"
-                )
-                sys.exit(1)
-        else:
-            # Virtual environment exists, just use it
+    if not venv_path.exists():
+        try:
+            create_venv(venv_path)
+            pip_path = get_pip_path(venv_path)
+            install_dependencies(pip_path)
+
+            # Re-execute the command in the virtual environment
             python_path = get_python_path(venv_path)
-            args = [str(python_path), "-m", "twinizer"] + sys.argv[1:]
+            args = [str(python_path)] + sys.argv
             os.execv(str(python_path), args)
+            # Note: execv replaces the current process, so the code below won't run
+            # unless there's an error with execv
+            return True
+        except Exception as e:
+            console.print(
+                f"[bold red]Error creating virtual environment:[/bold red] {e}"
+            )
+            return False
+    else:
+        # Virtual environment exists, just use it
+        pip_path = get_pip_path(venv_path)
+        install_dependencies(pip_path)
 
-    # If we're already in a virtual environment, just inject system paths
-    inject_system_paths()
+        python_path = get_python_path(venv_path)
+        args = [str(python_path)] + sys.argv
+        os.execv(str(python_path), args)
+        # Note: execv replaces the current process, so the code below won't run
+        # unless there's an error with execv
+        return True

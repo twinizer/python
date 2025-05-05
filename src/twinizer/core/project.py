@@ -921,3 +921,196 @@ class Project:
         table.add_row("Other Code", str(loc["other"]))
 
         console.print(table)
+
+    def analyze_documentation(self):
+        """
+        Analyze documentation files in the project.
+        """
+        if not self.doc_files:
+            console.print(
+                "[yellow]No documentation files found in the project.[/yellow]"
+            )
+            return
+
+        console.print(
+            f"[green]Analyzing {len(self.doc_files)} documentation files:[/green]"
+        )
+
+        # Group documentation files by type
+        markdown_files = [f for f in self.doc_files if f.endswith((".md", ".markdown"))]
+        pdf_files = [f for f in self.doc_files if f.endswith(".pdf")]
+        text_files = [f for f in self.doc_files if f.endswith((".txt", ".rst"))]
+        others = [
+            f
+            for f in self.doc_files
+            if f not in markdown_files and f not in pdf_files and f not in text_files
+        ]
+
+        table = Table("Type", "Count", "Files")
+        table.add_row(
+            "Markdown",
+            str(len(markdown_files)),
+            "\n".join(markdown_files[:5])
+            + (
+                f"\n... and {len(markdown_files) - 5} more"
+                if len(markdown_files) > 5
+                else ""
+            ),
+        )
+        table.add_row(
+            "PDF",
+            str(len(pdf_files)),
+            "\n".join(pdf_files[:5])
+            + (f"\n... and {len(pdf_files) - 5} more" if len(pdf_files) > 5 else ""),
+        )
+        table.add_row(
+            "Text",
+            str(len(text_files)),
+            "\n".join(text_files[:5])
+            + (f"\n... and {len(text_files) - 5} more" if len(text_files) > 5 else ""),
+        )
+        table.add_row(
+            "Other",
+            str(len(others)),
+            "\n".join(others[:5])
+            + (f"\n... and {len(others) - 5} more" if len(others) > 5 else ""),
+        )
+
+        console.print(table)
+
+        # Offer detailed analysis of specific files
+        console.print("\n[bold]Available actions:[/bold]")
+        console.print(
+            "1. Use [cyan]convert pdf2md <file>[/cyan] to convert PDF to Markdown"
+        )
+        console.print(
+            "2. Use [cyan]convert doc2tree <file>[/cyan] to create a document tree"
+        )
+
+    def analyze_scripts(self):
+        """
+        Analyze script files in the project.
+        """
+        if not self.script_files:
+            console.print("[yellow]No script files found in the project.[/yellow]")
+            return
+
+        console.print(
+            f"[green]Analyzing {len(self.script_files)} script files:[/green]"
+        )
+
+        # Group script files by type
+        python_files = [f for f in self.script_files if f.endswith(".py")]
+        shell_files = [f for f in self.script_files if f.endswith((".sh", ".bash"))]
+        batch_files = [f for f in self.script_files if f.endswith((".bat", ".cmd"))]
+        makefiles = [
+            f
+            for f in self.script_files
+            if os.path.basename(f).lower() == "makefile" or f.endswith(".mk")
+        ]
+        others = [
+            f
+            for f in self.script_files
+            if f not in python_files
+            and f not in shell_files
+            and f not in batch_files
+            and f not in makefiles
+        ]
+
+        table = Table("Type", "Count", "Files")
+        table.add_row(
+            "Python",
+            str(len(python_files)),
+            "\n".join(python_files[:5])
+            + (
+                f"\n... and {len(python_files) - 5} more"
+                if len(python_files) > 5
+                else ""
+            ),
+        )
+        table.add_row(
+            "Shell",
+            str(len(shell_files)),
+            "\n".join(shell_files[:5])
+            + (
+                f"\n... and {len(shell_files) - 5} more" if len(shell_files) > 5 else ""
+            ),
+        )
+        table.add_row(
+            "Batch",
+            str(len(batch_files)),
+            "\n".join(batch_files[:5])
+            + (
+                f"\n... and {len(batch_files) - 5} more" if len(batch_files) > 5 else ""
+            ),
+        )
+        table.add_row(
+            "Makefiles",
+            str(len(makefiles)),
+            "\n".join(makefiles[:5])
+            + (f"\n... and {len(makefiles) - 5} more" if len(makefiles) > 5 else ""),
+        )
+        table.add_row(
+            "Other",
+            str(len(others)),
+            "\n".join(others[:5])
+            + (f"\n... and {len(others) - 5} more" if len(others) > 5 else ""),
+        )
+
+        console.print(table)
+
+        # Offer detailed analysis of specific files
+        console.print("\n[bold]Available actions:[/bold]")
+        console.print("1. Use [cyan]run script <file>[/cyan] to execute a script")
+        console.print(
+            "2. Use [cyan]analyze script <file>[/cyan] to analyze a specific script"
+        )
+
+    def export_project(self, zip_path):
+        """
+        Export the project to a ZIP file.
+
+        Args:
+            zip_path: Path to save the ZIP file
+
+        Returns:
+            Path to the created ZIP file
+        """
+        import zipfile
+
+        console.print(f"[green]Exporting project to:[/green] {zip_path}")
+
+        # Create a zip archive
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            for root, _, files in os.walk(self.source_dir):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(file_path, self.source_dir)
+                    zipf.write(file_path, rel_path)
+
+        console.print(f"[green]Project exported successfully to:[/green] {zip_path}")
+        return zip_path
+
+    @classmethod
+    def import_project(cls, zip_path, import_dir):
+        """
+        Import a project from a ZIP file.
+
+        Args:
+            zip_path: Path to the ZIP file
+            import_dir: Directory to extract the project to
+
+        Returns:
+            Project instance for the imported project
+        """
+        import zipfile
+
+        console.print(f"[green]Importing project from:[/green] {zip_path}")
+        console.print(f"[green]Extracting to:[/green] {import_dir}")
+
+        # Extract the zip archive
+        with zipfile.ZipFile(zip_path, "r") as zipf:
+            zipf.extractall(import_dir)
+
+        console.print(f"[green]Project imported successfully to:[/green] {import_dir}")
+        return cls(import_dir)

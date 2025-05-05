@@ -200,8 +200,6 @@ class TestEnvironmentUtils(unittest.TestCase):
         # Mock venv path
         venv_path = Path("/path/to/venv")
         mock_get_venv_path.return_value = venv_path
-
-        # Mock venv does not exist
         mock_exists.return_value = False
 
         # Mock pip and python paths
@@ -210,43 +208,102 @@ class TestEnvironmentUtils(unittest.TestCase):
         mock_get_pip_path.return_value = pip_path
         mock_get_python_path.return_value = python_path
 
-        # Save original argv
-        original_argv = sys.argv
-        sys.argv = ["twinizer", "run"]
-
-        try:
-            # Call bootstrap_environment
-            bootstrap_environment()
-
-            # Verify venv was created
-            mock_create_venv.assert_called_with(venv_path)
-
-            # Verify dependencies were installed
-            mock_install_dependencies.assert_called_with(pip_path)
-
-            # Verify python path was retrieved
-            mock_get_python_path.assert_called_with(venv_path)
-
-            # Verify execv was called to restart in the venv
-            mock_execv.assert_called_with(
-                str(python_path), [str(python_path), "-m", "twinizer", "run"]
-            )
-        finally:
-            # Restore original argv
-            sys.argv = original_argv
-
-    @patch("twinizer.utils.env.check_python_version", return_value=True)
-    @patch("twinizer.utils.env.is_in_virtualenv", return_value=True)
-    @patch("twinizer.utils.env.inject_system_paths")
-    def test_bootstrap_environment_in_venv(
-        self, mock_inject_system_paths, mock_is_in_virtualenv, mock_check_python_version
-    ):
-        """Test bootstrapping when already in a virtual environment."""
         # Call bootstrap_environment
         bootstrap_environment()
 
-        # Verify system paths were injected
-        mock_inject_system_paths.assert_called_once()
+        # Verify venv was created
+        mock_create_venv.assert_called_once_with(venv_path)
+
+        # Verify dependencies were installed
+        mock_install_dependencies.assert_called_once_with(pip_path)
+
+        # Verify python was re-executed
+        mock_execv.assert_called_once_with(
+            str(python_path), [str(python_path)] + sys.argv
+        )
+
+    @patch("twinizer.utils.env.check_python_version", return_value=True)
+    @patch("twinizer.utils.env.is_in_virtualenv", return_value=False)
+    @patch("twinizer.utils.env.check_conda_env", return_value=False)
+    @patch("twinizer.utils.env.get_venv_path")
+    @patch("pathlib.Path.exists")
+    @patch("twinizer.utils.env.create_venv")
+    @patch("twinizer.utils.env.get_pip_path")
+    @patch("twinizer.utils.env.install_dependencies")
+    @patch("twinizer.utils.env.get_python_path")
+    @patch("os.execv")
+    def test_bootstrap_environment_existing_venv(
+        self,
+        mock_execv,
+        mock_get_python_path,
+        mock_install_dependencies,
+        mock_get_pip_path,
+        mock_create_venv,
+        mock_exists,
+        mock_get_venv_path,
+        mock_check_conda_env,
+        mock_is_in_virtualenv,
+        mock_check_python_version,
+    ):
+        """Test bootstrapping with an existing virtual environment."""
+        # Mock venv path
+        venv_path = Path("/path/to/venv")
+        mock_get_venv_path.return_value = venv_path
+        mock_exists.return_value = True
+
+        # Mock pip and python paths
+        pip_path = Path("/path/to/venv/bin/pip")
+        python_path = Path("/path/to/venv/bin/python")
+        mock_get_pip_path.return_value = pip_path
+        mock_get_python_path.return_value = python_path
+
+        # Call bootstrap_environment
+        bootstrap_environment()
+
+        # Verify venv was not created
+        mock_create_venv.assert_not_called()
+
+        # Verify dependencies were installed
+        mock_install_dependencies.assert_called_once_with(pip_path)
+
+        # Verify python was re-executed
+        mock_execv.assert_called_once_with(
+            str(python_path), [str(python_path)] + sys.argv
+        )
+
+    @patch("twinizer.utils.env.check_python_version", return_value=True)
+    @patch("twinizer.utils.env.is_in_virtualenv", return_value=True)
+    def test_bootstrap_environment_already_in_venv(
+        self, mock_is_in_virtualenv, mock_check_python_version
+    ):
+        """Test bootstrapping when already in a virtual environment."""
+        # Call bootstrap_environment
+        result = bootstrap_environment()
+
+        # Verify result is True (no action needed)
+        self.assertTrue(result)
+
+    @patch("twinizer.utils.env.check_python_version", return_value=True)
+    @patch("twinizer.utils.env.is_in_virtualenv", return_value=False)
+    @patch("twinizer.utils.env.check_conda_env", return_value=True)
+    def test_bootstrap_environment_in_conda(
+        self, mock_check_conda_env, mock_is_in_virtualenv, mock_check_python_version
+    ):
+        """Test bootstrapping when in a conda environment."""
+        # Call bootstrap_environment
+        result = bootstrap_environment()
+
+        # Verify result is True (no action needed)
+        self.assertTrue(result)
+
+    @patch("twinizer.utils.env.check_python_version", return_value=False)
+    def test_bootstrap_environment_wrong_python(self, mock_check_python_version):
+        """Test bootstrapping with incompatible Python version."""
+        # Call bootstrap_environment
+        result = bootstrap_environment()
+
+        # Verify result is False (cannot bootstrap)
+        self.assertFalse(result)
 
 
 if __name__ == "__main__":
