@@ -1,0 +1,67 @@
+title: Twinizer
+description: A comprehensive environment for hardware and firmware reverse engineering, analysis and management
+theme: jekyll-theme-cayman
+
+# Metadata for SEO
+lang: en
+author:
+  name: Your Name
+  email: your.email@example.com
+
+# Social media
+social:
+  github: yourusername/twinizer
+
+# Navigation
+show_downloads: true
+google_analytics: # Add your Google Analytics ID here if needed
+
+# Mermaid diagram support
+markdown: kramdown
+kramdown:
+  syntax_highlighter: rouge
+  math_engine: mathjax
+  
+# Enable mermaid diagrams
+mermaid:
+  version: "9.4.3"
+  
+# Additional plugins
+plugins:
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+# Exclude files from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor
+  - .github
+  - .gitignore
+  - venv
+  - .tox
+  - dist
+  - build
+  - "*.pyc"
+  - "*.pyo"
+  - "*.pyd"
+
+# Collections
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+
+# Defaults
+defaults:
+  - scope:
+      path: ""
+      type: "docs"
+    values:
+      layout: "default"
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "default"

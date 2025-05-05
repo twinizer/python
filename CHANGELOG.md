@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.14] - 2025-05-05
+
+### Added
+- Changes in pyproject.toml
+- Changes in src/twinizer.egg-info/PKG-INFO
+
+### Changed
+- Changes in .github/workflows/python-package.yml
+- Changes in _config.yml
+
 ## [0.1.13] - 2025-05-04
 
 ### Added
