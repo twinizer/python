@@ -1,15 +1,6 @@
 # Jekyll configuration for Twinizer documentation
 title: Twinizer
 description: Kompleksowe narzędzie do tworzenia i manipulowania cyfrowymi bliźniakami systemów sprzętowych i programowych
-url: https://python.twinizer.com
+url: http://python.twinizer.com
 baseurl: ""
 repository: twinizer/python
-mermaid:
-  src: "mermaid.js"
-plugins:
-  - "jekyll-github-metadata"
-  - "jekyll-readme-index"
-readme_index:
-  enabled:          true
-  remove_originals: false
-  with_frontmatter: false
